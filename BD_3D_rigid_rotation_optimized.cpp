@@ -269,7 +269,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
 				cluster[i].radii=0;
 	
-		/*
+		
 			// update Q
 				quat_old=cluster[i].quat;
 				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
@@ -291,7 +291,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			// update A matrix
 		
 				cluster[i].quat2rotmat();
-	*/
+	
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
 					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
@@ -498,21 +498,23 @@ do {
 						dr2=particle[cluster[i].sub[k]].pos-particle[cluster[j].sub[l]].pos;
 						dr2.PBC(box,rbox);
         				r2=dr2.norm2();
-						//	if ((r2<r_min2)) {
-						//						Collision(particle, cluster, i,j, &Max_Cluster_N, box, rbox );
-							if ((r2<r_min2)&&(r2>(1.44*rs2))) {	
+							if ((r2<r_min2)) {
+												Collision(particle, cluster, i,j, &Max_Cluster_N, box, rbox );
+						/*	if ((r2<r_min2)&&(r2>(1.44*rs2))) {	
 									cluster_combine=1;						
 								break;
 							} else if (r2<=(1.44*rs2)) {
-									cluster_combine=0;
-							}
+									cluster_combine=0;  */
+								l = cluster[j].Sub_Length ;
+								k = cluster[i].Sub_Length;	
+							} 
 							
 						}
 					}
-					if (cluster_combine) 
+				/*	if (cluster_combine) 
 						{
 							Collision(particle, cluster, i,j, &Max_Cluster_N, box, rbox );
-						}	
+						}	*/
 				} 
 			}		
 		} 	

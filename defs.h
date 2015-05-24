@@ -4,7 +4,7 @@
 # include "structure_definitions.h"
 const double m =1.0;
 const double inv_mass =1.0/m;
-const double dt=0.00005;
+const double dt=0.0001;
 const int NrParticles=5000;
 const double r_cut  = pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);

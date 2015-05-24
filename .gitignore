@@ -1,3 +1,7 @@
 *
 !*.cpp
 !*.h
+
+!A/
+A/*
+!A/create_input_pos_BD
