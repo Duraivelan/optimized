@@ -120,7 +120,9 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		outFile7.close();
 		cluster[i].pos.PBC(box,rbox);	
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
-		cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].Sub_Length);
+		cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].Sub_Length);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
+																						// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
+
 
 		// std::cout<<Length_cluster[i]<<'\t'<<Length_cluster[j]<<std::endl;
 		for ( int k = j ; k < *Max_Cluster_N-1 ; k ++ )
@@ -269,7 +271,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
 				cluster[i].radii=0;
 	
-		
+		/*
 			// update Q
 				quat_old=cluster[i].quat;
 				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
@@ -291,7 +293,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			// update A matrix
 		
 				cluster[i].quat2rotmat();
-	
+	*/
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
 					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
@@ -319,6 +321,11 @@ for(int i=0;i<*Max_Cluster_N;i++)
 						particle[cluster[i].sub[j]].pos=cluster[i].pos;
 					}
 			}
+	if (cluster[i].radii>max_size)
+		{
+			cout << "*** cluster reached maximum allowed size " << endl;
+			abort();
+		}	
 	}		
 }
 
@@ -529,11 +536,7 @@ do {
 	cluster[i].frc=null3D;
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
-	if (cluster[i].radii_gyr>max_size)
-		{
-			cout << "*** cluster reached maximum allowed size " << endl;
-			abort();
-		}
+
     for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
     {
 		dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
