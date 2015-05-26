@@ -153,7 +153,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		outFile4<<"new_cluster.dat              Structural (bead coords) file"<<endl;
 		outFile4<<"12                              ICASE"<<endl;
 		outFile4<<26.8500<<"                             Temperature, centigrade"<<endl;
-		outFile4<<"0.10                           Solvent viscosity"<<endl;
+		outFile4<<eta<<"                           Solvent viscosity"<<endl;
 		outFile4<<cluster[i].Sub_Length<<"                          Molecular weight"<<endl;
 		outFile4<<0.01<<"                           Specific volume of macromolecule"<<endl;
 		outFile4<<"1.0                             Solution density"<<endl;
@@ -271,7 +271,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
 				cluster[i].radii=0;
 	
-		/*
+		
 			// update Q
 				quat_old=cluster[i].quat;
 				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
@@ -293,7 +293,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			// update A matrix
 		
 				cluster[i].quat2rotmat();
-	*/
+	
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
 					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
@@ -323,6 +323,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			}
 	if (cluster[i].radii>max_size)
 		{
+			cout <<"Radius"<<'\t'<<cluster[i].radii<< endl;
+			cout <<"Cluster No:"<<'\t'<<i<<'\t'<<", Nr. of particles in the cluster"<<'\t'<<cluster[i].Sub_Length<< endl;
 			cout << "*** cluster reached maximum allowed size " << endl;
 			abort();
 		}	
@@ -608,14 +610,17 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	outFile8<<"NrParticles"<<'\t'<<NrParticles<<std::endl;
 	outFile8<<"mass"<<'\t'<<m<<std::endl;
 	outFile8<<"kb"<<'\t'<<kb<<std::endl;
-	outFile8<<"T0"<<'\t'<<T0<<std::endl;
-	outFile8<<"box"<<'\t'<<box.comp[0]<<'\t'<<box.comp[1]<<'\t'<<box.comp[2]<<std::endl;
+	outFile8<<"Temperature (T0) ,"<<'\t'<<T0<<std::endl;
+	outFile8<<"box size (abosute units)"<<'\t'<<box.comp[0]<<'\t'<<box.comp[1]<<'\t'<<box.comp[2]<<std::endl;
 	outFile8<<"shear rate"<<'\t'<<shear_rate<<std::endl;
-	outFile8<<"R_cut"<<'\t'<<r_cut<<std::endl;
-	outFile8<<"rs"<<'\t'<<rs<<std::endl;
+	outFile8<<"Cut-off for Interaction Potetntial , R_cut"<<'\t'<<r_cut<<std::endl;
+	outFile8<<"Saturation point for Interaction Potetntial , rs"<<'\t'<<rs<<std::endl;
 	outFile8<<"epsilon"<<'\t'<<epsilon<<std::endl;
 	outFile8<<"sigma"<<'\t'<<sigma<<std::endl;
-outFile8.close();
+	outFile8<<"Timestep, dt"<<'\t'<<dt<<std::endl;
+	outFile8<<"Viscosity, eta"<<'\t'<<r_cut<<std::endl;
+	outFile8<<"Mobility , mu"<<'\t'<<mu<<std::endl;
+	outFile8.close();
 
 
      // get time now
