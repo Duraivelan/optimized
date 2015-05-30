@@ -8,7 +8,7 @@
 #include <dirent.h>
 # include "defs.h"
 # include "rigid_force.h"
-#include <unsupported/Eigen/MatrixFunctions>
+#include <Eigen/Eigenvalues> 
 
 using namespace Eigen;
 
@@ -210,7 +210,9 @@ else {
 
 			}
 		}
-		temp_sqrt=temp.sqrt();
+	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
+	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
+	//	temp_sqrt=temp.sqrt();
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
@@ -227,7 +229,9 @@ else {
 
 			}
 		}
-		temp_sqrt=temp.sqrt();
+		Eigen::SelfAdjointEigenSolver<MatrixXd> ROT_MOBL_MAT(temp);
+		temp_sqrt = ROT_MOBL_MAT.operatorSqrt();
+	//	temp_sqrt=temp.sqrt();
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				cluster[i].rot_mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
@@ -271,7 +275,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
 				cluster[i].radii=0;
 	
-		
+		/*
 			// update Q
 				quat_old=cluster[i].quat;
 				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
@@ -291,7 +295,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].quat=cluster[i].quat+quat_old*lambda;
 		
 			// update A matrix
-		
+		*/
 				cluster[i].quat2rotmat();
 	
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
@@ -335,10 +339,14 @@ int main() {
 // current date/time based on current system
    time_t now = time(0);
    struct tm *ltm = localtime(&now);
-   cout << "start time"<< '\t'<< ltm->tm_hour << ":";
-   cout << ltm->tm_min << ":";
-   cout << ltm->tm_sec << endl;
-         
+   cout << "start time"<< '\t'
+   << (ltm->tm_year + 1900) << '-' 
+   << (ltm->tm_mon + 1) << '-'
+   <<  ltm->tm_mday << "\t"
+   << ltm->tm_hour << ":"
+   << ltm->tm_min << ":"
+   << ltm->tm_sec << endl;
+             
 int if_create_particles = xxcreate, ifrestart=xxrestart;
           
 double tauT=0.1;
@@ -371,7 +379,7 @@ std::string fileName=dataFileName+"/End_positions.dat";
 //read x,y positions from XY.dat
 std::ifstream dataFile(fileName);
 if(!dataFile.good()) {
-	std::cerr<<"Given file is corrupt /n"<<std::endl;
+	std::cerr<<"Given file is corrupt tyu/n"<<std::endl;
 }
 else {
 	std::cout<<"Reading X, Y, Z co-ordinates"<<std::endl;
@@ -393,7 +401,7 @@ createInitialPosition_N_particles(fileName,NrParticles,Lx,Ly,Lz);
 //read x,y positions from XY.dat
 std::ifstream dataFile(fileName);
 if(!dataFile.good()) {
-	std::cerr<<"Given file is corrupt /n"<<std::endl;
+	std::cerr<<"Given file is corrupt56 /n"<<std::endl;
 }
 else {
 	std::cout<<"Reading X, Y, Z co-ordinates"<<std::endl;
@@ -626,9 +634,13 @@ std::ofstream outFile8(dataFileName+"/logfile");
      // get time now
 	now = time(0);
 	ltm = localtime(&now);
-	cout << "end time"<< '\t'<< ltm->tm_hour << ":";
-	cout << ltm->tm_min << ":";
-	cout << ltm->tm_sec << endl;
+   cout << "end time"<< '\t'
+   << (ltm->tm_year + 1900) << '-' 
+   << (ltm->tm_mon + 1) << '-'
+   <<  ltm->tm_mday << "\t"
+   << ltm->tm_hour << ":"
+   << ltm->tm_min << ":"
+   << ltm->tm_sec << endl;
 
 	
 	
