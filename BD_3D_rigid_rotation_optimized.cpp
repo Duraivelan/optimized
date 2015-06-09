@@ -358,7 +358,7 @@ int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=500;
+int step=0, nSteps=10000, frame=1000;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
@@ -424,6 +424,7 @@ else {
 			std::istringstream currentLine3(line3);    
 			currentLine3 >> cluster[i].Sub_Length;
 			cluster[i].mass=cluster[i].Sub_Length;
+			currentLine3 >> cluster[i].radii_gyr;
 			currentLine3 >> cluster[i].pos.comp[0];
 			currentLine3 >> cluster[i].pos.comp[1];
 			currentLine3 >> cluster[i].pos.comp[2];
@@ -734,7 +735,7 @@ outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
 
 for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	{
-		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
+		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].radii_gyr<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
 		if (cluster[i].Sub_Length>1) 
 			{
 				cluster[i].mobility_tnsr.writeToFile(outFile7);
