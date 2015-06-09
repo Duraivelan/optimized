@@ -357,7 +357,7 @@ int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=1000;
+int step=0, nSteps=10000, frame=500;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
@@ -408,20 +408,48 @@ else {
     std::string line;
     std::string line1;
     std::string line2;
+    std::string line3;
+    std::string line4;
     int n=0;
     std::getline(dataFile,line0);
     std::istringstream currentLine0(line0);    
     currentLine0 >> Max_Cluster_N;
     currentLine0 >> restart_frame_offset;
-    for (int i=0;i<Max_Cluster_N;i++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].Sub_Length;
-        cluster[i].mass=cluster[i].Sub_Length;
-        currentLine >> cluster[i].pos.comp[0];
-        currentLine >> cluster[i].pos.comp[1];
-        currentLine >> cluster[i].pos.comp[2];
-			for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+    for (int i=0;i<Max_Cluster_N;i++) 
+		{
+			std::getline(dataFile,line3);
+			std::istringstream currentLine3(line3);    
+			currentLine3 >> cluster[i].Sub_Length;
+			cluster[i].mass=cluster[i].Sub_Length;
+			currentLine3 >> cluster[i].pos.comp[0];
+			currentLine3 >> cluster[i].pos.comp[1];
+			currentLine3 >> cluster[i].pos.comp[2];
+			if (cluster[i].Sub_Length>1) 
+				{
+					std::getline(dataFile,line);
+					std::istringstream currentLine(line); 
+					currentLine >> cluster[i].mobility_tnsr.comp[0][0];
+					currentLine >> cluster[i].mobility_tnsr.comp[0][1];
+					currentLine >> cluster[i].mobility_tnsr.comp[0][2]; 
+					currentLine >> cluster[i].mobility_tnsr.comp[1][0];
+					currentLine >> cluster[i].mobility_tnsr.comp[1][1];
+					currentLine >> cluster[i].mobility_tnsr.comp[1][2];
+					currentLine >> cluster[i].mobility_tnsr.comp[2][0];
+					currentLine >> cluster[i].mobility_tnsr.comp[2][1];
+					currentLine >> cluster[i].mobility_tnsr.comp[2][2];					
+					std::getline(dataFile,line4);
+					std::istringstream currentLine4(line4); 
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[0][0];
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[0][1];
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[0][2]; 
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[1][0];
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[1][1];
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[1][2];
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[2][0];
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[2][1];
+					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[2][2];
+				}
+		for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 				{
 					std::getline(dataFile,line1);
 					std::istringstream currentLine1(line1);    
@@ -680,7 +708,11 @@ outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
 for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	{
 		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
-	    
+		if (cluster[i].Sub_Length>1) 
+			{
+				cluster[i].mobility_tnsr.writeToFile(outFile7);
+				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
+			}
 	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 			{
 				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<std::endl;

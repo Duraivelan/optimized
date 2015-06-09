@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -238,6 +239,11 @@ struct mtrx3D
     cout << setw(10) << comp[0][0] << "  " << setw(10) << comp[0][1] << "  " << setw(10) << comp[0][2] << endl;
     cout << setw(10) << comp[1][0] << "  " << setw(10) << comp[1][1] << "  " << setw(10) << comp[1][2] << endl;
     cout << setw(10) << comp[2][0] << "  " << setw(10) << comp[2][1] << "  " << setw(10) << comp[2][2] << endl;
+  }  
+  
+void writeToFile(ofstream &outputFile)
+	{
+    outputFile <<'\t'<< comp[0][0] <<'\t'<< comp[0][1] <<'\t'<< comp[0][2] <<'\t'<< comp[1][0] <<'\t'<< comp[1][1] << '\t'<< comp[2][0] <<'\t'<< comp[2][1] <<'\t'<< comp[2][2] << endl;
   }
 
   double trace() const
