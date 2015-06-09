@@ -358,6 +358,7 @@ std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
 int step=0, nSteps=10000, frame=1000;
+int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
 cout<<mu<<endl;
@@ -374,6 +375,7 @@ vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
 
 if(ifrestart)	{
+	if(!xxcluster_restart)	{
 std::string fileName=dataFileName+"/End_positions.dat";
 
 //read x,y positions from XY.dat
@@ -390,9 +392,56 @@ else {
         currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[2];
-    }
+    }    
 }	
+}  else { 
+std::string fileName=dataFileName+"/End_Position_Full.xyz";
 
+//read x,y positions from XY.dat
+std::ifstream dataFile(fileName);
+if(!dataFile.good()) {
+	std::cerr<<"Given file is corrupt /n"<<std::endl;
+}
+else {
+	std::cout<<"Reading X, Y, Z co-ordinates"<<std::endl;
+    std::string line0;
+    std::string line;
+    std::string line1;
+    std::string line2;
+    int n=0;
+    std::getline(dataFile,line0);
+    std::istringstream currentLine0(line0);    
+    currentLine0 >> Max_Cluster_N;
+    currentLine0 >> restart_frame_offset;
+    for (int i=0;i<Max_Cluster_N;i++) {
+		std::getline(dataFile,line);
+    	std::istringstream currentLine(line);    
+        currentLine >> cluster[i].Sub_Length;
+        cluster[i].mass=cluster[i].Sub_Length;
+        currentLine >> cluster[i].pos.comp[0];
+        currentLine >> cluster[i].pos.comp[1];
+        currentLine >> cluster[i].pos.comp[2];
+			for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+				{
+					std::getline(dataFile,line1);
+					std::istringstream currentLine1(line1);    
+					cluster[i].sub[j]=n;
+					n+=1;
+					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[0];
+					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[1];
+					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[2];
+					std::getline(dataFile,line2);
+					std::istringstream currentLine2(line2);  
+					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[0];
+					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[1];
+					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[2];
+					particle[cluster[i].sub[j]].mass=1;
+					particle[cluster[i].sub[j]].radius=0.56;					
+					particle[cluster[i].sub[j]].cluster=i;					
+				}
+    }
+}
+}
 } else {
 	std::string fileName="../XYZ.dat";
 if (if_create_particles) {
@@ -417,14 +466,15 @@ else {
     }
 }
 }		
+
 //delete all files before writing data
 
 // following snippet taken from stakcflow link  http://stackoverflow.com/questions/11007494/how-to-delete-all-files-in-a-folder-but-not-delete-the-folder-c-linux
-if (ifrestart) {
+if (xxcluster_restart) {
 dataFileName=dataFileName_new;
 }
 const char *dataFileNamePointer = dataFileName.c_str();  // covnert the datafilename to a char pointer ans pass it to the snippet below which delete all files in that folder before running the simulation
-if (!ifrestart) {
+if (!xxcluster_restart) {
 struct dirent *next_file;
 DIR *theFolder;
 char filepath[256];
@@ -441,40 +491,36 @@ while (( next_file = readdir(theFolder)) )
 /* sort particles into cells */
 for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	{
-	cluster[i].Sub_Length=1;		// initially each cluster has size one
-	cluster[i].mass=1;
-	cluster[i].vel={0.0,0.0,0.0};
-
+		if (!xxcluster_restart) 
+			{
+				cluster[i].Sub_Length=1;		// initially each cluster has size one
+				cluster[i].mass=1;
+				cluster[i].vel={0.0,0.0,0.0};
+			}
 	for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
-		{  	
-		cluster[i].sub[j]=i;
-		particle[cluster[i].sub[j]].cluster=i;
-		particle[cluster[i].sub[j]].mass=cluster[i].mass;
-		particle[cluster[i].sub[j]].radius=0.56;
-		cluster[i].radii=0.56;
-	// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
-		particle[cluster[i].sub[j]].pos_bdyfxd={0.0,0.0,0.0};//cluster[i].sub[j].pos;
-		particle[cluster[i].sub[j]].vel=cluster[i].vel;
-
-		if (!ifrestart) {
+		{ 
+		if (!xxcluster_restart) {
+			cluster[i].sub[j]=i;
+			particle[cluster[i].sub[j]].cluster=i;
+			particle[cluster[i].sub[j]].mass=cluster[i].mass;
+			particle[cluster[i].sub[j]].radius=0.56;
+			cluster[i].radii=0.56;
+			// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
+			particle[cluster[i].sub[j]].vel=cluster[i].vel;
+			particle[cluster[i].sub[j]].pos_bdyfxd={0.0,0.0,0.0};//cluster[i].sub[j].pos;
 			cluster[i].pos=particle[cluster[i].sub[j]].pos;
 			cluster[i].omega={0.0,0.0,0.0};//{((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
 			cluster[i].angmom={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
-
-		} else {
-					cluster[i].pos=particle[cluster[i].sub[j]].pos;
-			//		cluster[i].omega={0,0,0};//{((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
-			//		cluster[i].angmom={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
-		}
-				
-		// intialize Q, A matrix
-
-		cluster[i].quat={1.0,0.0,0.0,0.0};
-		cluster[i].quat2rotmat();
+			cluster[i].pos=particle[cluster[i].sub[j]].pos;
+		} 				
 	}
+	// intialize Q, A matrix
+	cluster[i].quat={1.0,0.0,0.0,0.0};
+	cluster[i].quat2rotmat();
 }
 std::ofstream outFile1(dataFileName+"/PE_energy.dat");
-std::ofstream outFile7(dataFileName+"/End_positions.dat");
+std::ofstream outFile7(dataFileName+"/End_Position_Full.xyz");
+std::ofstream outFile10(dataFileName+"/End_positions.dat");
 std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 
 // perfrom MD steps
@@ -484,13 +530,35 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 	std::tie(Pxx[0],Pyy[0],Pzz[0],Pxy[0],Pxz[0],Pyz[0])= forceUpdate(&p_energy ,XYZ, new_neighbor, cell, cellLength, box, (R_cut+R_shell), N, force, shear_rate, simu_time, ifshear , epsilon, sigma, rs);
 }
 */
+
 step = 0;
 forceUpdate( particle, &p_energy);
-			
+
+
+	// convert subforces into total generalized forces on particles 
+
+  for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+  {
+	cluster[i].frc=null3D;
+	cluster[i].trq=null3D;
+	cluster[i].Iner_tnsr=null33D;
+
+    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+    {
+		dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
+		dr_vec.PBC(box,rbox);
+		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;		
+		cluster[i].trq +=                                               dr_vec^particle[cluster[i].sub[j]].frc;
+		mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
+		cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass; 	//	refer following paper , page 3 equa. 3 for interia tensor formula
+																												//	Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
+    } 
+  } 
+
 simu_time =dt;
 do {
 	p_energy=0;	
-	
+
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
 
 		// collision detection
@@ -536,7 +604,7 @@ do {
 			}		
 		} 	
 	}
-	
+
  	forceUpdate( particle, &p_energy);
 
 	// convert subforces into total generalized forces on particles 
@@ -562,13 +630,13 @@ do {
 if (step%frame==0) 
 	{ 
 
-        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame+restart_frame_offset) +".xyz");   
 		outFile5<<NrParticles<<std::endl;
 		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
-		std::ofstream outFile9(dataFileName+"/Cluster_dist"+ std::to_string(step/frame) +".dat");
+		std::ofstream outFile9(dataFileName+"/Cluster_dist"+ std::to_string(step/frame+restart_frame_offset) +".dat");
 
 		K_Energy=0;
 
@@ -599,19 +667,34 @@ if (step%frame==0)
 		outFile1<<p_energy<<std::endl;
 		outFile5.close();
 		outFile9.close();
+
 	}
-		
+	
 	simu_time+=dt;
 	step+=1;
 
 } while(xxnstep);
 	
+outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
 
-for (int i=0;i<NrParticles;i++) {
-	outFile7<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<std::endl;
-}
+for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+	{
+		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
+	    
+	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+			{
+				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<std::endl;
+				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
+			}
+	}
+			
+	for (int i=0;i<NrParticles;i++) 
+		{
+			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<std::endl;
+		}			
 outFile1.close();
 outFile7.close();
+outFile10.close();
 outFile11.close();
 
 std::ofstream outFile8(dataFileName+"/logfile");

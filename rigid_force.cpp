@@ -48,6 +48,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy) {
     periodR[NrCells[j] + 1][j] = +box.comp[j];
   } // j
   
+
 // generate grid list
  	int grid[NrCells[x]][NrCells[y]][NrCells[z]][MaxPerCell+1];
 
