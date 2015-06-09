@@ -1,10 +1,10 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 1
-while ( $a < 2 )
+@ a = 2
+while ( $a < 3 )
 mkdir $a
   cd $a
-  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<1000/ ; s/xxcreate/1/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<1000/ ; s/xxcreate/1/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/1/ " ../../pairforce.h > pairforce.h
 
   cp ../../rigid_force.h .
@@ -21,10 +21,10 @@ mkdir $a
   @ a = $a + 1
 end
 
-@ a = 1
-while ( $a < 2 )
+@ a = 2
+while ( $a < 3 )
   cd $a
-  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<50000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<5000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ " ../../pairforce.h > pairforce.h
   cp ../../rigid_force.h .
   cp ../../structure_definitions.h .

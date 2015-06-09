@@ -275,7 +275,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
 				cluster[i].radii=0;
 	
-		/*
+				if(xx_rotation)	
+				{
 			// update Q
 				quat_old=cluster[i].quat;
 				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
@@ -295,7 +296,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].quat=cluster[i].quat+quat_old*lambda;
 		
 			// update A matrix
-		*/
+				}
 				cluster[i].quat2rotmat();
 	
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
@@ -410,6 +411,8 @@ else {
     std::string line2;
     std::string line3;
     std::string line4;
+    std::string line5;
+    std::string line6;
     int n=0;
     std::getline(dataFile,line0);
     std::istringstream currentLine0(line0);    
@@ -448,6 +451,30 @@ else {
 					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[2][0];
 					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[2][1];
 					currentLine4 >> cluster[i].mobility_tnsr_sqrt.comp[2][2];
+					if(xx_rotation)	
+					{
+					std::getline(dataFile,line5);
+					std::istringstream currentLine5(line5); 
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[0][0];
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[0][1];
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[0][2]; 
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[1][0];
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[1][1];
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[1][2];
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[2][0];
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[2][1];
+					currentLine5 >> cluster[i].rot_mobility_tnsr.comp[2][2];					
+					std::getline(dataFile,line6);
+					std::istringstream currentLine6(line6); 
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[0][0];
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[0][1];
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[0][2]; 
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[1][0];
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[1][1];
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[1][2];
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[2][0];
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[2][1];
+					currentLine6 >> cluster[i].rot_mobility_tnsr_sqrt.comp[2][2];	}
 				}
 		for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 				{
@@ -712,6 +739,11 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			{
 				cluster[i].mobility_tnsr.writeToFile(outFile7);
 				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
+		if(xx_rotation)	
+			{
+				cluster[i].mobility_tnsr.writeToFile(outFile7);
+				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
+			}
 			}
 	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 			{
