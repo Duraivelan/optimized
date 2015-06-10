@@ -7,10 +7,20 @@
 
 # include "rigid_force.h"
 # include "defs.h"
+#include <algorithm>
+#include <functional>
+#include <array>
 
 using namespace std;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy) {
+ struct RowSort {
+        bool operator()(vector<int> a, vector<int>  b)
+        {   
+            return a[0] < b[0];
+        }   
+    } ;
+
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][2], int* step) {
 
   int    NrCells[3],MaxNrCells;
   double scale[3];
