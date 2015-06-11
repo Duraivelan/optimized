@@ -317,7 +317,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
 						dr=(particle[cluster[i].sub[j]].pos -cluster[i].pos);
-						dr.PBC(box,rbox);
+					//	dr.PBC(box,rbox);
 						temp= dr.norm2();
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 						r	=	 0.56	+	sqrt(temp);
@@ -513,7 +513,7 @@ do {
  	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 	if (xxclustering && combine_now>1) 
 		{	
-			cout<<combine_now<<endl;
+		//	cout<<combine_now<<endl;
 			vector<vector<int>> temp_combine(combine_now+1,vector<int> (2)) ;
 			for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
@@ -521,16 +521,16 @@ do {
 						{
 							temp_combine[pn][j]=combine[pn][j];
 						}
-						cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main beroe sort"<<endl;
+				//		cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main beroe sort"<<endl;
 				}			
 		
 	sort (temp_combine.begin()+1,temp_combine.end(), RowSort());
 	
-				for (int pn = 1; pn<=combine_now ; pn++) 
+		/*		for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
 				}	
-
+*/
 	if(combine_now>0) {	
 	int count=1;
 	do
@@ -549,12 +549,12 @@ do {
 			count=count+1;			
 		} while (count<combine_now);
 	}	
-				for (int pn = 1; pn<=combine_now ; pn++) 
+		/*		for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide mainf after unique"<<endl;
-				}
+				}*/
 	// collision detection
-	 			cout<<combine_now<<endl;
+	 		//	cout<<combine_now<<endl;
 
 	for ( int pn = 1 ; pn <=combine_now; pn ++ )
 		{
@@ -566,11 +566,11 @@ do {
 					}
 		}
 		
-						for (int pn = 1; pn<=combine_now ; pn++) 
+			/*			for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<" after combine"<<endl;
 				}
-
+*/
 	}
 
 
