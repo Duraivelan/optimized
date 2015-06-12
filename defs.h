@@ -6,7 +6,7 @@ const double m =1.0;
 const double inv_mass =1.0/m;
 const double dt=0.0001;
 const int NrParticles=5000;
-const double r_cut  = pow(2.0,(1.0/6.0));
+const double r_cut  = 2.5;
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0; 
 const double r_min = pow(2.0,(1.0/6.0))*sigma;
@@ -34,8 +34,8 @@ const int cellz=(int) ceil(Lz/r_cut);
 const vctr3D box(Lx, Ly, Lz);
 const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
 const vctr3D havbox (Lx/2.0, Ly/2.0 , Lz/2.0);
-const vctr3D shift(r_cut,r_cut,r_cut);
 const double max_size = (Lx/2.0 + Ly/2.0 + Lz/2.0)/3.0;
+const vctr3D shift(2.5+r_min,2.5+r_min,2.5+r_min);
 
 const double Fs=4.0*epsilon*(12.0*pow(sigma/rs,12.0)-6.0*pow(sigma/rs,6.0))/rs2;
 const double phis =4.0*epsilon*(pow(sigma/rs,12.0)-pow(sigma/rs,6.0));

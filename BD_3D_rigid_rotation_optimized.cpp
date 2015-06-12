@@ -6,6 +6,9 @@
 #include <cmath>
 #include <tuple>
 #include <dirent.h>
+#include <algorithm>
+#include <functional>
+#include <array>
 # include "defs.h"
 # include "rigid_force.h"
 #include <Eigen/Eigenvalues> 
@@ -13,6 +16,13 @@
 using namespace Eigen;
 
 using namespace std;
+
+ struct RowSort {
+        bool operator()(vector<int> a, vector<int>  b)
+        {   
+            return a[0] < b[0];
+        }   
+    } ;
 
 // random numbers using random_device option with normal distribution
 /*void createInitialPosition_N_particles(std::string fileName, int N) {
@@ -58,6 +68,8 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 		vctr3D L_after, L_before ;
 		vctr3D old_pos= cluster[i].pos;
+		vctr3D dr;
+		double temp_r, r;
 		
 		L_before= ((cluster[i].pos^cluster[i].vel)*cluster[i].mass + cluster[i].Iner_tnsr*cluster[i].omega +
 				   (cluster[j].pos.revPBC(old_pos,box,rbox)^cluster[j].vel)*cluster[j].mass + cluster[j].Iner_tnsr*cluster[j].omega );
@@ -69,7 +81,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		L[i][1] = (I[i][1][0]*Ang_Velocity[i][0]+I[i][1][1]*Ang_Velocity[i][1]+I[i][1][2]*Ang_Velocity[i][2] + I[j][1][0]*Ang_Velocity[j][0]+I[j][1][1]*Ang_Velocity[j][1]+I[j][1][2]*Ang_Velocity[j][2] );
 		L[i][2] = (I[i][2][0]*Ang_Velocity[i][0]+I[i][2][1]*Ang_Velocity[i][1]+I[i][2][2]*Ang_Velocity[i][2] + I[j][2][0]*Ang_Velocity[j][0]+I[j][2][1]*Ang_Velocity[j][1]+I[j][2][2]*Ang_Velocity[j][2] );
 */			
-		cluster[i].pos=(cluster[i].pos*cluster[i].mass + cluster[j].pos*cluster[j].mass ) * (1/(cluster[i].mass+cluster[j].mass));		
+		cluster[i].pos=(cluster[i].pos*cluster[i].mass + cluster[j].pos*cluster[j].mass ) * (1.0/(cluster[i].mass+cluster[j].mass));		
 
 		cluster[i].mass=cluster[i].mass+cluster[j].mass;
 		
@@ -120,6 +132,32 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		outFile7.close();
 		cluster[i].pos.PBC(box,rbox);	
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
+
+		cluster[i].radii=0;
+		
+		for ( int l = 0 ; l < cluster[i].Sub_Length ; l ++ )
+			{
+				for ( int k = l+1 ; k < cluster[i].Sub_Length ; k ++ )
+					{
+						dr=(particle[cluster[i].sub[l]].pos_bdyfxd -particle[cluster[i].sub[k]].pos_bdyfxd );
+					//	dr.PBC(box,rbox);
+						temp_r= dr.norm2();
+						r	=	 0.56	+	sqrt(temp_r);
+						if(r>cluster[i].radii)
+							{
+								cluster[i].radii	= r;
+							} 
+					}
+			}
+					
+		if (cluster[i].radii>max_size)
+			{
+				cout <<"Radius"<<'\t'<<cluster[i].radii<< endl;
+				cout <<"Cluster No:"<<'\t'<<i<<'\t'<<", Nr. of particles in the cluster"<<'\t'<<cluster[i].Sub_Length<< endl;
+				cout << "*** cluster reached maximum allowed size " << endl;
+				abort();
+			}	
+		
 		cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].Sub_Length);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
 																						// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
 
@@ -133,6 +171,10 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			cluster[k].omega=cluster[k+1].omega;
 			cluster[k].rotmat=cluster[k+1].rotmat;
 			cluster[k].Iner_tnsr=cluster[k+1].Iner_tnsr;
+			cluster[k].mobility_tnsr=cluster[k+1].mobility_tnsr;
+			cluster[k].mobility_tnsr_sqrt=cluster[k+1].mobility_tnsr_sqrt;
+			cluster[k].rot_mobility_tnsr=cluster[k+1].rot_mobility_tnsr;
+			cluster[k].rot_mobility_tnsr_sqrt=cluster[k+1].rot_mobility_tnsr_sqrt;
 			cluster[k].trq=cluster[k+1].trq;
 			cluster[k].angmom=cluster[k+1].angmom;
 			cluster[k].quat=cluster[k+1].quat;
@@ -143,7 +185,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			for ( int l = 0 ; l < cluster[k].Sub_Length ; l ++ )
 			{
 			cluster[k].sub[l]			=	cluster[k+1].sub[l];
-	
+			particle[cluster[k].sub[l]].cluster=k;
 			} 
 		} 
 		
@@ -260,9 +302,8 @@ std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0,1),R2(0,1),R3(0,1),R4(0,1),R5(0,1),R6(0,1);
 
 void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale) {
-double r, a, b , c, lambda, temp;
+double a, b , c, lambda;
 vctr4D quat_old;
-vctr3D dr;
 *KE_rot=0;
 	
 for(int i=0;i<*Max_Cluster_N;i++) 
@@ -273,7 +314,6 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		if (cluster[i].Sub_Length>1) 
 			{
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
-				cluster[i].radii=0;
 	
 				if(xx_rotation)	
 				{
@@ -303,15 +343,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					{
 					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
-						dr=(particle[cluster[i].sub[j]].pos -cluster[i].pos);
-						dr.PBC(box,rbox);
-						temp= dr.norm2();
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
-						r	=	 0.56	+	sqrt(temp);
-						if(r>cluster[i].radii)
-							{
-								cluster[i].radii	= r;
-							} 
 					}
 				cluster[i].pos.PBC(box,rbox);
 			} 
@@ -326,13 +358,6 @@ for(int i=0;i<*Max_Cluster_N;i++)
 						particle[cluster[i].sub[j]].pos=cluster[i].pos;
 					}
 			}
-	if (cluster[i].radii>max_size)
-		{
-			cout <<"Radius"<<'\t'<<cluster[i].radii<< endl;
-			cout <<"Cluster No:"<<'\t'<<i<<'\t'<<", Nr. of particles in the cluster"<<'\t'<<cluster[i].Sub_Length<< endl;
-			cout << "*** cluster reached maximum allowed size " << endl;
-			abort();
-		}	
 	}		
 }
 
@@ -374,6 +399,9 @@ int NrSubs=NrParticles;
 
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
+int combine_now=0;
+int combine[NrParticles][2];
+
 
 if(ifrestart)	{
 	if(!xxcluster_restart)	{
@@ -588,7 +616,8 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 */
 
 step = 0;
-forceUpdate( particle, &p_energy);
+
+forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 
 
 	// convert subforces into total generalized forces on particles 
@@ -616,52 +645,69 @@ do {
 	p_energy=0;	
 
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
-
-		// collision detection
-	if (xxclustering) 
-	{ 		 
-	for ( int i = 0 ; i < Max_Cluster_N-1; i ++ )
-		{
-		for ( int j = i+1 ; j < Max_Cluster_N; j ++ )
-			{  
-			R=cluster[i].radii+cluster[j].radii;
-			// R-=box.norm2()*round(R/box.norm2());
-			dR=cluster[i].pos-cluster[j].pos;
-			dR.PBC(box,rbox);
-
-			if (sqrt(dR.norm2())<R) 
-				{
-					cluster_combine=0;
-				for ( int k = 0 ; k < cluster[i].Sub_Length; k ++ )
-					{
-					for ( int l = 0 ; l < cluster[j].Sub_Length ; l ++ )
+	combine_now=0;
+ 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+	if (xxclustering && combine_now>1) 
+		{	
+		//	cout<<combine_now<<endl;
+			vector<vector<int>> temp_combine(combine_now+1,vector<int> (2)) ;
+			for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+					for (int j = 0; j< 2 ; j ++) 
 						{
-						dr2=particle[cluster[i].sub[k]].pos-particle[cluster[j].sub[l]].pos;
-						dr2.PBC(box,rbox);
-        				r2=dr2.norm2();
-							if ((r2<r_min2)) {
-												Collision(particle, cluster, i,j, &Max_Cluster_N, box, rbox );
-						/*	if ((r2<r_min2)&&(r2>(1.44*rs2))) {	
-									cluster_combine=1;						
-								break;
-							} else if (r2<=(1.44*rs2)) {
-									cluster_combine=0;  */
-								l = cluster[j].Sub_Length ;
-								k = cluster[i].Sub_Length;	
-							} 
-							
+							temp_combine[pn][j]=combine[pn][j];
 						}
-					}
-				/*	if (cluster_combine) 
-						{
-							Collision(particle, cluster, i,j, &Max_Cluster_N, box, rbox );
-						}	*/
-				} 
-			}		
-		} 	
-	}
+				//		cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main beroe sort"<<endl;
+				}			
+		
+	sort (temp_combine.begin()+1,temp_combine.end(), RowSort());
+	
+		/*		for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
+				}	
+*/
+	if(combine_now>0) {	
+	int count=1;
+	do
+		{
+			int j=1;
+		do
+			{
+			if ((temp_combine[count][0]==temp_combine[count+j][0]) && (temp_combine[count][1]==temp_combine[count+j][1]) )
+				{
+					temp_combine.erase( temp_combine.begin() + count+ j );
+					combine_now-=1;
+					j-=1;
+				}
+				j+=1;
+			}	while (j<=(combine_now-count));
+			count=count+1;			
+		} while (count<combine_now);
+	}	
+		/*		for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide mainf after unique"<<endl;
+				}*/
+	// collision detection
+	 		//	cout<<combine_now<<endl;
 
- 	forceUpdate( particle, &p_energy);
+	for ( int pn = 1 ; pn <=combine_now; pn ++ )
+		{
+			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
+				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
+					{
+						if (temp_combine[pp][0]>temp_combine[pn][1]) {temp_combine[pp][0]-=1; } else if ( temp_combine[pp][0]==temp_combine[pn][1] ) {temp_combine[pp][0]=temp_combine[pn][0] ;} 
+						if (temp_combine[pp][1]>temp_combine[pn][1]) {temp_combine[pp][1]-=1; } else if ( temp_combine[pp][1]==temp_combine[pn][1] ) {temp_combine[pp][1]=temp_combine[pn][0] ;}
+					}
+		}
+		
+			/*			for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<" after combine"<<endl;
+				}
+*/
+	}
 
 	// convert subforces into total generalized forces on particles 
 

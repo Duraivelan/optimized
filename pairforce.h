@@ -1,11 +1,19 @@
 //  Calculate the force between particles i and j
 if (particle[i].cluster!=particle[j].cluster)
 	{
-dr=particle[i].pos-(particle[j].pos+dR);
+dr=particle[i].pos-(particle[j].pos+dR+shift*xxshift);
 r2=dr.norm2();
 
 		if (r2<(r_cut2)) 
 		{
+		//	cout<<r2<<endl;
+			if(xxclustering && r2 < (r_min2)) 
+				{
+					*combine_now += 1;
+					combine[	*combine_now	]	[ 0 ] = min(particle[i].cluster,particle[j].cluster);
+					combine[	*combine_now	]	[ 1 ] = max(particle[i].cluster,particle[j].cluster);
+				//	cout<<combine[*combine_now][0]<<'\t'<<combine[*combine_now][1]<<"insdide pairforce"<<'\t'<<*step<<endl;
+				}
 
 			 if (r2<(rs2)) {
 						    	r=std::sqrt(r2);								
@@ -41,6 +49,7 @@ r2=dr.norm2();
 		}
 
 }  else {
+
 if (r2<(r_cut2)) 
 		{
 
