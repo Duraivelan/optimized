@@ -7,7 +7,7 @@ r2=dr.norm2();
 		if (r2<(r_cut2)) 
 		{
 		//	cout<<r2<<endl;
-			if(xxclustering) 
+			if(xxclustering && r2 < (r_min2)) 
 				{
 					*combine_now += 1;
 					combine[	*combine_now	]	[ 0 ] = min(particle[i].cluster,particle[j].cluster);

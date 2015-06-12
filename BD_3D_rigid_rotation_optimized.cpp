@@ -140,6 +140,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 				for ( int k = l+1 ; k < cluster[i].Sub_Length ; k ++ )
 					{
 						dr=(particle[cluster[i].sub[l]].pos_bdyfxd -particle[cluster[i].sub[k]].pos_bdyfxd );
+					//	dr.PBC(box,rbox);
 						temp_r= dr.norm2();
 						r	=	 0.56	+	sqrt(temp_r);
 						if(r>cluster[i].radii)
