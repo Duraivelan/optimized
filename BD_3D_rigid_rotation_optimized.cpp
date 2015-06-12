@@ -68,6 +68,8 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 		vctr3D L_after, L_before ;
 		vctr3D old_pos= cluster[i].pos;
+		vctr3D dr;
+		double temp_r, r;
 		
 		L_before= ((cluster[i].pos^cluster[i].vel)*cluster[i].mass + cluster[i].Iner_tnsr*cluster[i].omega +
 				   (cluster[j].pos.revPBC(old_pos,box,rbox)^cluster[j].vel)*cluster[j].mass + cluster[j].Iner_tnsr*cluster[j].omega );
@@ -130,6 +132,31 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		outFile7.close();
 		cluster[i].pos.PBC(box,rbox);	
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
+
+		cluster[i].radii=0;
+		
+		for ( int l = 0 ; l < cluster[i].Sub_Length ; l ++ )
+			{
+				for ( int k = l+1 ; k < cluster[i].Sub_Length ; k ++ )
+					{
+						dr=(particle[cluster[i].sub[l]].pos_bdyfxd -particle[cluster[i].sub[k]].pos_bdyfxd );
+						temp_r= dr.norm2();
+						r	=	 0.56	+	sqrt(temp_r);
+						if(r>cluster[i].radii)
+							{
+								cluster[i].radii	= r;
+							} 
+					}
+			}
+					
+		if (cluster[i].radii>max_size)
+			{
+				cout <<"Radius"<<'\t'<<cluster[i].radii<< endl;
+				cout <<"Cluster No:"<<'\t'<<i<<'\t'<<", Nr. of particles in the cluster"<<'\t'<<cluster[i].Sub_Length<< endl;
+				cout << "*** cluster reached maximum allowed size " << endl;
+				abort();
+			}	
+		
 		cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].Sub_Length);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
 																						// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
 
@@ -274,9 +301,8 @@ std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0,1),R2(0,1),R3(0,1),R4(0,1),R5(0,1),R6(0,1);
 
 void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale) {
-double r, a, b , c, lambda, temp;
+double a, b , c, lambda;
 vctr4D quat_old;
-vctr3D dr;
 *KE_rot=0;
 	
 for(int i=0;i<*Max_Cluster_N;i++) 
@@ -287,7 +313,6 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		if (cluster[i].Sub_Length>1) 
 			{
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
-				cluster[i].radii=0;
 	
 		/*
 			// update Q
@@ -316,15 +341,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					{
 					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
-						dr=(particle[cluster[i].sub[j]].pos -cluster[i].pos);
-					//	dr.PBC(box,rbox);
-						temp= dr.norm2();
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
-						r	=	 0.56	+	sqrt(temp);
-						if(r>cluster[i].radii)
-							{
-								cluster[i].radii	= r;
-							} 
 					}
 				cluster[i].pos.PBC(box,rbox);
 			} 
@@ -339,13 +356,6 @@ for(int i=0;i<*Max_Cluster_N;i++)
 						particle[cluster[i].sub[j]].pos=cluster[i].pos;
 					}
 			}
-	if (cluster[i].radii>max_size)
-		{
-			cout <<"Radius"<<'\t'<<cluster[i].radii<< endl;
-			cout <<"Cluster No:"<<'\t'<<i<<'\t'<<", Nr. of particles in the cluster"<<'\t'<<cluster[i].Sub_Length<< endl;
-			cout << "*** cluster reached maximum allowed size " << endl;
-			abort();
-		}	
 	}		
 }
 
