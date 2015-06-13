@@ -383,7 +383,7 @@ int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=1000;
+int step=0, nSteps=10000, frame=1;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
@@ -606,6 +606,9 @@ std::ofstream outFile1(dataFileName+"/PE_energy.dat");
 std::ofstream outFile7(dataFileName+"/End_Position_Full.xyz");
 std::ofstream outFile10(dataFileName+"/End_positions.dat");
 std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
+std::ofstream outFile12(dataFileName+"/vec1.dat");
+std::ofstream outFile13(dataFileName+"/vec2.dat");
+std::ofstream outFile14(dataFileName+"/vec3.dat");
 
 // perfrom MD steps
 /*	if (ifrestart) {
@@ -616,9 +619,7 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 */
 
 step = 0;
-
 forceUpdate( particle, &p_energy, &combine_now , combine, &step);
-
 
 	// convert subforces into total generalized forces on particles 
 
@@ -628,8 +629,9 @@ forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
 
-    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+   for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
     {
+		
 		dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
 		dr_vec.PBC(box,rbox);
 		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;		
@@ -646,7 +648,7 @@ do {
 
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
 	combine_now=0;
- 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+ //	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 	if (xxclustering && combine_now>1) 
 		{	
 		//	cout<<combine_now<<endl;
@@ -710,7 +712,7 @@ do {
 	}
 
 	// convert subforces into total generalized forces on particles 
-
+/*
   for ( int i = 0 ; i < Max_Cluster_N; i ++ )
   {
 	cluster[i].frc=null3D;
@@ -728,11 +730,11 @@ do {
 																												//	Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
     } 
   } 
-
+*/
 if (step%frame==0) 
 	{ 
 
-        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame+restart_frame_offset) +".xyz");   
+   /*     std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame+restart_frame_offset) +".xyz");   
 		outFile5<<NrParticles<<std::endl;
 		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
@@ -742,7 +744,12 @@ if (step%frame==0)
 
 		K_Energy=0;
 
-		for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+	*/	 outFile12<<cluster[0].rotmat.comp[0][0] <<'\t'<< cluster[0].rotmat.comp[0][1] << '\t'<< cluster[0].rotmat.comp[0][2] <<  endl;      
+		 outFile13<<cluster[0].rotmat.comp[1][0] <<'\t'<< cluster[0].rotmat.comp[1][1] << '\t'<< cluster[0].rotmat.comp[1][2] <<  endl;      
+		 outFile14<<cluster[0].rotmat.comp[2][0] <<'\t'<< cluster[0].rotmat.comp[2][1] << '\t'<< cluster[0].rotmat.comp[2][2] <<  endl;      
+
+
+	/*	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			{
 				if(cluster[i].Sub_Length>1)
 				{
@@ -756,19 +763,19 @@ if (step%frame==0)
 			}
 
 
-/*		for ( int i = 0 ; i < NrParticles; i ++ )
+		for ( int i = 0 ; i < NrParticles; i ++ )
 			{
 						outFile5<<'H'<<'\t'<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<std::endl;
 						K_Energy+=0.5*m*(particle[i].vel.comp[0]*particle[i].vel.comp[0]
 									   + particle[i].vel.comp[1]*particle[i].vel.comp[1]
 									   + particle[i].vel.comp[2]*particle[i].vel.comp[2]);
 			}
- */
+ 
  
       	outFile5<<'\n'<<std::endl;
 		outFile1<<p_energy<<std::endl;
 		outFile5.close();
-		outFile9.close();
+		outFile9.close();	*/
 
 	}
 	
