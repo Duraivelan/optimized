@@ -6,7 +6,7 @@ const double m =1.0;
 const double inv_mass =1.0/m;
 const double dt=0.0001;
 const int NrParticles=5000;
-const double r_cut  = 2.5;
+const double r_cut  = pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0; 
 const double r_min = pow(2.0,(1.0/6.0))*sigma;
@@ -24,7 +24,7 @@ const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
 const int  MaxPerCell = 10;
 
-const double Lx=90.0, Ly=90.0, Lz=90.0;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
+const double Lx=150.0, Ly=150.0, Lz=150.0;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
 const double Volume =Lx*Ly*Lz;
 const double Volume_inv = 1.0/ Volume;
 const int cellx=(int) ceil(Lx/r_cut);
