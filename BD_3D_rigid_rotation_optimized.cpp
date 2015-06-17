@@ -299,7 +299,7 @@ else {
 	}
 std::random_device seed;
 std::mt19937 gen{seed()};
-std::normal_distribution<> R1(0,1),R2(0,1),R3(0,1),R4(0,1),R5(0,1),R6(0,1);
+std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
 
 void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale) {
 double a, b , c, lambda;
@@ -329,7 +329,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
 			// assuming qi(t+dt) = ~qi + lambda*qi(t);
 			// hence 	|qi(t+dt)| = |~qi + lambda*qi(t)| =1;
-				a=1;
+				a=1.0;
 				b=cluster[i].quat*quat_old*2.0;
 				c=cluster[i].quat.norm2()-1.0;
 				lambda = (-b+sqrt(b*b-4.0*a*c))/(2.0*a);
@@ -550,6 +550,8 @@ else {
     }
 }
 }		
+cluster[0].rot_mobility_tnsr.echo();
+cluster[0].rot_mobility_tnsr_sqrt.echo();
 
 //delete all files before writing data
 
@@ -744,9 +746,9 @@ if (step%frame==0)
 
 		K_Energy=0;
 
-	*/	 outFile12<<cluster[0].rotmat.comp[0][0] <<'\t'<< cluster[0].rotmat.comp[0][1] << '\t'<< cluster[0].rotmat.comp[0][2] <<  endl;      
-		 outFile13<<cluster[0].rotmat.comp[1][0] <<'\t'<< cluster[0].rotmat.comp[1][1] << '\t'<< cluster[0].rotmat.comp[1][2] <<  endl;      
-		 outFile14<<cluster[0].rotmat.comp[2][0] <<'\t'<< cluster[0].rotmat.comp[2][1] << '\t'<< cluster[0].rotmat.comp[2][2] <<  endl;      
+	*/	 outFile12<<cluster[0].rotmat.comp[0][0] <<'\t'<< cluster[0].rotmat.comp[1][0] << '\t'<< cluster[0].rotmat.comp[2][0] <<  endl;      
+		 outFile13<<cluster[0].rotmat.comp[0][1] <<'\t'<< cluster[0].rotmat.comp[1][1] << '\t'<< cluster[0].rotmat.comp[2][1] <<  endl;      
+		 outFile14<<cluster[0].rotmat.comp[0][2] <<'\t'<< cluster[0].rotmat.comp[1][2] << '\t'<< cluster[0].rotmat.comp[2][2] <<  endl;      
 
 
 	/*	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
@@ -843,7 +845,9 @@ std::ofstream outFile8(dataFileName+"/logfile");
    << ltm->tm_min << ":"
    << ltm->tm_sec << endl;
 
-	
+	cluster[0].rot_mobility_tnsr.echo();
+	cluster[0].rot_mobility_tnsr_sqrt.echo();
+
 	
 return 0;
 
