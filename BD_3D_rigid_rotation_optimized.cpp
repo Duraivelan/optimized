@@ -550,8 +550,6 @@ else {
     }
 }
 }		
-cluster[0].rot_mobility_tnsr.echo();
-cluster[0].rot_mobility_tnsr_sqrt.echo();
 
 //delete all files before writing data
 
@@ -573,10 +571,23 @@ while (( next_file = readdir(theFolder)) )
     }
 //
 }
-
+MatrixXd temp(3,3), temp_sqrt(3,3);
 /* sort particles into cells */
 for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	{
+		cluster[i].rot_mobility_tnsr_sqrt=null33D;
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k][l];
+			}
+		}
+		Eigen::SelfAdjointEigenSolver<MatrixXd> ROT_MOBL_MAT(temp);
+		temp_sqrt = ROT_MOBL_MAT.operatorSqrt();
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rot_mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
+			}
+		}
 		if (!xxcluster_restart) 
 			{
 				cluster[i].Sub_Length=1;		// initially each cluster has size one
@@ -620,6 +631,13 @@ std::ofstream outFile14(dataFileName+"/vec3.dat");
 }
 */
 
+cluster[0].rot_mobility_tnsr.echo();
+cluster[0].rot_mobility_tnsr_sqrt.echo();
+vctr3D eig1(-0.0379, -0.9799, -0.1960 ); 
+vctr3D eig2(-0.9991,  0.0338,  0.0243 );
+vctr3D eig3( 0.0171, -0.1967,  0.9803 );
+vctr3D vec1, vec2, vec3;
+      
 step = 0;
 forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 
@@ -746,10 +764,18 @@ if (step%frame==0)
 
 		K_Energy=0;
 
-	*/	 outFile12<<cluster[0].rotmat.comp[0][0] <<'\t'<< cluster[0].rotmat.comp[1][0] << '\t'<< cluster[0].rotmat.comp[2][0] <<  endl;      
-		 outFile13<<cluster[0].rotmat.comp[0][1] <<'\t'<< cluster[0].rotmat.comp[1][1] << '\t'<< cluster[0].rotmat.comp[2][1] <<  endl;      
-		 outFile14<<cluster[0].rotmat.comp[0][2] <<'\t'<< cluster[0].rotmat.comp[1][2] << '\t'<< cluster[0].rotmat.comp[2][2] <<  endl;      
-
+	*/	
+	//	 outFile12<<cluster[0].rotmat.comp[0][0] <<'\t'<< cluster[0].rotmat.comp[1][0] << '\t'<< cluster[0].rotmat.comp[2][0] <<  endl;      
+	//	 outFile13<<cluster[0].rotmat.comp[0][1] <<'\t'<< cluster[0].rotmat.comp[1][1] << '\t'<< cluster[0].rotmat.comp[2][1] <<  endl;      
+	//	 outFile14<<cluster[0].rotmat.comp[0][2] <<'\t'<< cluster[0].rotmat.comp[1][2] << '\t'<< cluster[0].rotmat.comp[2][2] <<  endl;      
+			vec1 = cluster[0].rotmat*eig1;
+			vec2 = cluster[0].rotmat*eig2;
+			vec3 = cluster[0].rotmat*eig3;
+			
+		outFile12<<vec1.comp[0] <<'\t'<< vec1.comp[1] << '\t'<< vec1.comp[2] <<  endl;      
+		outFile13<<vec2.comp[0] <<'\t'<< vec2.comp[1] << '\t'<< vec2.comp[2] <<  endl;      
+		outFile14<<vec3.comp[0] <<'\t'<< vec3.comp[1] << '\t'<< vec3.comp[2] <<  endl;      
+		
 
 	/*	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			{
