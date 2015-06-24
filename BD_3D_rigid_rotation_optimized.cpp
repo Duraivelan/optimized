@@ -11,7 +11,7 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-#include <Eigen/Eigenvalues> 
+#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues> 
 
 using namespace Eigen;
 
@@ -572,7 +572,7 @@ while (( next_file = readdir(theFolder)) )
 	{
     // build the full path for each file in the folder
     sprintf(filepath, "%s/%s",dataFileNamePointer, next_file->d_name);
-    if(!strcpy(filepath,"log"))
+    if(strcmp(filepath,"../xxx/log")!=0)
 		{
 			remove(filepath);
 		}
