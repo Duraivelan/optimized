@@ -209,6 +209,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		outFile4.close();
 		
 		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+
 		// cout<<"Done hydro"<<endl;
 		std::ifstream dataFile("12-cluster-res.txt");
 if(!dataFile.good()) {
@@ -372,7 +373,11 @@ int main() {
    << ltm->tm_hour << ":"
    << ltm->tm_min << ":"
    << ltm->tm_sec << endl;
-             
+   
+   cout << "\t : current Git Hash - extended version";
+   system(" git log --pretty=format:'%H' -n 1 ");
+   cout << " \n \n Temperature scale factor \t" ;
+         
 int if_create_particles = xxcreate, ifrestart=xxrestart;
           
 double tauT=0.1;
@@ -567,8 +572,11 @@ while (( next_file = readdir(theFolder)) )
 	{
     // build the full path for each file in the folder
     sprintf(filepath, "%s/%s",dataFileNamePointer, next_file->d_name);
-    remove(filepath);
-    }
+    if(!strcpy(filepath,"log"))
+		{
+			remove(filepath);
+		}
+	}	
 //
 }
 

@@ -14,6 +14,10 @@ mkdir $a
   cp ../../vctr4D.h .
   cp ../../defs.h .
 
+  if ( $ifcreate == 1 ) then
+		rm -f log
+  endif
+
   icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -pg -O3 -o BD_3D_rigid_rotation_optimized.out
     ./BD_3D_rigid_rotation_optimized.out | tee log
 
