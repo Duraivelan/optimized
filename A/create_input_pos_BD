@@ -1,7 +1,7 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 9
-while ( $a < 10 )
+@ a = 12
+while ( $a < 13 )
 mkdir $a
   cd $a
   sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<1000/ ; s/xxcreate/1/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
@@ -21,8 +21,8 @@ mkdir $a
   @ a = $a + 1
 end
 
-@ a = 9
-while ( $a < 10 )
+@ a = 12
+while ( $a < 13 )
   cd $a
   sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<15000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/" ../../pairforce.h > pairforce.h

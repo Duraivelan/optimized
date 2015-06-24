@@ -241,8 +241,8 @@ else {
  
     }
 }	 
-		cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1*10*2414323832351.228);
-		cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1*10*2414323832351.228);
+		cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
+		cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1*10*2414323832351.228);		// outputed by hydro++
 		cluster[i].mobility_tnsr_sqrt=null33D;
 		MatrixXd temp(3,3), temp_sqrt(3,3);
 		for (int k=0;k<3;k++) {
@@ -299,7 +299,7 @@ else {
 	}
 std::random_device seed;
 std::mt19937 gen{seed()};
-std::normal_distribution<> R1(0,1),R2(0,1),R3(0,1),R4(0,1),R5(0,1),R6(0,1);
+std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
 
 void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale) {
 double a, b , c, lambda;
@@ -329,7 +329,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
 			// assuming qi(t+dt) = ~qi + lambda*qi(t);
 			// hence 	|qi(t+dt)| = |~qi + lambda*qi(t)| =1;
-				a=1;
+				a=1.0;
 				b=cluster[i].quat*quat_old*2.0;
 				c=cluster[i].quat.norm2()-1.0;
 				lambda = (-b+sqrt(b*b-4.0*a*c))/(2.0*a);
@@ -519,7 +519,7 @@ else {
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[0];
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[1];
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[2];
-					particle[cluster[i].sub[j]].mass=1;
+					particle[cluster[i].sub[j]].mass=1.0;
 					particle[cluster[i].sub[j]].radius=0.56;					
 					particle[cluster[i].sub[j]].cluster=i;					
 				}
@@ -578,7 +578,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 		if (!xxcluster_restart) 
 			{
 				cluster[i].Sub_Length=1;		// initially each cluster has size one
-				cluster[i].mass=1;
+				cluster[i].mass=1.0;
 				cluster[i].vel={0.0,0.0,0.0};
 			}
 	for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
