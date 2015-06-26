@@ -1,25 +1,27 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 10
-while ( $a < 11 )
+@ a = 20
+while ( $a < 21 )
 mkdir $a
   cd $a
-  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>0/ ; s/xxnstep/step<50000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/0/ ; s/xxcluster_restart/1/ ; s/xx_rotation/0/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+  @ ifcreate = 0; 
+  sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step>0/ ; s/xxnstep/step<=5000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/1/ ; s/xxthermo/0/ ; s/xxcluster_restart/1/ ; s/xx_rotation/1/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/" ../../pairforce.h > pairforce.h
-
+  sed "s/xxNrParticles/10000/" ../../defs.h > defs.h
+  
   cp ../../rigid_force.h .
   cp ../../structure_definitions.h .
   cp ../../rigid_force.cpp .
   cp ../../vctr3D.h .
   cp ../../vctr4D.h .
-  cp ../../defs.h .
 
+  icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o BD_3D_rigid_rotation_optimized.out
+  
   if ( $ifcreate == 1 ) then
 		rm -f log
   endif
-
-  icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -pg -O3 -o BD_3D_rigid_rotation_optimized.out
-    ./BD_3D_rigid_rotation_optimized.out | tee log
+  
+  ./BD_3D_rigid_rotation_optimized.out >>& log -a 
 
   cd ..
   @ a = $a + 1
