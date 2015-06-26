@@ -367,19 +367,18 @@ int main() {
    time_t now = time(0);
    struct tm *ltm = localtime(&now);
    cout << "start time"<< '\t'
-   << (ltm->tm_year + 1900) << '-' 
+   << (ltm->tm_year + 1900) << '-'
    << (ltm->tm_mon + 1) << '-'
    <<  ltm->tm_mday << "\t"
    << ltm->tm_hour << ":"
    << ltm->tm_min << ":"
    << ltm->tm_sec << endl;
-   
+
    cout << "\t : current Git Hash - extended version";
    system(" git log --pretty=format:'%H' -n 1 ");
-   cout << " \n \n Temperature scale factor \t" ;
-         
+
 int if_create_particles = xxcreate, ifrestart=xxrestart;
-          
+
 double tauT=0.1;
 int cluster_combine;
 double Temp=T0;
@@ -392,7 +391,6 @@ int step=0, nSteps=10000, frame=1000;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
-cout<<mu<<endl;
 std::cout<<cellx<<'\t'<<celly<<'\t'<<cellz<<std::endl;
 double  T_Energy, K_Energy, P_Energy, p_energy=0;
 vctr3D dR, dr2 , dr_vec;
@@ -554,7 +552,7 @@ else {
         currentLine >> particle[i].pos.comp[2];
     }
 }
-}		
+}
 
 //delete all files before writing data
 
@@ -576,7 +574,7 @@ while (( next_file = readdir(theFolder)) )
 		{
 			remove(filepath);
 		}
-	}	
+	}
 //
 }
 
@@ -610,6 +608,9 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	cluster[i].quat={1.0,0.0,0.0,0.0};
 	cluster[i].quat2rotmat();
 }
+
+cout<<"done 1" <<endl;
+
 std::ofstream outFile1(dataFileName+"/PE_energy.dat");
 std::ofstream outFile7(dataFileName+"/End_Position_Full.xyz");
 std::ofstream outFile10(dataFileName+"/End_positions.dat");
@@ -625,8 +626,12 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 
 step = 0;
 
+cout<<"done 11" <<endl;
+
+
 forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 
+cout<<"done 12" <<endl;
 
 	// convert subforces into total generalized forces on particles 
 
@@ -645,8 +650,9 @@ forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 		mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
 		cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass; 	//	refer following paper , page 3 equa. 3 for interia tensor formula
 																												//	Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
-    } 
-  } 
+    }
+  }
+cout<<"done 2" <<endl;
 
 simu_time =dt;
 do {
@@ -784,7 +790,9 @@ if (step%frame==0)
 	step+=1;
 
 } while(xxnstep);
-	
+
+cout<<"done 3"<<endl;
+
 outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
 
 for ( int i = 0 ; i < Max_Cluster_N; i ++ )
@@ -806,19 +814,35 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
 			}
 	}
-			
-	for (int i=0;i<NrParticles;i++) 
+	for (int i=0;i<NrParticles;i++)
 		{
 			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<std::endl;
-		}			
+		}
 outFile1.close();
 outFile7.close();
 outFile10.close();
 outFile11.close();
 
+cout<<"done 4"<<endl;
+
 std::ofstream outFile8(dataFileName+"/logfile");
+
+//	system(" git log --pretty=format:'%H' -n 1 >> logfile ");
+//	system(" pwd >> logfile ");
+
+	outFile8 << "start time"<< '\t'
+   	<< (ltm->tm_year + 1900) << '-'
+   	<< (ltm->tm_mon + 1) << '-'
+  	<<  ltm->tm_mday << "\t"
+   	<< ltm->tm_hour << ":"
+   	<< ltm->tm_min << ":"
+   	<< ltm->tm_sec << endl;
+
+
+	outFile8<<"Rotational Brownian On"<<'\t'<<xx_rotation<<std::endl;
 	outFile8<<"NrParticles"<<'\t'<<NrParticles<<std::endl;
 	outFile8<<"mass"<<'\t'<<m<<std::endl;
+	outFile8<<"Volume fraction"<<'\t'<<vol_frac<<std::endl;
 	outFile8<<"kb"<<'\t'<<kb<<std::endl;
 	outFile8<<"Temperature (T0) ,"<<'\t'<<T0<<std::endl;
 	outFile8<<"box size (abosute units)"<<'\t'<<box.comp[0]<<'\t'<<box.comp[1]<<'\t'<<box.comp[2]<<std::endl;
@@ -828,7 +852,7 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	outFile8<<"epsilon"<<'\t'<<epsilon<<std::endl;
 	outFile8<<"sigma"<<'\t'<<sigma<<std::endl;
 	outFile8<<"Timestep, dt"<<'\t'<<dt<<std::endl;
-	outFile8<<"Viscosity, eta"<<'\t'<<r_cut<<std::endl;
+	outFile8<<"Viscosity, eta"<<'\t'<<eta<<std::endl;
 	outFile8<<"Mobility , mu"<<'\t'<<mu<<std::endl;
 	outFile8.close();
 
