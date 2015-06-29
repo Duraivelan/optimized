@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues> 
-#include<Eigen/Eigenvalues> 
+#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+//#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -530,7 +530,7 @@ else {
 }
 }
 } else {
-	std::string fileName="../XYZ.dat";
+	std::string fileName="XYZ.dat";
 if (if_create_particles) {
 createInitialPosition_N_particles(fileName,NrParticles,Lx,Ly,Lz);
 }
@@ -799,10 +799,6 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
 			}
 	}
-	for (int i=0;i<NrParticles;i++)
-		{
-			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<std::endl;
-		}
 outFile7.close();
   remove("End_Position_Full.xyz");
   char oldname[] ="End_Position_Full_new.xyz";
