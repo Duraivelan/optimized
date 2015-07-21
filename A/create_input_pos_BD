@@ -1,13 +1,13 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 11
-while ( $a < 12 )
+@ a = 13
+while ( $a < 14 )
 mkdir $a
   cd $a
   @ ifcreate = 1; 
   sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<=1000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/1/ ; s/xxclustering/0/" ../../pairforce.h > pairforce.h
-  sed "s/xxNrParticles/5000/" ../../defs.h > defs.h
+  sed "s/xxNrParticles/10000/" ../../defs.h > defs.h
   
   cp ../../rigid_force.h .
   cp ../../structure_definitions.h .
@@ -15,7 +15,7 @@ mkdir $a
   cp ../../vctr3D.h .
   cp ../../vctr4D.h .
 
-  icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o BD_3D_rigid_rotation_optimized.out
+  g++ -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o BD_3D_rigid_rotation_optimized.out
   
   if ( $ifcreate == 1 ) then
 		rm -f log
@@ -27,13 +27,13 @@ mkdir $a
   @ a = $a + 1
 end
 
-@ a = 11
-while ( $a < 12 )
+@ a = 13
+while ( $a < 14 )
   cd $a
   @ ifcreate = 0; 
-  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=30000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=15000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/" ../../pairforce.h > pairforce.h
-  sed "s/xxNrParticles/5000/" ../../defs.h > defs.h
+  sed "s/xxNrParticles/10000/" ../../defs.h > defs.h
 
   cp ../../rigid_force.h .
   cp ../../structure_definitions.h .

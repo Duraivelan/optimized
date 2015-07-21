@@ -307,12 +307,10 @@ void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& partic
 double a, b , c, lambda;
 vctr4D quat_old;
 *KE_rot=0;
-	
 for(int i=0;i<*Max_Cluster_N;i++) 
 	{
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
-
 		if (cluster[i].Sub_Length>1) 
 			{
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
@@ -365,6 +363,11 @@ for(int i=0;i<*Max_Cluster_N;i++)
 
 int main() {
 
+
+if(xxcluster_restart) {
+	std::ifstream fin("random_device_state.txt");
+  	fin >> gen;
+	}
 // current date/time based on current system
    time_t now = time(0);
    struct tm *ltm = localtime(&now);
@@ -777,6 +780,7 @@ if (step%frame==0)
 		
 		// store info to restart file End_Position_Full.xyz
 		std::ofstream outFile7(dataFileName+"/End_Position_Full_new.xyz");
+		std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
 
 outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
 
@@ -799,8 +803,18 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
 			}
 	}
-outFile7.close();
-  remove("End_Position_Full.xyz");
+
+	outFile_rand_state << gen;
+	outFile_rand_state.close();
+
+	outFile7.close();
+
+ remove("random_device_state.txt");
+  char oldname_rand_state[] ="random_device_state_new.txt";
+  char newname_rand_state[] ="random_device_state.txt";
+  rename( oldname_rand_state , newname_rand_state );
+
+ remove("End_Position_Full.xyz");
   char oldname[] ="End_Position_Full_new.xyz";
   char newname[] ="End_Position_Full.xyz";
   rename( oldname , newname );
@@ -813,6 +827,9 @@ outFile7.close();
 } while(xxnstep);
 
 std::ofstream outFile7(dataFileName+"/End_Position_Full_new.xyz");
+		std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
+	outFile_rand_state << gen;
+	outFile_rand_state.close();
 
 outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame )<<endl;
 
