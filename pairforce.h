@@ -12,6 +12,7 @@ r2=dr.norm2();
 					*combine_now += 1;
 					combine[	*combine_now	]	[ 0 ] = min(particle[i].cluster,particle[j].cluster);
 					combine[	*combine_now	]	[ 1 ] = max(particle[i].cluster,particle[j].cluster);
+				//	cout<<r2<<endl;
 				//	cout<<combine[*combine_now][0]<<'\t'<<combine[*combine_now][1]<<"insdide pairforce"<<'\t'<<*step<<endl;
 				}
 

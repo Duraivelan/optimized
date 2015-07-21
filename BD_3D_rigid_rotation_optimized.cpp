@@ -21,7 +21,7 @@ using namespace std;
  struct RowSort {
         bool operator()(vector<int> a, vector<int>  b)
         {   
-            return a[0] < b[0];
+           return ( (a[0]<b[0]) || ((a[0]==b[0])&&(a[1]<b[1])) );
         }   
     } ;
 
@@ -82,7 +82,18 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		L[i][1] = (I[i][1][0]*Ang_Velocity[i][0]+I[i][1][1]*Ang_Velocity[i][1]+I[i][1][2]*Ang_Velocity[i][2] + I[j][1][0]*Ang_Velocity[j][0]+I[j][1][1]*Ang_Velocity[j][1]+I[j][1][2]*Ang_Velocity[j][2] );
 		L[i][2] = (I[i][2][0]*Ang_Velocity[i][0]+I[i][2][1]*Ang_Velocity[i][1]+I[i][2][2]*Ang_Velocity[i][2] + I[j][2][0]*Ang_Velocity[j][0]+I[j][2][1]*Ang_Velocity[j][1]+I[j][2][2]*Ang_Velocity[j][2] );
 */			
+
+		remove("space__fixed.dat");
+
+		std::ofstream outFile17("space_fixed.dat");
+
+		outFile17<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<'\t'<<endl;
+
 		cluster[i].pos=(cluster[i].pos*cluster[i].mass + cluster[j].pos*cluster[j].mass ) * (1.0/(cluster[i].mass+cluster[j].mass));		
+
+		outFile17<<"new center of mass" << endl;
+
+		outFile17<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<'\t'<<endl;
 
 		cluster[i].mass=cluster[i].mass+cluster[j].mass;
 		
@@ -115,10 +126,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
 	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);				
 		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
+		outFile17<<particle[cluster[i].sub[k]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
 
 		
 		} 
-		
+		outFile17<<"cluster 2"<<endl;
 		for (int  k=cluster[i].Sub_Length; k<cluster[i].Sub_Length+cluster[j].Sub_Length; k++) {
 		
 	//	cluster[i].sub[k]	=	cluster[j].sub[k-cluster[i].Sub_Length];
@@ -128,9 +140,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
 			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
 			particle[cluster[i].sub[k]].cluster=i;
+		outFile17<<particle[cluster[i].sub[k]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
 			
 		} 
 		outFile7.close();
+		outFile17.close();
 		cluster[i].pos.PBC(box,rbox);	
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
 
@@ -368,6 +382,9 @@ int main() {
 // current date/time based on current system
    time_t now = time(0);
    struct tm *ltm = localtime(&now);
+
+   cout <<r_cut2<<'\t'<<r_min2<<endl;
+
    cout << "start time"<< '\t'
    << (ltm->tm_year + 1900) << '-'
    << (ltm->tm_mon + 1) << '-'
@@ -612,6 +629,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 std::ofstream outFile1(dataFileName+"/PE_energy.dat");
 std::ofstream outFile10(dataFileName+"/End_positions.dat");
 std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
+std::ofstream outFile20(dataFileName+"/current_coordinates.dat");
+std::ofstream outFile21(dataFileName+"/current_combine.dat");
 
 // perfrom MD steps
 /*	if (ifrestart) {
@@ -653,7 +672,9 @@ do {
 	combine_now=0;
  	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 	if (xxclustering && combine_now>1) 
-		{	
+		{
+
+
 		//	cout<<combine_now<<endl;
 			vector<vector<int>> temp_combine(combine_now+1,vector<int> (2)) ;
 			for (int pn = 1; pn<=combine_now ; pn++) 
@@ -664,7 +685,12 @@ do {
 						}
 				//		cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main beroe sort"<<endl;
 				}			
-		
+
+/*		for (int pn = 1; pn<=combine_now ; pn++)
+				{
+						outFile20<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<" before sort combine"<<endl;
+				}
+*/
 	sort (temp_combine.begin()+1,temp_combine.end(), RowSort());
 	
 		/*		for (int pn = 1; pn<=combine_now ; pn++) 
@@ -697,15 +723,50 @@ do {
 	// collision detection
 	 		//	cout<<combine_now<<endl;
 
-	for ( int pn = 1 ; pn <=combine_now; pn ++ )
-		{
-			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
-				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
+
+		for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+			{
+				outFile20<<"cluster no and length"<<'\t'<<i<<'\t'<<cluster[i].Sub_Length<<std::endl;
+			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
-						if (temp_combine[pp][0]>temp_combine[pn][1]) {temp_combine[pp][0]-=1; } else if ( temp_combine[pp][0]==temp_combine[pn][1] ) {temp_combine[pp][0]=temp_combine[pn][0] ;} 
-						if (temp_combine[pp][1]>temp_combine[pn][1]) {temp_combine[pp][1]-=1; } else if ( temp_combine[pp][1]==temp_combine[pn][1] ) {temp_combine[pp][1]=temp_combine[pn][0] ;}
+						outFile20<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
-		}
+			}
+
+		for (int pn = 1; pn<=combine_now ; pn++)
+				{
+						outFile20<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<" after combine"<<endl;
+				}
+		int pn =1;
+
+	do {
+
+	//	remove("current_combine.dat");
+		outFile21<<pn<<endl;
+		for (int row = 1; row<=combine_now ; row++)
+				{
+						outFile21<<temp_combine[row][0]<<'\t'<<temp_combine[row][1]<<" after combine"<<endl;
+				}
+	//	outFile21.close();
+
+			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
+
+				int pp=pn+1;
+
+				do	{
+
+	if (temp_combine[pp][0]>temp_combine[pn][1]) {temp_combine[pp][0]-=1; } 
+	else if ( temp_combine[pp][0]==temp_combine[pn][1] ) {temp_combine[pp][0]=temp_combine[pn][0] ;} 
+//	if (temp_combine[pp][1]>temp_combine[pn][1]) {temp_combine[pp][1]-=1; } else if ( temp_combine[pp][1]==temp_combine[pn][1] ) {temp_combine[pp][1]=temp_combine[pn][0] ;}
+	if (temp_combine[pp][1]>temp_combine[pn][1]) {temp_combine[pp][1]-=1; }
+	else if ( temp_combine[pp][1]==temp_combine[pn][1] ) {  if (temp_combine[pn][0]>temp_combine[pp][0]) {temp_combine[pp][1]=temp_combine[pn][0]; } 
+	else {temp_combine[pp][1]=temp_combine[pp][0]  ;temp_combine[pp][0]=temp_combine[pn][0]  ; }}
+	//if ( temp_combine[pp][1]==temp_combine[pn][1]  && temp_combine[pp][0]==temp_combine[pn][0] )
+	 //   {temp_combine.erase( temp_combine.begin() + pp +1 ); combine_now-=1;}
+						pp+=1;
+					} while(pp<=combine_now);
+		pn+=1;
+	} while (pn <=combine_now);
 		
 			/*			for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
