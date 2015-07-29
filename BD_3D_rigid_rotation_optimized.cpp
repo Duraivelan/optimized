@@ -447,6 +447,7 @@ else {
     std::string line4;
     std::string line5;
     std::string line6;
+    std::string line7;
     int n=0;
     std::getline(dataFile,line0);
     std::istringstream currentLine0(line0);    
@@ -462,6 +463,13 @@ else {
 			currentLine3 >> cluster[i].pos.comp[0];
 			currentLine3 >> cluster[i].pos.comp[1];
 			currentLine3 >> cluster[i].pos.comp[2];
+			std::getline(dataFile,line7);
+			std::istringstream currentLine7(line7);
+			currentLine7 >> cluster[i].quat.comp[0];
+			currentLine7 >> cluster[i].quat.comp[1];
+			currentLine7 >> cluster[i].quat.comp[2];
+			currentLine7 >> cluster[i].quat.comp[3];
+
 			if (cluster[i].Sub_Length>1) 
 				{
 					std::getline(dataFile,line);
@@ -589,7 +597,12 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				cluster[i].Sub_Length=1;		// initially each cluster has size one
 				cluster[i].mass=1.0;
 				cluster[i].vel={0.0,0.0,0.0};
-			}
+
+				// intialize Q, A matrix
+
+				cluster[i].quat={1.0,0.0,0.0,0.0};
+				cluster[i].quat2rotmat();
+		}
 	for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 		{ 
 		if (!xxcluster_restart) {
@@ -607,9 +620,6 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			cluster[i].pos=particle[cluster[i].sub[j]].pos;
 		} 				
 	}
-	// intialize Q, A matrix
-	cluster[i].quat={1.0,0.0,0.0,0.0};
-	cluster[i].quat2rotmat();
 }
 
 std::ofstream outFile1(dataFileName+"/PE_energy.dat");
@@ -647,6 +657,37 @@ forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 																												//	Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
     }
   }
+
+
+
+std::ofstream outFile8(dataFileName+"/logfile");
+
+	outFile8 << "start time"<< '\t'
+   	<< (ltm->tm_year + 1900) << '-'
+   	<< (ltm->tm_mon + 1) << '-'
+  	<<  ltm->tm_mday << "\t"
+   	<< ltm->tm_hour << ":"
+   	<< ltm->tm_min << ":"
+   	<< ltm->tm_sec << endl;
+	outFile8<<"Rotational Brownian On"<<'\t'<<xx_rotation<<std::endl;
+	outFile8<<"NrParticles"<<'\t'<<NrParticles<<std::endl;
+	outFile8<<"mass"<<'\t'<<m<<std::endl;
+	outFile8<<"Volume fraction"<<'\t'<<vol_frac<<std::endl;
+	outFile8<<"kb"<<'\t'<<kb<<std::endl;
+	outFile8<<"Temperature (T0) ,"<<'\t'<<T0<<std::endl;
+	outFile8<<"box size (abosute units)"<<'\t'<<box.comp[0]<<'\t'<<box.comp[1]<<'\t'<<box.comp[2]<<std::endl;
+	outFile8<<"shear rate"<<'\t'<<shear_rate<<std::endl;
+	outFile8<<"Cut-off for Interaction Potetntial , R_cut"<<'\t'<<r_cut<<std::endl;
+	outFile8<<"Saturation point for Interaction Potetntial , rs"<<'\t'<<rs<<std::endl;
+	outFile8<<"epsilon"<<'\t'<<epsilon<<std::endl;
+	outFile8<<"sigma"<<'\t'<<sigma<<std::endl;
+	outFile8<<"Timestep, dt"<<'\t'<<dt<<std::endl;
+	outFile8<<"Viscosity, eta"<<'\t'<<eta<<std::endl;
+	outFile8<<"Mobility , mu"<<'\t'<<mu<<std::endl;
+	outFile8<<'\n'<<" Data Folder and Git Vesrion : "<<'\n';
+	system(" echo >> logfile & git log --pretty=format:'%h' -n 1 >> logfile   & echo >> logfile  &  pwd >> logfile & ");
+	outFile8.close();
+
 
 simu_time =dt;
 do {
@@ -787,6 +828,7 @@ outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
 for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	{
 		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].radii_gyr<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
+		outFile7<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
 		if (cluster[i].Sub_Length>1) 
 			{
 				cluster[i].mobility_tnsr.writeToFile(outFile7);
@@ -836,6 +878,7 @@ outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame )<<endl;
 for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	{
 		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].radii_gyr<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
+		outFile7<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
 		if (cluster[i].Sub_Length>1) 
 			{
 				cluster[i].mobility_tnsr.writeToFile(outFile7);
@@ -865,34 +908,6 @@ outFile11.close();
   char oldname[] ="End_Position_Full_new.xyz";
   char newname[] ="End_Position_Full.xyz";
   rename( oldname , newname );
-
-std::ofstream outFile8(dataFileName+"/logfile");
-
-	outFile8 << "start time"<< '\t'
-   	<< (ltm->tm_year + 1900) << '-'
-   	<< (ltm->tm_mon + 1) << '-'
-  	<<  ltm->tm_mday << "\t"
-   	<< ltm->tm_hour << ":"
-   	<< ltm->tm_min << ":"
-   	<< ltm->tm_sec << endl;
-	outFile8<<"Rotational Brownian On"<<'\t'<<xx_rotation<<std::endl;
-	outFile8<<"NrParticles"<<'\t'<<NrParticles<<std::endl;
-	outFile8<<"mass"<<'\t'<<m<<std::endl;
-	outFile8<<"Volume fraction"<<'\t'<<vol_frac<<std::endl;
-	outFile8<<"kb"<<'\t'<<kb<<std::endl;
-	outFile8<<"Temperature (T0) ,"<<'\t'<<T0<<std::endl;
-	outFile8<<"box size (abosute units)"<<'\t'<<box.comp[0]<<'\t'<<box.comp[1]<<'\t'<<box.comp[2]<<std::endl;
-	outFile8<<"shear rate"<<'\t'<<shear_rate<<std::endl;
-	outFile8<<"Cut-off for Interaction Potetntial , R_cut"<<'\t'<<r_cut<<std::endl;
-	outFile8<<"Saturation point for Interaction Potetntial , rs"<<'\t'<<rs<<std::endl;
-	outFile8<<"epsilon"<<'\t'<<epsilon<<std::endl;
-	outFile8<<"sigma"<<'\t'<<sigma<<std::endl;
-	outFile8<<"Timestep, dt"<<'\t'<<dt<<std::endl;
-	outFile8<<"Viscosity, eta"<<'\t'<<eta<<std::endl;
-	outFile8<<"Mobility , mu"<<'\t'<<mu<<std::endl;
-	outFile8<<'\n'<<" Data Folder and Git Vesrion : "<<'\n';
-	system(" echo >> logfile & git log --pretty=format:'%h' -n 1 >> logfile   & echo >> logfile  &  pwd >> logfile & ");
-	outFile8.close();
 
      // get time now
 	now = time(0);
