@@ -14,8 +14,11 @@ const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
 const double eta=0.1;
-const double mu = 1.0/(6.0*pi*eta*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions
+const double mu = 1.0/(6.0*pi*eta*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions 
+						// single particle translational mobility - stokes einstein
 const double mu_sqrt=sqrt(mu);
+const double mu_r = 1.0/(8.0*pi*eta*(sigma/2.0)*(sigma/2.0)*(sigma/2.0)); // single particle rotational mobility - debye 
+const double mu_r_sqrt=sqrt(mu_r);
 const double kb=1.0;
 const double T0=1.0;
 const double kbT_dt=sqrt(2.0*kb*T0*dt);
@@ -24,7 +27,7 @@ const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
 const int  MaxPerCell = 10;
 
-const double Lx=150.0, Ly=150.0, Lz=150.0;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
+const double Lx=100.0, Ly=100.0, Lz=100.0;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
 const double Volume =Lx*Ly*Lz;
 const double Volume_inv = 1.0/ Volume;
 const double Particle_radius = sigma/2.0;
