@@ -294,8 +294,10 @@ else {
 		// modulus of A is one; A inverse is jsut the cofactor of A 
 	
 		*Max_Cluster_N=*Max_Cluster_N-1;
-		if (*Max_Cluster_N<=0) {
-		*Max_Cluster_N=1; 
+		if (*Max_Cluster_N<=1) {
+		*Max_Cluster_N=1;
+		cout<<"all particles combined into Single Cluster "<<endl;
+		abort();
 		} 
 
 	}
