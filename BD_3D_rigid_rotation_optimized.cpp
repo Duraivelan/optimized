@@ -185,9 +185,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		// modulus of A is one; A inverse is jsut the cofactor of A 
 
 		*Max_Cluster_N=*Max_Cluster_N-1;
-		if (*Max_Cluster_N<=0) {
-		*Max_Cluster_N=1; 
-		} 
+		if (*Max_Cluster_N<=1) {
+		*Max_Cluster_N=1;
+		cout<<"all particles combined into Single Cluster "<<endl;
+		abort();
+		}
 
 	}
 std::random_device seed;
@@ -207,7 +209,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].rotmat*(cluster[i].frc*(mu*pow(cluster[i].Sub_Length,-1.0/1.8))*dt) + 
 cluster[i].rotmat*pow(cluster[i].Sub_Length,-0.5/1.8)*(rand*mu_sqrt*kbT_dt);
-	
+
 				if(xx_rotation)	
 				{
 			// update Q
