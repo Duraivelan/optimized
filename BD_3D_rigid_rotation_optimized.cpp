@@ -66,18 +66,34 @@ std::vector<int> radialDistFunc(double XYZ[][3], double Lx,double Ly, double Lz,
 
 
 void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, int j,int *Max_Cluster_N, vctr3D box, vctr3D rbox ) {
-	
+	  
+	    int temp_min, temp_max;
+	    
 
-		if (cluster[i].link_clstr_ptr != -1)
-		{ 	i = cluster[i].link_clstr_ptr ; }
-		if (cluster[j].link_clstr_ptr != -1)
-		{ 	j = cluster[j].link_clstr_ptr ; }
-		
+		 while (cluster[i].linked != 0 ) 
+		{ 	
+			cout << i << '\t'<< "inside" <<endl;
+			i = cluster[i].link_clstr_ptr ;
+		}
+		while (cluster[j].linked != 0 ) 
+		{ 	
+			cout << j << '\t'<< "inside" <<endl;
+			j = cluster[j].link_clstr_ptr ;
+		} 	
+
+		temp_min = min(i,j);
+		temp_max = max(i,j);
+		i = temp_min;
+		j = temp_max; 
+		cout << i << '\t'<< j <<endl;
 		vctr3D L_after, L_before ;
 		vctr3D old_pos= cluster[i].pos;
 		vctr3D dr;
 		double temp_r, r;
-		
+	
+		cout<<particle[cluster[i].sub[0]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[0]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[0]].pos.comp[2]<<'\t'<<std::endl;
+		cout<<particle[cluster[j].sub[0]].pos.comp[0]<<'\t'<<particle[cluster[j].sub[0]].pos.comp[1]<<'\t'<<particle[cluster[j].sub[0]].pos.comp[2]<<'\t'<<std::endl;
+			
 		L_before= ((cluster[i].pos^cluster[i].vel)*cluster[i].mass + cluster[i].Iner_tnsr*cluster[i].omega +
 				   (cluster[j].pos.revPBC(old_pos,box,rbox)^cluster[j].vel)*cluster[j].mass + cluster[j].Iner_tnsr*cluster[j].omega );
 	//	L_before[0] = ( mass[i]*(Cluster_XYZ[i][1]*Velocity[i][2]-Cluster_XYZ[i][2]*Velocity[i][2])+ I[i][0][0]*Ang_Velocity[i][0]+I[i][0][1]*Ang_Velocity[i][1]+I[i][0][2]*Ang_Velocity[i][2] +	mass[j]*(Cluster_XYZ[j][1]*Velocity[j][2]-Cluster_XYZ[j][2]*Velocity[j][1])+ I[j][0][0]*Ang_Velocity[j][0]+I[j][0][1]*Ang_Velocity[j][1]+I[j][0][2]*Ang_Velocity[j][2] );
@@ -111,6 +127,8 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		outFile7<<1<<",    !Unit of length for coordinates and radii, cm (10 A)"<<endl;
 		outFile7<<cluster[i].Sub_Length+cluster[j].Sub_Length<<",        !Number of beads"<<endl;
 
+		cout<<particle[cluster[i].sub[0]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[0]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[0]].pos.comp[2]<<'\t'<<std::endl;
+		cout<<particle[cluster[j].sub[0]].pos.comp[0]<<'\t'<<particle[cluster[j].sub[0]].pos.comp[1]<<'\t'<<particle[cluster[j].sub[0]].pos.comp[2]<<'\t'<<std::endl;
 
 
 		cluster[i].radii_gyr=0.0;		     	     	
@@ -133,7 +151,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
 			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
-			particle[cluster[i].sub[k]].cluster=i;
+			particle[cluster[i].sub[k]].cluster= i ;
 			
 		} 
 		outFile7.close();
@@ -269,11 +287,11 @@ else {
 
         cluster[i].quat2rotmat();
 
-		if (cluster[i].link_clstr_ptr == -1)
-			{ 	cluster[j].link_clstr_ptr= i ; }
-		else{	cluster[j].link_clstr_ptr = cluster[i].link_clstr_ptr; }
-		
 		// modulus of A is one; A inverse is jsut the cofactor of A 
+
+		cluster[j].linked = 1; 
+		cluster[j].link_clstr_ptr= i ; 
+		
 		}
 		
 std::random_device seed;
@@ -746,6 +764,7 @@ do {
                    for ( int k = j ; k < Max_Cluster_N-1 ; k ++ )
                        {
                        cluster[k].link_clstr_ptr=cluster[k+1].link_clstr_ptr;
+                       cluster[k].linked=cluster[k+1].linked;
                        cluster[k].pos=cluster[k+1].pos;
                        cluster[k].frc=cluster[k+1].frc;
                        cluster[k].omega=cluster[k+1].omega;
@@ -765,9 +784,9 @@ do {
                        for ( int l = 0 ; l < cluster[k].Sub_Length ; l ++ )
                        {
                        cluster[k].sub[l]                       =       cluster[k+1].sub[l];
-                      particle[cluster[k].sub[l]].cluster=k;
+                       particle[cluster[k].sub[l]].cluster = particle[cluster[k+1].sub[l]].cluster ;
                        } 
-               }
+					}
 					Max_Cluster_N=Max_Cluster_N-1;
 					if (Max_Cluster_N<=1) 
 					{
