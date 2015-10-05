@@ -158,6 +158,8 @@ struct ParticleData
   double radii;
   double radii_gyr;
   double mass;
+  int link_clstr_ptr = -1 ; 
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

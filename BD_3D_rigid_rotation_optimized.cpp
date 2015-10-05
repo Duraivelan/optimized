@@ -11,7 +11,7 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
 //#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
@@ -66,7 +66,13 @@ std::vector<int> radialDistFunc(double XYZ[][3], double Lx,double Ly, double Lz,
 
 
 void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, int j,int *Max_Cluster_N, vctr3D box, vctr3D rbox ) {
+	
 
+		if (cluster[i].link_clstr_ptr != -1)
+		{ 	i = cluster[i].link_clstr_ptr ; }
+		if (cluster[j].link_clstr_ptr != -1)
+		{ 	j = cluster[j].link_clstr_ptr ; }
+		
 		vctr3D L_after, L_before ;
 		vctr3D old_pos= cluster[i].pos;
 		vctr3D dr;
@@ -163,33 +169,6 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 																						// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
 
 
-		// std::cout<<Length_cluster[i]<<'\t'<<Length_cluster[j]<<std::endl;
-		for ( int k = j ; k < *Max_Cluster_N-1 ; k ++ )
-			{
-		//	 cluster[k]=cluster[k+1];
-			cluster[k].pos=cluster[k+1].pos;
-			cluster[k].frc=cluster[k+1].frc;
-			cluster[k].omega=cluster[k+1].omega;
-			cluster[k].rotmat=cluster[k+1].rotmat;
-			cluster[k].Iner_tnsr=cluster[k+1].Iner_tnsr;
-			cluster[k].mobility_tnsr=cluster[k+1].mobility_tnsr;
-			cluster[k].mobility_tnsr_sqrt=cluster[k+1].mobility_tnsr_sqrt;
-			cluster[k].rot_mobility_tnsr=cluster[k+1].rot_mobility_tnsr;
-			cluster[k].rot_mobility_tnsr_sqrt=cluster[k+1].rot_mobility_tnsr_sqrt;
-			cluster[k].trq=cluster[k+1].trq;
-			cluster[k].angmom=cluster[k+1].angmom;
-			cluster[k].quat=cluster[k+1].quat;
-			cluster[k].radii=cluster[k+1].radii;
-			cluster[k].mass=cluster[k+1].mass;
- 			cluster[k].Sub_Length=cluster[k+1].Sub_Length; 
-			cluster[k].radii_gyr=cluster[k+1].radii_gyr;
-			for ( int l = 0 ; l < cluster[k].Sub_Length ; l ++ )
-			{
-			cluster[k].sub[l]			=	cluster[k+1].sub[l];
-			particle[cluster[k].sub[l]].cluster=k;
-			} 
-		} 
-		
 		
 		outFile4<<"Square Tetramer                 Title"<<endl;
 		outFile4<<"12-cluster                  filename for output files"<<endl;
@@ -290,17 +269,13 @@ else {
 
         cluster[i].quat2rotmat();
 
+		if (cluster[i].link_clstr_ptr == -1)
+			{ 	cluster[j].link_clstr_ptr= i ; }
+		else{	cluster[j].link_clstr_ptr = cluster[i].link_clstr_ptr; }
 		
 		// modulus of A is one; A inverse is jsut the cofactor of A 
-	
-		*Max_Cluster_N=*Max_Cluster_N-1;
-		if (*Max_Cluster_N<=1) {
-		*Max_Cluster_N=1;
-		cout<<"all particles combined into Single Cluster "<<endl;
-		abort();
-		} 
-
-	}
+		}
+		
 std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
@@ -637,8 +612,11 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 */
 
 step = restart_frame_offset*frame+1;
+ 	cout <<cluster[0].link_clstr_ptr<<endl;
 
-forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+ forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+
+ 	cout <<cluster[0].link_clstr_ptr<<endl;
 
 	// convert subforces into total generalized forces on particles 
 
@@ -698,6 +676,7 @@ do {
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
 	combine_now=0;
  	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+
 	if (xxclustering && combine_now>1) 
 		{	
 		//	cout<<combine_now<<endl;
@@ -746,18 +725,61 @@ do {
 	for ( int pn = 1 ; pn <=combine_now; pn ++ )
 		{
 			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
-				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
-					{
-						if (temp_combine[pp][0]>temp_combine[pn][1]) {temp_combine[pp][0]-=1; } else if ( temp_combine[pp][0]==temp_combine[pn][1] ) {temp_combine[pp][0]=temp_combine[pn][0] ;} 
-						if (temp_combine[pp][1]>temp_combine[pn][1]) {temp_combine[pp][1]-=1; } else if ( temp_combine[pp][1]==temp_combine[pn][1] ) {temp_combine[pp][1]=temp_combine[pn][0] ;}
-					}
+		    
 		}
+			 	cout <<cluster[0].link_clstr_ptr<<endl;
+
 		
 			/*			for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<" after combine"<<endl;
 				}
 */
+	
+		
+		// std::cout<<Length_cluster[i]<<'\t'<<Length_cluster[j]<<std::endl;
+		int j =1;
+		do
+			{ 
+				if (cluster[j].link_clstr_ptr != -1 ) 
+				{	
+                   for ( int k = j ; k < Max_Cluster_N-1 ; k ++ )
+                       {
+                       cluster[k].link_clstr_ptr=cluster[k+1].link_clstr_ptr;
+                       cluster[k].pos=cluster[k+1].pos;
+                       cluster[k].frc=cluster[k+1].frc;
+                       cluster[k].omega=cluster[k+1].omega;
+                       cluster[k].rotmat=cluster[k+1].rotmat;
+                       cluster[k].Iner_tnsr=cluster[k+1].Iner_tnsr;
+                       cluster[k].mobility_tnsr=cluster[k+1].mobility_tnsr;
+                       cluster[k].mobility_tnsr_sqrt=cluster[k+1].mobility_tnsr_sqrt;
+                       cluster[k].rot_mobility_tnsr=cluster[k+1].rot_mobility_tnsr;
+                       cluster[k].rot_mobility_tnsr_sqrt=cluster[k+1].rot_mobility_tnsr_sqrt;
+                       cluster[k].trq=cluster[k+1].trq;
+                       cluster[k].angmom=cluster[k+1].angmom;
+                       cluster[k].quat=cluster[k+1].quat;
+                       cluster[k].radii=cluster[k+1].radii;
+                       cluster[k].mass=cluster[k+1].mass;
+                       cluster[k].Sub_Length=cluster[k+1].Sub_Length; 
+                       cluster[k].radii_gyr=cluster[k+1].radii_gyr;
+                       for ( int l = 0 ; l < cluster[k].Sub_Length ; l ++ )
+                       {
+                       cluster[k].sub[l]                       =       cluster[k+1].sub[l];
+                      particle[cluster[k].sub[l]].cluster=k;
+                       } 
+               }
+					Max_Cluster_N=Max_Cluster_N-1;
+					if (Max_Cluster_N<=1) 
+					{
+						Max_Cluster_N=1;
+						cout<<"all particles combined into Single Cluster "<<endl;
+						abort();
+					} 
+				 j-=1;
+				}
+				j+=1;
+			} while (j < Max_Cluster_N)	;
+			
 	}
 
 	// convert subforces into total generalized forces on particles 
