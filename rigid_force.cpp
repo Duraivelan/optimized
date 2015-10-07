@@ -11,6 +11,8 @@
 #include <functional>
 #include <array>
 
+static inline double sign(double a,double b) { return a= fabs(a),(b<0)?-a:a; }
+
 using namespace std;
 
  struct RowSort {
@@ -122,7 +124,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
 			j = grid[mi[x]][mi[y]][mi[z]][jj];
 		//	if (particle[i].cluster!=particle[j].cluster)
 			//	{
-					#include "pairforce.h"
+					#include "pairforce_rod.h"
 			//	}
           } // jj
 
@@ -140,7 +142,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
 				j = grid[mj[x]][mj[y]][mj[z]][jj];
 		//	if (particle[i].cluster!=particle[j].cluster)
 			//	{
-					#include "pairforce.h"
+					#include "pairforce_rod.h"
 			//	}
             } // jj
           } // m

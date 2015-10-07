@@ -129,6 +129,8 @@ struct SubData
   int PartNum;
   double radius;
   int cluster;
+  vctr3D dir;
+
 
 /*double sigma;
   double eps;

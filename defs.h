@@ -67,7 +67,7 @@ const mtrx3D Unit_diag(1.0,1.0,1.0);
                        {  1,  1,  0 },
                        {  1,  1,  1 } };
 	
-
+const double lh = 2.5*sigma; 
 
 
 
