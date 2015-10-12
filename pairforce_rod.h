@@ -18,7 +18,7 @@ if (particle[i].cluster!=particle[j].cluster)
 
 // Minimum distance in the periodic system:
 	
-dr=particle[i].pos-(particle[j].pos+dR+shift*xxshift);
+dr=particle[i].pos-(particle[j].pos+dR);
 
 //---------------- Distance of two rods: -------------------------------------
 
@@ -67,7 +67,9 @@ if( fabs(xla)>lh || fabs(xmu)>lh ) {
 
 // Step 8
 
- r2+= (xla)*(xla)+(xmu)*(xmu) + 2.0 *(xmu*rw2 -xla*(rw1+xmu*w1w2));		
+ r2+= (xla)*(xla)+(xmu)*(xmu) + 2.0 *(xmu*rw2 -xla*(rw1+xmu*w1w2));	
+ 	
+ // r2-=r_min2*xxshift;
 
 		if (r2<(r_cut2)) 
 		{

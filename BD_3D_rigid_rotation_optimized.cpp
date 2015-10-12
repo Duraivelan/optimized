@@ -47,13 +47,17 @@ void createInitialPosition_N_particles(std::string fileName, int N, double Lx, d
  		x=((double) rand() / (RAND_MAX/Lx))-Lx/2.0;  // create particle position from -Lx/2 to Lx/2
 		y=((double) rand() / (RAND_MAX/Ly))-Ly/2.0;
 		z=((double) rand() / (RAND_MAX/Lz))-Lz/2.0;
-		ux = ((double) rand() / (RAND_MAX/2.0))-1.0;
+/*		ux = ((double) rand() / (RAND_MAX/2.0))-1.0;
 		uy = ((double) rand() / (RAND_MAX/2.0))-1.0;
 		uz = ((double) rand() / (RAND_MAX/2.0))-1.0;
         double temp_norm = sqrt(ux*ux+uy*uy+uz*uz);
         ux /=temp_norm; 
         uy /=temp_norm; 
-        uz /=temp_norm;  
+        uz /=temp_norm;  */
+        ux =1.0; 
+        uy =0.0; 
+        uz =0.0; 
+        
 		outFile<<x<<'\t'<<y<<'\t'<<z<<'\t'<<ux<<'\t'<<uy<<'\t'<<uz<<std::endl;
  	}
  	outFile.close();
@@ -110,7 +114,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		std::ofstream outFile4("hydro++input.txt");
 
 		outFile7<<1<<",    !Unit of length for coordinates and radii, cm (10 A)"<<endl;
-		outFile7<<(cluster[i].Sub_Length+cluster[j].Sub_Length )* 5<<",        !Number of beads"<<endl;
+		outFile7<<(cluster[i].Sub_Length+cluster[j].Sub_Length )*5<<",        !Number of beads"<<endl;
 
 
 
@@ -144,14 +148,14 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
 			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
 			for (double j=0; j< 2; j++) {
-			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]+particle[cluster[i].sub[k]].dir.comp[0]*(j+1.0)*r_min <<'\t'
-			<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] +particle[cluster[i].sub[k]].dir.comp[1]*(j+1.0)*r_min<<'\t'<<
-			particle[cluster[i].sub[k]].pos_bdyfxd.comp[2] +particle[cluster[i].sub[k]].dir.comp[2]*(j+1.0)*r_min<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
+			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]+particle[cluster[i].sub[k]].dir.comp[0]*(j+1.0)*0.9*r_min <<'\t'
+			<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] +particle[cluster[i].sub[k]].dir.comp[1]*(j+1.0)*0.9*r_min<<'\t'<<
+			particle[cluster[i].sub[k]].pos_bdyfxd.comp[2] +particle[cluster[i].sub[k]].dir.comp[2]*(j+1.0)*0.9*r_min<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
 			}
 			for (double j=0; j< 2; j++) {
-			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]-particle[cluster[i].sub[k]].dir.comp[0]*(j+1.0)*r_min <<'\t'
-			<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] -particle[cluster[i].sub[k]].dir.comp[1]*(j+1.0)*r_min<<'\t'<<
-			particle[cluster[i].sub[k]].pos_bdyfxd.comp[2] -particle[cluster[i].sub[k]].dir.comp[2]*(j+1.0)*r_min<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
+			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]-particle[cluster[i].sub[k]].dir.comp[0]*(j+1.0)*0.9*r_min <<'\t'
+			<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] -particle[cluster[i].sub[k]].dir.comp[1]*(j+1.0)*0.9*r_min<<'\t'<<
+			particle[cluster[i].sub[k]].pos_bdyfxd.comp[2] -particle[cluster[i].sub[k]].dir.comp[2]*(j+1.0)*0.9*r_min<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
 			}			
 			particle[cluster[i].sub[k]].cluster=i;
 			
@@ -269,8 +273,8 @@ else {
  
     }
 }	 
-		cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1.*10.*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
-		cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1.*10.*2414323832351.228);		// outputed by hydro++
+		cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1.0*10.0*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
+		cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1.0*10.0*2414323832351.228);		// outputed by hydro++
 		cluster[i].mobility_tnsr_sqrt=null33D;
 		MatrixXd temp(3,3), temp_sqrt(3,3);
 		for (int k=0;k<3;k++) {
@@ -323,7 +327,7 @@ else {
 		if (*Max_Cluster_N<=1) {
 		*Max_Cluster_N=1;
 		cout<<"all particles combined into Single Cluster "<<endl;
-		abort();
+	//	abort();
 		} 
 
 	}
@@ -339,20 +343,36 @@ for(int i=0;i<*Max_Cluster_N;i++)
 	{
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
-		if (cluster[i].Sub_Length>1) 
+		if (cluster[i].Sub_Length>0) 
 			{
+
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
 	
 				if(xx_rotation)	
 				{
+	
 			// update Q
 				quat_old=cluster[i].quat;
+				
+		//		cout << cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<'\t'<<endl;
+
+			//	cout<<'1'<<endl;
 				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
+			//	cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr_sqrt*(rand1*(kbT_dt));
 				cluster[i].quat		=	cluster[i].theta2quat();
+				
+				
+		/*		cluster[i].rot_mobility_tnsr_sqrt.echo();
+				cluster[i].trq.echo();			
+				cout << cluster[i].theta.comp[0]<<'\t'<<cluster[i].theta.comp[1]<<'\t'<<cluster[i].theta.comp[2]<<'\t'<<endl;
+				cout << rand1.comp[0]<<'\t'<<rand1.comp[1]<<'\t'<<rand1.comp[2]<<'\t'<<endl;
+				cout << cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<'\t'<<endl;
+
+*/
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
 			// assuming qi(t+dt) = ~qi + lambda*qi(t);
@@ -362,51 +382,35 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				c=cluster[i].quat.norm2()-1.0;
 				lambda = (-b+sqrt(b*b-4.0*a*c))/(2.0*a);
 				cluster[i].quat=cluster[i].quat+quat_old*lambda;
-		
+				
+		//		cout << cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<'\t'<<endl;
+
 			// update A matrix
 				}
 				cluster[i].quat2rotmat();
 				
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
-					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
-						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
+						particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
+						particle[cluster[i].sub[j]].dir = cluster[i].rotmat*particle[cluster[i].sub[j]].dir;
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
-				cluster[i].pos.PBC(box,rbox);
-			} 
+				cluster[i].pos.PBC(box,rbox); 
+				
+			}
+			
+			
+			
 			else 
 			{
-				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
-	
-				if(xx_rotation)	
-				{
-			// update Q
-				quat_old=cluster[i].quat;
-				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
-				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
-				// J. Chem. Phys. 142, 114103 (2015)
-				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
-				cluster[i].quat		=	cluster[i].theta2quat();
-			// lagragian normalization of quaternions; see your notes;
-			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
-			// assuming qi(t+dt) = ~qi + lambda*qi(t);
-			// hence 	|qi(t+dt)| = |~qi + lambda*qi(t)| =1;
-				a=1.0;
-				b=cluster[i].quat*quat_old*2.0;
-				c=cluster[i].quat.norm2()-1.0;
-				lambda = (-b+sqrt(b*b-4.0*a*c))/(2.0*a);
-				cluster[i].quat=cluster[i].quat+quat_old*lambda;
-		
-			// update A matrix
-				}
-				cluster[i].quat2rotmat();
-				
-				particle[cluster[i].sub[0]].dir = cluster[i].rotmat*particle[cluster[i].sub[0]].dir;
-				particle[cluster[i].sub[0]].pos = cluster[i].pos ;
-				particle[cluster[i].sub[0]].pos.PBC(box,rbox);
+				cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
+				cluster[i].pos+=cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt;
 				cluster[i].pos.PBC(box,rbox);
+				*KE_rot += 	(cluster[i].omega)*(cluster[i].angmom)*0.5;	
+				for (int j=0; j< cluster[i].Sub_Length; j++) 
+					{
+						particle[cluster[i].sub[j]].pos=cluster[i].pos;
+					}
 			}
 	}		
 }
@@ -461,8 +465,8 @@ int combine[NrParticles][2];
 
 /* initialize single rod diffusivity */
 
-double temp_diff_xx=2.038E-10*(1.*10.*2414323832351.228) , temp_diff_xy= 1.590E-10*(1.*10.*2414323832351.228), temp_diff_rot_xx=1.866E-04*(1.*10.*2414323832351.228) , 
-temp_diff_rot_xy=2.882E-05*(1.*10.*2414323832351.228) , temp_diff_sqrt_xx= sqrt(temp_diff_xx) , temp_diff_sqrt_xy= sqrt(temp_diff_xy), 
+double temp_diff_xx=2.040E-14*(1.0*10.0*2414323832351.228) , temp_diff_xy= 1.591E-14*(1.0*10.0*2414323832351.228), temp_diff_rot_xx=1.877E-14*(1.0*10.0*2414323832351.228) , 
+temp_diff_rot_xy=2.890E-15*(1.0*10.0*2414323832351.228) , temp_diff_sqrt_xx= sqrt(temp_diff_xx) , temp_diff_sqrt_xy= sqrt(temp_diff_xy), 
 temp_diff_rot_sqrt_xx= sqrt(temp_diff_rot_xx) , temp_diff_rot_sqrt_xy= sqrt(temp_diff_rot_xy) ;
 
 for (int i=0;i<NrParticles;i++) {
@@ -508,6 +512,7 @@ else {
         currentLine >> particle[i].dir.comp[0];
         currentLine >> particle[i].dir.comp[1];
         currentLine >> particle[i].dir.comp[2];
+       // cout<<particle[i].dir.comp[0]<<endl;
         
     }    
 }	
@@ -646,6 +651,8 @@ else {
         currentLine >> particle[i].dir.comp[0];
         currentLine >> particle[i].dir.comp[1];
         currentLine >> particle[i].dir.comp[2];
+        cout<<particle[i].dir.comp[0]<<endl;
+
     }
 }
 }
@@ -685,7 +692,10 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 
 				// intialize Q, A matrix
 
-				cluster[i].quat={1.0,0.0,0.0,0.0};
+			    cluster[i].quat={1.0,0.0,0.0,0.0};
+			//	cluster[i].quat={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5) ,((double) rand()/(RAND_MAX)-0.5)} ;
+			//	double temp_quat_norm = sqrt(cluster[i].quat.norm2());
+			//	cluster[i].quat*=(1.0/temp_quat_norm);
 				cluster[i].quat2rotmat();
 		}
 	for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
@@ -721,8 +731,8 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 
 step = restart_frame_offset*frame+1;
 
-forceUpdate( particle, &p_energy, &combine_now , combine, &step);
-
+ 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+	
 	// convert subforces into total generalized forces on particles 
 
   for ( int i = 0 ; i < Max_Cluster_N; i ++ )
