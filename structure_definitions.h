@@ -130,6 +130,7 @@ struct SubData
   double radius;
   int cluster;
   vctr3D dir;
+  vctr3D dir_bdyfxd;
 
 
 /*double sigma;
