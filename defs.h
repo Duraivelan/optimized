@@ -67,7 +67,7 @@ const mtrx3D Unit_diag(1.0,1.0,1.0);
                        {  1,  1,  0 },
                        {  1,  1,  1 } };
 	
-const double apct_rt = 9.0 ;   // aspect ratio of rods
+const double apct_rt = 5.0 ;   // aspect ratio of rods
 const double extra_beads = floor(apct_rt*0.5) ;   // aspect ratio of rods
 
 const double lh = apct_rt*0.5*r_min; 
