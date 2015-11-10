@@ -134,22 +134,22 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd+particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
 				
 			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;
-						
-			particle[cluster[i].sub[k]].rod_end = extd_rod_pos ; 
-			
+									
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);		
 
 			}
+						
 			for (double j=0; j< extra_beads; j++) {
 			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
 				
 			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;
-
-			particle[cluster[i].sub[k]].rod_begin = extd_rod_pos ;			
 			
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);	
 
 			}		
+			
+			particle[cluster[i].sub[k]].rod_end_bdyfxd = particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min ;   
+			particle[cluster[i].sub[k]].rod_begin_bdyfxd =  (particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min)*(-1.0) ;   			
 		
 		} 
 		
@@ -157,7 +157,6 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			
 			particle[cluster[i].sub[k]].dir_bdyfxd = particle[cluster[i].sub[k]].dir ;
 
-		
 	//	cluster[i].sub[k]	=	cluster[j].sub[k-cluster[i].Sub_Length];
 	
 			cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
@@ -175,9 +174,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd+particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
 				
 			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;	
-			
-			particle[cluster[i].sub[k]].rod_end_bdyfxd = extd_rod_pos ; 		
-			
+						
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);		
 
 			}
@@ -187,18 +184,21 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
 				
 			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;		
-			
-			particle[cluster[i].sub[k]].rod_begin_bdyfxd = extd_rod_pos ;							
-			
+						
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);	
 
-			}			
+			}		
+				
+			particle[cluster[i].sub[k]].rod_end_bdyfxd = particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min ;   
+			particle[cluster[i].sub[k]].rod_begin_bdyfxd =  (particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min)*(-1.0) ;   			
 			
 			particle[cluster[i].sub[k]].cluster=i;
 			
 		} 
 		outFile7.close();
+		
 		cluster[i].pos.PBC(box,rbox);	
+		
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
 
 		cluster[i].radii=0;
@@ -225,7 +225,9 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 										dr=(extd_rod_pos_k -extd_rod_pos_l );
 					
 										temp_r= dr.norm2();
+										
 										r	=	 0.56	+	sqrt(temp_r);
+										
 										if(r>cluster[i].radii)
 										
 											{
