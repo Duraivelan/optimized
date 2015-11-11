@@ -123,10 +123,16 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 			
 		particle[cluster[i].sub[k]].dir_bdyfxd = particle[cluster[i].sub[k]].dir ;
-
+	
 		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+	
+		particle[cluster[i].sub[k]].rod_end_bdyfxd   = particle[cluster[i].sub[k]].pos_bdyfxd +  particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min ;   
+		particle[cluster[i].sub[k]].rod_begin_bdyfxd = particle[cluster[i].sub[k]].pos_bdyfxd + (particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min)*(-1.0) ; 
+		
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
+	
 	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);				
+	
 		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
 			
 			for (double j=0; j< extra_beads; j++) {
@@ -146,10 +152,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);	
 
-			}		
-			
-			particle[cluster[i].sub[k]].rod_end_bdyfxd = particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min ;   
-			particle[cluster[i].sub[k]].rod_begin_bdyfxd =  (particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min)*(-1.0) ;   			
+			}	  			
 		
 		} 
 		
@@ -162,6 +165,9 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
 			
 			particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+			
+			particle[cluster[i].sub[k]].rod_end_bdyfxd   = particle[cluster[i].sub[k]].pos_bdyfxd +  particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min ;   
+			particle[cluster[i].sub[k]].rod_begin_bdyfxd = particle[cluster[i].sub[k]].pos_bdyfxd + (particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min)*(-1.0) ;  			
 			
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
 			
@@ -187,10 +193,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 						
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);	
 
-			}		
-				
-			particle[cluster[i].sub[k]].rod_end_bdyfxd = particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min ;   
-			particle[cluster[i].sub[k]].rod_begin_bdyfxd =  (particle[cluster[i].sub[k]].dir*(extra_beads)*0.5774*r_min)*(-1.0) ;   			
+			}				
 			
 			particle[cluster[i].sub[k]].cluster=i;
 			
@@ -472,7 +475,9 @@ for(int i=0;i<*Max_Cluster_N;i++)
 
 						// particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
 
-						particle[cluster[i].sub[j]].dir = cluster[i].rotmat*particle[cluster[i].sub[j]].rod_end_bdyfxd - cluster[i].rotmat*particle[cluster[i].sub[j]].rod_begin_bdyfxd ;
+						particle[cluster[i].sub[j]].dir = cluster[i].rotmat*particle[cluster[i].sub[j]].rod_begin_bdyfxd - cluster[i].rotmat*particle[cluster[i].sub[j]].rod_end_bdyfxd ;
+
+						// particle[cluster[i].sub[j]].dir.PBC(box,rbox);
 
 						particle[cluster[i].sub[j]].dir = particle[cluster[i].sub[j]].dir*(1.0/sqrt(particle[cluster[i].sub[j]].dir.norm2()));
 
