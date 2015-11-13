@@ -367,7 +367,7 @@ int main() {
 
 
 if(xxcluster_restart) {
-	std::ifstream fin("random_device_state.txt");
+	std::ifstream fin("random_device_state_new.txt");
   	fin >> gen;
 	}
 // current date/time based on current system
@@ -780,6 +780,40 @@ do {
     } 
   } 
 
+if (step%(frame*10)==0)
+        {
+                cout<<step<<endl;
+                std::ofstream outFile_inter_endfile(dataFileName+"/End_Position_Full_"+std::to_string(step/(frame*10))+".xyz");
+                std::ofstream outFile_inter_rand_state(dataFileName+"/random_device_state_"+std::to_string(step/(frame*10))+".txt");
+
+ outFile_inter_endfile<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
+
+for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+        {
+                 outFile_inter_endfile<<cluster[i].Sub_Length<<'\t'<<cluster[i].radii_gyr<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
+                 outFile_inter_endfile<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
+                if (cluster[i].Sub_Length>1)
+                        {
+                                cluster[i].mobility_tnsr.writeToFile(outFile_inter_endfile);
+                                cluster[i].mobility_tnsr_sqrt.writeToFile( outFile_inter_endfile);
+                if(xx_rotation)
+                        {
+                                cluster[i].mobility_tnsr.writeToFile( outFile_inter_endfile);
+                                cluster[i].mobility_tnsr_sqrt.writeToFile( outFile_inter_endfile);
+                        }
+                        }
+            for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+                        {
+                                 outFile_inter_endfile<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<std::endl;
+                                 outFile_inter_endfile<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
+                        }
+        }
+
+        outFile_inter_rand_state << gen;
+        outFile_inter_rand_state.close();
+         outFile_inter_endfile.close();
+        }
+
 if (step%frame==0) 
 	{ 
 
@@ -923,6 +957,5 @@ outFile11.close();
    << ltm->tm_sec << endl;
 
 return 0;
-
 
 }
