@@ -125,12 +125,16 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		particle[cluster[i].sub[k]].dir_bdyfxd = particle[cluster[i].sub[k]].dir ;
 
 		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+		
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
+	    
 	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);				
+		
 		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
+		
 			for (double j=0; j< extra_beads; j++) {
 			
-			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd+particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
+			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd + particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 				
 			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;			
 			
@@ -138,7 +142,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 			}
 			for (double j=0; j< extra_beads; j++) {
-			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
+			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 				
 			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;			
 			
@@ -149,19 +153,22 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		} 
 		
 		for (int  k=cluster[i].Sub_Length; k<cluster[i].Sub_Length+cluster[j].Sub_Length; k++) {
+						
+			cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
 			
 			particle[cluster[i].sub[k]].dir_bdyfxd = particle[cluster[i].sub[k]].dir ;
-
-		
-	//	cluster[i].sub[k]	=	cluster[j].sub[k-cluster[i].Sub_Length];
-			cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
+			
 			particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+			
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
+			
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);		
+			
 			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
+			
 			for (double j=0; j< extra_beads; j++) {
 			
-			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd+particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
+			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd+particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 				
 			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
 			
@@ -169,7 +176,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 			}
 			for (double j=0; j< extra_beads; j++) {
-			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
+			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 				
 			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;			
 			
@@ -196,13 +203,13 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 						
 							{
 						
-								vctr3D extd_rod_pos_k = particle[cluster[i].sub[k]].pos_bdyfxd + particle[cluster[i].sub[k]].dir*(j+1.0)*0.5774*r_min ;
+								vctr3D extd_rod_pos_k = particle[cluster[i].sub[k]].pos_bdyfxd + particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 						
 								for (double p =-1*extra_beads-1; p< 2; p++) 
 							
 									{
 						
-										vctr3D extd_rod_pos_l = particle[cluster[i].sub[l]].pos_bdyfxd + particle[cluster[i].sub[l]].dir*(p+1.0)*0.5774*r_min ;
+										vctr3D extd_rod_pos_l = particle[cluster[i].sub[l]].pos_bdyfxd + particle[cluster[i].sub[l]].dir*(p+1.0)*0.49*r_min ;
 							
 										dr=(extd_rod_pos_k -extd_rod_pos_l );
 					
@@ -233,7 +240,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 				abort();
 			}	
 		
-		cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15*apct_rt/cluster[i].Sub_Length);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
+		cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/(apct_rt*cluster[i].Sub_Length));  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
 																						// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
 
 
@@ -324,18 +331,13 @@ else {
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
-			//	cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
-
 			}
 		}
 	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
 	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
-	//	temp_sqrt=temp.sqrt();
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-		//		cluster[i].mobility_tnsr_sqrt.comp[k][k]=sqrt(cluster[i].mobility_tnsr.comp[k][k]);
-		//		cout<<cluster[i].mobility_tnsr_sqrt.comp[k][k]<<endl;
 			}
 		}
 		
@@ -343,18 +345,13 @@ else {
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k][l];
-		//		cout<<cluster[i].rot_mobility_tnsr.comp[k][l]<<endl;
-
 			}
 		}
 		Eigen::SelfAdjointEigenSolver<MatrixXd> ROT_MOBL_MAT(temp);
 		temp_sqrt = ROT_MOBL_MAT.operatorSqrt();
-	//	temp_sqrt=temp.sqrt();
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				cluster[i].rot_mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-			//	cluster[i].rot_mobility_tnsr_sqrt.comp[k][k]=sqrt(cluster[i].rot_mobility_tnsr.comp[k][k]);
-		//		cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k][k]<<endl;
 			}
 		}
 		
@@ -406,25 +403,14 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			// update Q
 				quat_old=cluster[i].quat;
 				
-		//		cout << cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<'\t'<<endl;
-
-			//	cout<<'1'<<endl;
 				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
-			//	cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr_sqrt*(rand1*(kbT_dt));
 				cluster[i].quat		=	cluster[i].theta2quat();
 				
-				
-		/*		cluster[i].rot_mobility_tnsr_sqrt.echo();
-				cluster[i].trq.echo();			
-				cout << cluster[i].theta.comp[0]<<'\t'<<cluster[i].theta.comp[1]<<'\t'<<cluster[i].theta.comp[2]<<'\t'<<endl;
-				cout << rand1.comp[0]<<'\t'<<rand1.comp[1]<<'\t'<<rand1.comp[2]<<'\t'<<endl;
-				cout << cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<'\t'<<endl;
-
-*/
+	
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
 			// assuming qi(t+dt) = ~qi + lambda*qi(t);
@@ -445,7 +431,6 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					{
 						
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
-						// particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].dir = cluster[i].rotmat*particle[cluster[i].sub[j]].dir_bdyfxd;
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
@@ -530,7 +515,7 @@ if(!xxcluster_restart)	{
 				
 		for (double j=-1*extra_beads-1; j< extra_beads; j++) {
 							
-		outFile7<<(j+1.0)*0.5774*r_min<<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.56<<std::endl;
+		outFile7<<(j+1.0)*0.49*r_min<<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.56<<std::endl;
 			
 			}		 
 		
@@ -634,9 +619,11 @@ else {
         currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[2];        
-        currentLine >> particle[i].dir.comp[0];
-        currentLine >> particle[i].dir.comp[1];
-        currentLine >> particle[i].dir.comp[2];
+        currentLine >> cluster[i].quat.comp[0];
+        currentLine >> cluster[i].quat.comp[1];
+        currentLine >> cluster[i].quat.comp[2];
+        currentLine >> cluster[i].quat.comp[3];
+        particle[i].dir = {1.0,0.0,0.0} ; 
         particle[i].dir_bdyfxd = particle[i].dir;
        // cout<<particle[i].dir.comp[0]<<endl;
         
@@ -818,7 +805,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 
 				// intialize Q, A matrix
 
-			 // cluster[i].quat={1.0,0.0,0.0,0.0};
+			//	cluster[i].quat={1.0,0.0,0.0,0.0};
 				cluster[i].quat={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5) ,((double) rand()/(RAND_MAX)-0.5)} ;
 				double temp_quat_norm = sqrt(cluster[i].quat.norm2());
 				cluster[i].quat*=(1.0/temp_quat_norm);
@@ -1023,14 +1010,14 @@ if (step%frame==0)
 					
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					for (double l=0; l< extra_beads; l++) {
-			outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]+particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*0.5774*r_min <<'\t'
-			<<particle[cluster[i].sub[j]].pos.comp[1] +particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*0.5774*r_min<<'\t'<<
-			particle[cluster[i].sub[j]].pos.comp[2] +particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*0.5774*r_min<<'\t'<<i<<std::endl;			
+			outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]+particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*0.49*r_min <<'\t'
+			<<particle[cluster[i].sub[j]].pos.comp[1] +particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*0.49*r_min<<'\t'<<
+			particle[cluster[i].sub[j]].pos.comp[2] +particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*0.49*r_min<<'\t'<<i<<std::endl;			
 			}
 			for (double l=0; l< extra_beads; l++) {
-			outFile5<<"He"<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]-particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*0.5774*r_min <<'\t'
-			<<particle[cluster[i].sub[j]].pos.comp[1] - particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*0.5774*r_min<<'\t'<<
-			particle[cluster[i].sub[j]].pos.comp[2] - particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*0.5774*r_min<<'\t'<<i<<std::endl;		
+			outFile5<<"He"<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]-particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*0.49*r_min <<'\t'
+			<<particle[cluster[i].sub[j]].pos.comp[1] - particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*0.49*r_min<<'\t'<<
+			particle[cluster[i].sub[j]].pos.comp[2] - particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*0.49*r_min<<'\t'<<i<<std::endl;		
 			}		
 					
 					
@@ -1130,7 +1117,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	}
 	for (int i=0;i<NrParticles;i++)
 		{
-			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<'\t'<<particle[i].dir.comp[0]<<'\t'<<particle[i].dir.comp[1]<<'\t'<<particle[i].dir.comp[2]<<std::endl;
+			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<'\t'<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
+
 		}
 outFile1.close();
 outFile7.close();
