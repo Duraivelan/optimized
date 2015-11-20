@@ -131,8 +131,6 @@ struct SubData
   int cluster;
   vctr3D dir;
   vctr3D dir_bdyfxd;
-  vctr3D rod_begin, rod_end;
-  vctr3D rod_begin_bdyfxd, rod_end_bdyfxd;
 
 
 /*double sigma;
