@@ -53,8 +53,8 @@ void createInitialPosition_N_particles(std::string fileName, int N, double Lx, d
         double temp_norm = sqrt(ux*ux+uy*uy+uz*uz);
         ux /=temp_norm; 
         uy /=temp_norm; 
-        uz /=temp_norm;  */
-        ux =1.0; 
+        uz /=temp_norm; 
+	*/	ux =1.0; 
         uy =0.0; 
         uz =0.0; 
         
@@ -123,7 +123,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 			
 		particle[cluster[i].sub[k]].dir_bdyfxd = particle[cluster[i].sub[k]].dir ;
-
+	
 		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
 		
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
@@ -136,19 +136,20 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			
 			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd + particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 				
-			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;			
-			
+			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;
+									
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);		
 
 			}
+						
 			for (double j=0; j< extra_beads; j++) {
 			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 				
-			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;			
+			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;
 			
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);	
 
-			}		
+			}	  			
 		
 		} 
 		
@@ -170,24 +171,30 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			
 			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd+particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 				
-			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
-			
+			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;	
+						
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);		
 
 			}
+			
 			for (double j=0; j< extra_beads; j++) {
 			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
 				
-			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;			
-			
+			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*0.49*r_min ;
+				
+			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;		
+						
 			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);	
 
-			}			
+			}				
+			
 			particle[cluster[i].sub[k]].cluster=i;
 			
 		} 
 		outFile7.close();
+		
 		cluster[i].pos.PBC(box,rbox);	
+		
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
 
 		cluster[i].radii=0;
@@ -214,10 +221,15 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 										dr=(extd_rod_pos_k -extd_rod_pos_l );
 					
 										temp_r= dr.norm2();
+										
 										r	=	 0.56	+	sqrt(temp_r);
+										
 										if(r>cluster[i].radii)
+										
 											{
+												
 												cluster[i].radii	= r;
+												
 											} 						
 									}	
 							}
@@ -355,7 +367,7 @@ else {
 			}
 		}
 		
-		cluster[i].quat={1.0,0.0,0.0,0.0};
+		cluster[i].quat={ 1.0 , 0.0 , 0.0 , 0.0 };
 
 		// update A matrix
 
@@ -392,12 +404,13 @@ for(int i=0;i<*Max_Cluster_N;i++)
 	{
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
-		if (cluster[i].Sub_Length>0) 
+		if (cluster[i].Sub_Length>1) 
 			{
 
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
 	
 				if(xx_rotation)	
+				
 				{
 	
 			// update Q
@@ -442,14 +455,63 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			
 			else 
 			{
-				cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
-				cluster[i].pos+=cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt;
-				cluster[i].pos.PBC(box,rbox);
-				*KE_rot += 	(cluster[i].omega)*(cluster[i].angmom)*0.5;	
-				for (int j=0; j< cluster[i].Sub_Length; j++) 
-					{
-						particle[cluster[i].sub[j]].pos=cluster[i].pos;
-					}
+			
+			cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
+	
+				if(xx_rotation)	
+				
+				{
+	
+			// update Q
+				quat_old=cluster[i].quat;
+				
+		//		cout << cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<'\t'<<endl;
+
+			//	cout<<'1'<<endl;
+				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
+				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
+				// J. Chem. Phys. 142, 114103 (2015)
+				
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
+			//	cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr_sqrt*(rand1*(kbT_dt));
+				cluster[i].quat		=	cluster[i].theta2quat();
+				
+				
+		/*		cluster[i].rot_mobility_tnsr_sqrt.echo();
+				cluster[i].trq.echo();			
+				cout << cluster[i].theta.comp[0]<<'\t'<<cluster[i].theta.comp[1]<<'\t'<<cluster[i].theta.comp[2]<<'\t'<<endl;
+				cout << rand1.comp[0]<<'\t'<<rand1.comp[1]<<'\t'<<rand1.comp[2]<<'\t'<<endl;
+				cout << cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<'\t'<<endl;
+
+*/
+			// lagragian normalization of quaternions; see your notes;
+			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
+			// assuming qi(t+dt) = ~qi + lambda*qi(t);
+			// hence 	|qi(t+dt)| = |~qi + lambda*qi(t)| =1;
+				a=1.0;
+				b=cluster[i].quat*quat_old*2.0;
+				c=cluster[i].quat.norm2()-1.0;
+				lambda = (-b+sqrt(b*b-4.0*a*c))/(2.0*a);
+				cluster[i].quat=cluster[i].quat+quat_old*lambda;
+				
+		//		cout << cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<'\t'<<endl;
+
+			// update A matrix
+			
+				}
+				
+				cluster[i].quat2rotmat();
+						
+				particle[i].pos = cluster[i].pos;
+				
+				// particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
+				
+				particle[i].dir = cluster[i].rotmat*particle[i].dir_bdyfxd;
+				
+				particle[i].pos.PBC(box,rbox);
+					
+				cluster[i].pos.PBC(box,rbox); 
+				
 			}
 	}		
 }
@@ -636,7 +698,7 @@ std::string fileName=dataFileName+"/End_Position_Full.xyz";
 std::ifstream dataFile(fileName);
 if(!dataFile.good()) {
 	std::cerr<<"Given file is corrupt /n"<<std::endl;
-}
+}   
 else {
 	std::cout<<"Reading X, Y, Z co-ordinates"<<std::endl;
     std::string line0;
@@ -809,6 +871,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				cluster[i].quat={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5) ,((double) rand()/(RAND_MAX)-0.5)} ;
 				double temp_quat_norm = sqrt(cluster[i].quat.norm2());
 				cluster[i].quat*=(1.0/temp_quat_norm);
+				
 				cluster[i].quat2rotmat();
 		}
 	for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
