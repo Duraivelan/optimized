@@ -29,9 +29,6 @@ const double Volume =Lx*Ly*Lz;
 const double Volume_inv = 1.0/ Volume;
 const double Particle_radius = sigma/2.0;
 const double Particle_vol = 4.0*pi*(Particle_radius*Particle_radius*Particle_radius)/3.0;
-const int cellx=(int) ceil(Lx/r_cut);
-const int celly=(int) ceil(Ly/r_cut);
-const int cellz=(int) ceil(Lz/r_cut);
 
 const vctr3D box(Lx, Ly, Lz);
 const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
@@ -72,6 +69,10 @@ const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv * apct_
 
 const double lh = apct_rt*0.5*r_min; 
 const double DIAMpairlistSQ = r_min2; 
+
+const int cellx=(int) ceil(Lx/(r_cut*apct_rt));
+const int celly=(int) ceil(Ly/(r_cut*apct_rt));
+const int cellz=(int) ceil(Lz/(r_cut*apct_rt));
 
 #endif
 
