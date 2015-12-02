@@ -24,10 +24,10 @@ const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
 const int  MaxPerCell = 10;
 
-const double Lx=75.0, Ly=75.0, Lz=75.0;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
+const double Lx=box_Lx, Ly=box_Ly, Lz=box_Lz;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
 const double Volume =Lx*Ly*Lz;
 const double Volume_inv = 1.0/ Volume;
-const double Particle_radius = sigma/2.0;
+const double Particle_radius = 0.56; // sigma/2.0;
 const double Particle_vol = 4.0*pi*(Particle_radius*Particle_radius*Particle_radius)/3.0;
 const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv;
 const int cellx=(int) ceil(Lx/r_cut);

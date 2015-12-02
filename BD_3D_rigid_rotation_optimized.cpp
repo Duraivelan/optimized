@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-//#include<Eigen/Eigenvalues>
+//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -698,7 +698,7 @@ do {
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
 	combine_now=0;
  	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
-	if (xxclustering && combine_now>1) 
+	if (xxclustering && combine_now>0) 
 		{	
 		//	cout<<combine_now<<endl;
 			vector<vector<int>> temp_combine(combine_now+1,vector<int> (2)) ;
@@ -708,17 +708,17 @@ do {
 						{
 							temp_combine[pn][j]=combine[pn][j];
 						}
-				//		cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main beroe sort"<<endl;
+					//	cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide main beroe sort"<<endl;
 				}			
 		
-	sort (temp_combine.begin()+1,temp_combine.end(), RowSort());
+	if(combine_now>1) {	sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
 	
 		/*		for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
 				}	
 */
-	if(combine_now>0) {	
+	if(combine_now>1) {	
 	int count=1;
 	do
 		{
@@ -736,10 +736,10 @@ do {
 			count=count+1;			
 		} while (count<combine_now);
 	}	
-		/*		for (int pn = 1; pn<=combine_now ; pn++) 
+			/*	for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide mainf after unique"<<endl;
-				}*/
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide mainf after unique"<<endl;
+				} */
 	// collision detection
 	 		//	cout<<combine_now<<endl;
 
@@ -753,11 +753,11 @@ do {
 					}
 		}
 		
-			/*			for (int pn = 1; pn<=combine_now ; pn++) 
+				/*		for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<" after combine"<<endl;
-				}
-*/
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<" after combine"<<endl;
+				}  */
+
 	}
 
 	// convert subforces into total generalized forces on particles 
