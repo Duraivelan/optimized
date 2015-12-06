@@ -1,13 +1,13 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 1501
-while ( $a < 1502 )
+@ a = 1300
+while ( $a < 1301 )
 mkdir $a
   cd $a
   @ ifcreate = 1; 
   sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=1000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/1/ ; s/xxclustering/0/" ../../pairforce_rod.h > pairforce_rod.h
-  sed "s/xxNrParticles/3056/" ../../defs.h > defs.h
+  sed "s/xxNrParticles/270/" ../../defs.h > defs.h
   
   cp ../../rigid_force.h .
   cp ../../structure_definitions.h .
@@ -27,13 +27,13 @@ mkdir $a
   @ a = $a + 1
 end
 
-@ a = 1501
-while ( $a < 1502 )
+@ a = 1300
+while ( $a < 1301 )
   cd $a
   @ ifcreate = 0; 
   sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=30000000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/" ../../pairforce_rod.h > pairforce_rod.h
-  sed "s/xxNrParticles/3056/" ../../defs.h > defs.h
+  sed "s/xxNrParticles/270/" ../../defs.h > defs.h
 
   cp ../../rigid_force.h .
   cp ../../structure_definitions.h .
@@ -45,8 +45,8 @@ while ( $a < 1502 )
 		rm -f log
   endif
   
-  icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o 1501_BD_3D_rigid_rotation_optimized.out
-    ./1501_BD_3D_rigid_rotation_optimized.out >>& log -a
+  icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o 1300_BD_3D_rigid_rotation_optimized.out
+    ./1300_BD_3D_rigid_rotation_optimized.out >>& log -a
 
   cd ..
   @ a = $a + 1

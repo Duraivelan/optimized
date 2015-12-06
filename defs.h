@@ -4,7 +4,7 @@
 # include "structure_definitions.h"
 const double m =1.0;
 const double inv_mass =1.0/m;
-const double dt=0.00005;
+const double dt=0.0001;
 const int NrParticles=xxNrParticles;
 const double r_cut  = pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
@@ -24,7 +24,7 @@ const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
 const int  MaxPerCell = 10;
 
-const double Lx=200.0, Ly=200.0, Lz=200.0;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
+const double Lx=75.0, Ly=75.0, Lz=75.0;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
 const double Volume =Lx*Ly*Lz;
 const double Volume_inv = 1.0/ Volume;
 const double Particle_radius = sigma/2.0;
@@ -63,7 +63,7 @@ const mtrx3D Unit_diag(1.0,1.0,1.0);
                        {  1,  1,  0 },
                        {  1,  1,  1 } };
 	
-const double apct_rt = 5.0 ;   // aspect ratio of rods
+const double apct_rt = 3.0 ;   // aspect ratio of rods
 const double extra_beads = floor(apct_rt*0.5) ;   // aspect ratio of rods
 const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv * apct_rt ;
 
