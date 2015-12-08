@@ -20,7 +20,7 @@ using namespace std;
         }   
     } ;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][2], int* step) {
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], int* step) {
 
   int    NrCells[3],MaxNrCells;
   double scale[3];

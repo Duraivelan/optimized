@@ -67,6 +67,14 @@ std::vector<int> radialDistFunc(double XYZ[][3], double Lx,double Ly, double Lz,
 
 void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, int j,int *Max_Cluster_N, vctr3D box, vctr3D rbox ) {
 
+	/*	int cluster_swap ;
+		
+		if (i > j) {
+			cluster_swap = i;
+			i = j;
+			j = cluster_swap;
+			}
+	*/
 		vctr3D L_after, L_before ;
 		vctr3D old_pos= cluster[i].pos;
 		vctr3D dr;
@@ -97,9 +105,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 	//	std::cout<<"inside_collision"<<'\t'<<i<<'\t'<<A[i][0][0]<<'\t'<<Ang_Velocity[i][0]<<'\t'<<Q[i][0]<<'\t'<<L[i][0]<<'\t'<<torque[i][0]<<std::endl;
 		
 		remove("new_cluster.dat");
+		remove("cluster_ID.dat");
 		remove("hydro++input.txt");
 
 		std::ofstream outFile7("new_cluster.dat");
+		std::ofstream outFile70("cluster_ID.dat");
 		std::ofstream outFile4("hydro++input.txt");
 
 		outFile7<<1<<",    !Unit of length for coordinates and radii, cm (10 A)"<<endl;
@@ -115,7 +125,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
 	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);				
 		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
-
+		outFile70<<cluster[i].sub[k]<<'\t'<<i<<endl;
 		
 		} 
 		
@@ -127,6 +137,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
 			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;			
+			outFile70<<cluster[i].sub[k]<<'\t'<<j<<endl;
 			particle[cluster[i].sub[k]].cluster=i;
 			
 		} 
@@ -409,7 +420,7 @@ int NrSubs=NrParticles;
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
 int combine_now=0;
-int combine[NrParticles][2];
+int combine[NrParticles][4];
 
 if(ifrestart)	{
 	if(!xxcluster_restart)	{
@@ -701,10 +712,10 @@ do {
 	if (xxclustering && combine_now>0) 
 		{	
 		//	cout<<combine_now<<endl;
-			vector<vector<int>> temp_combine(combine_now+1,vector<int> (2)) ;
+			vector<vector<int>> temp_combine(combine_now+1,vector<int> (4)) ;
 			for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
-					for (int j = 0; j< 2 ; j ++) 
+					for (int j = 0; j< 4 ; j ++) 
 						{
 							temp_combine[pn][j]=combine[pn][j];
 						}
@@ -713,11 +724,11 @@ do {
 		
 	if(combine_now>1) {	sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
 	
-		/*		for (int pn = 1; pn<=combine_now ; pn++) 
+				for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
 				}	
-*/
+
 	if(combine_now>1) {	
 	int count=1;
 	do
@@ -736,28 +747,63 @@ do {
 			count=count+1;			
 		} while (count<combine_now);
 	}	
-			/*	for (int pn = 1; pn<=combine_now ; pn++) 
+				for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide mainf after unique"<<endl;
-				} */
+				} 
 	// collision detection
-	 		//	cout<<combine_now<<endl;
+	 	//		cout<<combine_now<<endl;
 
 	for ( int pn = 1 ; pn <=combine_now; pn ++ )
 		{
-			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
+			if(particle[temp_combine[pn][2]].cluster!=particle[temp_combine[pn][3]].cluster) {
+ 			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
+				
 				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
 					{
-						if (temp_combine[pp][0]>temp_combine[pn][1]) {temp_combine[pp][0]-=1; } else if ( temp_combine[pp][0]==temp_combine[pn][1] ) {temp_combine[pp][0]=temp_combine[pn][0] ;} 
-						if (temp_combine[pp][1]>temp_combine[pn][1]) {temp_combine[pp][1]-=1; } else if ( temp_combine[pp][1]==temp_combine[pn][1] ) {temp_combine[pp][1]=temp_combine[pn][0] ;}
-					}
-		}
+					 
+							if ( temp_combine[pp][0]==temp_combine[pn][1] ) {
+								if (temp_combine[pp][1] > temp_combine[pn][0]) {
+								
+									temp_combine[pp][0]=temp_combine[pn][0] ;
+									
+								}
+								else {
+										temp_combine[pp][0]=temp_combine[pp][1] ;
+										temp_combine[pp][1]=temp_combine[pn][0] ;
+									} 
+									
+								}
+									
+							if ( temp_combine[pp][1]==temp_combine[pn][1] ) {
+								if (temp_combine[pp][0] < temp_combine[pn][0]) {
+								
+									temp_combine[pp][1]=temp_combine[pn][0] ;
+									
+								}
+								else {
+										temp_combine[pp][1]=temp_combine[pp][0] ;
+										temp_combine[pp][0]=temp_combine[pn][0] ;
+									} 
+									
+								}
+					
+						if (temp_combine[pp][0]>=temp_combine[pn][1]) {temp_combine[pp][0]-=1; } 
+									
+						if (temp_combine[pp][1]>=temp_combine[pn][1]) {temp_combine[pp][1]-=1; } 
 		
-				/*		for (int pn = 1; pn<=combine_now ; pn++) 
-				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<" after combine"<<endl;
-				}  */
+					}
+					
+				}	
+					//	sort (temp_combine.begin()+pn+1,temp_combine.end(), RowSort());
 
+				/*	for (int px = 1; px<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[px][0]<<'\t'<<temp_combine[px][1]<<'\t'<<" after combine"<<endl;
+				} */
+			//	cout << "Doner one combine " << '\t'<< pn <<  endl;
+		}
+	
 	}
 
 	// convert subforces into total generalized forces on particles 
