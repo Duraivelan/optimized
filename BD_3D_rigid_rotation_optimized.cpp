@@ -724,10 +724,10 @@ do {
 		
 	if(combine_now>1) {	sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
 	
-				for (int pn = 1; pn<=combine_now ; pn++) 
+			/*	for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
-				}	
+				}	*/
 
 	if(combine_now>1) {	
 	int count=1;
@@ -747,10 +747,10 @@ do {
 			count=count+1;			
 		} while (count<combine_now);
 	}	
-				for (int pn = 1; pn<=combine_now ; pn++) 
+			/*	for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide mainf after unique"<<endl;
-				} 
+				} */
 	// collision detection
 	 	//		cout<<combine_now<<endl;
 
@@ -844,8 +844,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
                                 cluster[i].mobility_tnsr_sqrt.writeToFile( outFile_inter_endfile);
                 if(xx_rotation)
                         {
-                                cluster[i].mobility_tnsr.writeToFile( outFile_inter_endfile);
-                                cluster[i].mobility_tnsr_sqrt.writeToFile( outFile_inter_endfile);
+								cluster[i].rot_mobility_tnsr.writeToFile(outFile_inter_endfile);
+								cluster[i].rot_mobility_tnsr_sqrt.writeToFile(outFile_inter_endfile);
                         }
                         }
             for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
@@ -917,8 +917,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
 		if(xx_rotation)	
 			{
-				cluster[i].mobility_tnsr.writeToFile(outFile7);
-				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
+				cluster[i].rot_mobility_tnsr.writeToFile(outFile7);
+				cluster[i].rot_mobility_tnsr_sqrt.writeToFile(outFile7);
 			}
 			}
 	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
@@ -967,8 +967,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
 		if(xx_rotation)	
 			{
-				cluster[i].mobility_tnsr.writeToFile(outFile7);
-				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
+				cluster[i].rot_mobility_tnsr.writeToFile(outFile7);
+				cluster[i].rot_mobility_tnsr_sqrt.writeToFile(outFile7);
 			}
 			}
 	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )

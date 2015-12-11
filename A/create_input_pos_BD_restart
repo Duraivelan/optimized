@@ -1,28 +1,41 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 34
-while ( $a < 35 )
-mkdir $a
+@ a = 2014
+@ init = $a 
+@ nrparticles = 15279
+
+while ( $a < 2015 )
   cd $a
   @ ifcreate = 0; 
-  sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step>0/ ; s/xxnstep/step<=30000000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/1/ ; s/xxthermo/0/ ; s/xxcluster_restart/1/ ; s/xx_rotation/0/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+  sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step>0/ ; s/xxnstep/step<=30000000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/1/ ; s/xxthermo/0/ ; s/xxcluster_restart/1/ ; s/xx_rotation/1/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/" ../../pairforce.h > pairforce.h
-  sed "s/xxNrParticles/850/" ../../defs.h > defs.h
-  
+ 
+ 	@ cubic = 1
+	
+	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.56^3)/(($a-$init)*0.001+0.004))/(3))" | bc -l`
+	echo $box_Lx
+	if ($cubic) then
+	
+	set box_Ly = $box_Lx ;
+	set box_Lz = $box_Lx ;
+	
+	endif
+   
+  sed "s/xxNrParticles/$nrparticles/ ; s/box_Lx/$box_Lx/ ; s/box_Ly/$box_Ly/ ; s/box_Lz/$box_Lz/ ;  " ../../defs.h > defs.h
+
   cp ../../rigid_force.h .
   cp ../../structure_definitions.h .
   cp ../../rigid_force.cpp .
   cp ../../vctr3D.h .
   cp ../../vctr4D.h .
-
   
   if ( $ifcreate == 1 ) then
 		rm -f log
   endif
   
-   icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o 34_BD_3D_rigid_rotation_optimized.out
+  icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o ${a}_BD_3D_rigid_rotation_optimized.out
 
-  ./34_BD_3D_rigid_rotation_optimized.out >>& log -a 
+    ./${a}_BD_3D_rigid_rotation_optimized.out >>& log -a &
 
   cd ..
   @ a = $a + 1
