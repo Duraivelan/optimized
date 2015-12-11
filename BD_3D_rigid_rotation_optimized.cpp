@@ -1159,8 +1159,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
                                 cluster[i].mobility_tnsr_sqrt.writeToFile( outFile_inter_endfile);
                 if(xx_rotation)
                         {
-                                cluster[i].mobility_tnsr.writeToFile( outFile_inter_endfile);
-                                cluster[i].mobility_tnsr_sqrt.writeToFile( outFile_inter_endfile);
+                                cluster[i].rot_mobility_tnsr.writeToFile( outFile_inter_endfile);
+                                cluster[i].rot_mobility_tnsr_sqrt.writeToFile( outFile_inter_endfile);
                         }
                         }
             for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
@@ -1252,8 +1252,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
 		if(xx_rotation)	
 			{
-				cluster[i].mobility_tnsr.writeToFile(outFile7);
-				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
+				cluster[i].rot_mobility_tnsr.writeToFile(outFile7);
+				cluster[i].rot_mobility_tnsr_sqrt.writeToFile(outFile7);
 			}
 			}
 	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
