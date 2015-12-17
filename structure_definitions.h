@@ -155,6 +155,7 @@ struct ParticleData
   vctr3D angmom;        // lab-fixed
   vctr4D quat;
   int Sub_Length;
+  int clicked; 
   double radii;
   double radii_gyr;
   double mass;
