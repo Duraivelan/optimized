@@ -122,6 +122,8 @@ if( fabs(xla)>lh || fabs(xmu)>lh ) {
 					*combine_now += 1;
 					combine[	*combine_now	]	[ 0 ] = min(particle[i].cluster,particle[j].cluster);
 					combine[	*combine_now	]	[ 1 ] = max(particle[i].cluster,particle[j].cluster);
+					combine[	*combine_now	]	[ 2 ] = min(i,j);
+					combine[	*combine_now	]	[ 3 ] = max(i,j);
 				//	cout<<combine[*combine_now][0]<<'\t'<<combine[*combine_now][1]<<"insdide pairforce"<<'\t'<<*step<<endl;
 				}
 

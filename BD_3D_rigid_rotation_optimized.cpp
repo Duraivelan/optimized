@@ -11,9 +11,9 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-//#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
-#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-//#include<Eigen/Eigenvalues>
+#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
+//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -137,17 +137,6 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 //	std::cout<<"inside_collision"<<'\t'<<i<<'\t'<<A[i][0][0]<<'\t'<<Ang_Velocity[i][0]<<'\t'<<Q[i][0]<<'\t'<<L[i][0]<<'\t'<<torque[i][0]<<std::endl;
 
-	remove("new_cluster.dat");
-	remove("hydro++input.txt");
-
-	std::ofstream outFile7("new_cluster.dat");
-	std::ofstream outFile4("hydro++input.txt");
-
-	outFile7<<1<<",    !Unit of length for coordinates and radii, cm (10 A)"<<endl;
-	outFile7<<(cluster[i].Sub_Length+cluster[j].Sub_Length )*apct_rt<<",        !Number of beads"<<endl;
-
-	cluster[i].radii_gyr=0.0;
-
 	for (int  k=0; k<cluster[i].Sub_Length; k++)
 
         {
@@ -157,34 +146,6 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
     		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
 
 	    	particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
-
-		    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);
-
-		    outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
-
-            for (double j=0; j< extra_beads; j++)
-
-			    {
-
-				    vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd + particle[cluster[i].sub[k]].dir*(j+1.0)*r_min ;
-
-				    outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;
-
-    				cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);
-
-	    		}
-
-		    for (double j=0; j< extra_beads; j++)
-
-			    {
-
-    			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*r_min ;
-
-	    		outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;
-
-		    	cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);
-
-			    }
 
         }
 
@@ -200,39 +161,9 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
 
-			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);
-
-			outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
-
-			for (double j=0; j< extra_beads; j++)
-
-                {
-
-        			vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd+particle[cluster[i].sub[k]].dir*(j+1.0)*r_min ;
-
-        			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
-
-        			cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);
-
-			    }
-
-			for (double j=0; j< extra_beads; j++)
-
-                {
-			        vctr3D extd_rod_pos = particle[cluster[i].sub[k]].pos_bdyfxd - particle[cluster[i].sub[k]].dir*(j+1.0)*r_min ;
-
-        			outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius <<std::endl;
-
-    	    		cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length+cluster[j].Sub_Length)*apct_rt);
-
-			    }
-
-			    particle[cluster[i].sub[k]].cluster=i;
+		    particle[cluster[i].sub[k]].cluster=i;
 
         }
-
-
-    outFile7.close();
 
 	cluster[i].pos.PBC(box,rbox);
 
@@ -301,9 +232,6 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
         }
 
-    cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/(apct_rt*cluster[i].Sub_Length));  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
-	        																					// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
-
  // std::cout<<Length_cluster[i]<<'\t'<<Length_cluster[j]<<std::endl;
 
 	for ( int k = j ; k < *Max_Cluster_N-1 ; k ++ )
@@ -311,6 +239,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
         {
 
         //  cluster[k]=cluster[k+1];
+		    cluster[k].clicked=cluster[k+1].clicked;
 		    cluster[k].pos=cluster[k+1].pos;
 			cluster[k].frc=cluster[k+1].frc;
 			cluster[k].omega=cluster[k+1].omega;
@@ -337,160 +266,12 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
         }
 
-    outFile4<<"Square Tetramer                 Title"<<endl;
-	outFile4<<"12-cluster                  filename for output files"<<endl;
-	outFile4<<"new_cluster.dat              Structural (bead coords) file"<<endl;
-	outFile4<<"12                              ICASE"<<endl;
-	outFile4<<26.8500<<"                             Temperature, centigrade"<<endl;
-	outFile4<<eta<<"                           Solvent viscosity"<<endl;
-	outFile4<<cluster[i].Sub_Length*apct_rt<<"                          Molecular weight"<<endl;
-	outFile4<<0.01<<"                           Specific volume of macromolecule"<<endl;
-	outFile4<<"1.0                             Solution density"<<endl;
-	outFile4<<"1,                 Number of values of H"<<endl;
-	outFile4<<"0,             HMAX"<<endl;
-	outFile4<<"1,                 Number of intervals for the distance distribution"<<endl;
-	outFile4<<"0              RMAX"<<endl;
-	outFile4<<"0,             (ONLY IF ISCA IS NOT ZERO) NTRIALS"<<endl;
-	outFile4<<"1                   IDIF=1 (yes) for full diffusion tensors"<<endl;
-	outFile4<<"*           End of file"<<endl;
-	outFile4.close();
-
-	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-
- // cout<<"Done hydro"<<endl;
-	std::ifstream dataFile("12-cluster-res.txt");
-
-    if(!dataFile.good())
-
-        {
-
-            std::cerr<<"Given file is corrupt /n"<<std::endl;
-        }
-    else
-
-        {
-
-            std::string line;
-
-            for (int n=0;n<56;n++)
-
-                {
-
-            		std::getline(dataFile,line);
-	            }
-
-            for (int n=0;n<3;n++)
-
-                {
-
-            		std::getline(dataFile,line);
-    	            std::istringstream currentLine(line);
-                    currentLine >> cluster[i].mobility_tnsr.comp[n][0];
-                    currentLine >> cluster[i].mobility_tnsr.comp[n][1];
-                    currentLine >> cluster[i].mobility_tnsr.comp[n][2];
-                }
-
-            for (int n=0;n<2;n++)
-
-                {
-
-            		std::getline(dataFile,line);
-	            }
-
-            for (int n=0;n<3;n++)
-
-                {
-
-            		std::getline(dataFile,line);
-    	            std::istringstream currentLine(line);
-                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][1];
-                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][2];
-
-                }
-
-        }
-
-    cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1.0*10.0*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
-	cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1.0*10.0*2414323832351.228);		// outputed by hydro++
-	cluster[i].mobility_tnsr_sqrt=null33D;
-	MatrixXd temp(3,3), temp_sqrt(3,3);
-
-    for (int k=0;k<3;k++)
-
-        {
-			for (int l=0;l<3;l++)
-
-                {
-
-	        		temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
-
-                }
-		}
-
-	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
-	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
-
-	for (int k=0;k<3;k++)
-
-        {
-
-			for (int l=0;l<3;l++)
-
-                {
-
-				    cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-
-    			}
-
-		}
-
-	cluster[i].rot_mobility_tnsr_sqrt=null33D;
-
-	for (int k=0;k<3;k++)
-
-        {
-
-			for (int l=0;l<3;l++)
-
-                {
-
-				    temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k][l];
-
-    			}
-
-		}
-
-	Eigen::SelfAdjointEigenSolver<MatrixXd> ROT_MOBL_MAT(temp);
-	temp_sqrt = ROT_MOBL_MAT.operatorSqrt();
-
-	for (int k=0;k<3;k++)
-
-        {
-
-			for (int l=0;l<3;l++)
-
-                {
-
-    		        cluster[i].rot_mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-
-                }
-
-		}
-
-    cluster[i].quat={ 1.0 , 0.0 , 0.0 , 0.0 };
-
-	// update A matrix
-
-    cluster[i].quat2rotmat();
-
     // modulus of A is one; A inverse is jsut the cofactor of A 
 
 	*Max_Cluster_N=*Max_Cluster_N-1;
 
+	cluster[i].clicked = 1 ; 
+	
 	if (*Max_Cluster_N<=1)
 
         {
@@ -646,8 +427,7 @@ int NrSubs=NrParticles;
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
 int combine_now=0;
-int combine[NrParticles][2];
-
+int combine[NrParticles][4];
 /* initialize single rod diffusivity */
 if(!xxcluster_restart)	{
 		remove("new_cluster.dat");
@@ -1059,27 +839,27 @@ do {
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
 	combine_now=0;
  	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
-	if (xxclustering && combine_now>0)
-		{
+	if (xxclustering && combine_now>0) 
+		{	
 		//	cout<<combine_now<<endl;
-			vector<vector<int>> temp_combine(combine_now+1,vector<int> (2)) ;
-			for (int pn = 1; pn<=combine_now ; pn++)
-				{
-					for (int j = 0; j< 2 ; j ++)
+			vector<vector<int>> temp_combine(combine_now+1,vector<int> (4)) ;
+			for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+					for (int j = 0; j< 4 ; j ++) 
 						{
 							temp_combine[pn][j]=combine[pn][j];
 						}
-				//		cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main beroe sort"<<endl;
-				}
-
-	if(combine_now>1) { sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
-
-		/*		for (int pn = 1; pn<=combine_now ; pn++)
-				{
+					//	cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide main beroe sort"<<endl;
+				}			
+		
+	if(combine_now>1) {	sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
+	
+			/*	for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
-				}
-        */
-	if(combine_now>1) {
+				}	*/
+
+	if(combine_now>1) {	
 	int count=1;
 	do
 		{
@@ -1094,31 +874,257 @@ do {
 				}
 				j+=1;
 			}	while (j<=(combine_now-count));
-			count=count+1;
+			count=count+1;			
 		} while (count<combine_now);
-	}
-		/*		for (int pn = 1; pn<=combine_now ; pn++)
-				{
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide mainf after unique"<<endl;
-				}*/
+	}	
+			/*	for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide mainf after unique"<<endl;
+				} */
 	// collision detection
-	 		//	cout<<combine_now<<endl;
+	 	//		cout<<combine_now<<endl;
 
 	for ( int pn = 1 ; pn <=combine_now; pn ++ )
 		{
-			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
+			if(particle[temp_combine[pn][2]].cluster!=particle[temp_combine[pn][3]].cluster) {
+ 			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
+				
 				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
 					{
-						if (temp_combine[pp][0]>temp_combine[pn][1]) {temp_combine[pp][0]-=1; } else if ( temp_combine[pp][0]==temp_combine[pn][1] ) {temp_combine[pp][0]=temp_combine[pn][0] ;} 
-						if (temp_combine[pp][1]>temp_combine[pn][1]) {temp_combine[pp][1]-=1; } else if ( temp_combine[pp][1]==temp_combine[pn][1] ) {temp_combine[pp][1]=temp_combine[pn][0] ;}
-					}
-		}
+					 
+							if ( temp_combine[pp][0]==temp_combine[pn][1] ) {
+								if (temp_combine[pp][1] > temp_combine[pn][0]) {
+								
+									temp_combine[pp][0]=temp_combine[pn][0] ;
+									
+								}
+								else {
+										temp_combine[pp][0]=temp_combine[pp][1] ;
+										temp_combine[pp][1]=temp_combine[pn][0] ;
+									} 
+									
+								}
+									
+							if ( temp_combine[pp][1]==temp_combine[pn][1] ) {
+								if (temp_combine[pp][0] < temp_combine[pn][0]) {
+								
+									temp_combine[pp][1]=temp_combine[pn][0] ;
+									
+								}
+								else {
+										temp_combine[pp][1]=temp_combine[pp][0] ;
+										temp_combine[pp][0]=temp_combine[pn][0] ;
+									} 
+									
+								}
+					
+						if (temp_combine[pp][0]>=temp_combine[pn][1]) {temp_combine[pp][0]-=1; } 
+									
+						if (temp_combine[pp][1]>=temp_combine[pn][1]) {temp_combine[pp][1]-=1; } 
 		
-			/*			for (int pn = 1; pn<=combine_now ; pn++) 
+					}
+					
+				}	
+					//	sort (temp_combine.begin()+pn+1,temp_combine.end(), RowSort());
+
+				/*	for (int px = 1; px<=combine_now ; pn++) 
 				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<" after combine"<<endl;
-				}
-*/
+						cout<<temp_combine[px][0]<<'\t'<<temp_combine[px][1]<<'\t'<<" after combine"<<endl;
+				} */
+			//	cout << "Doner one combine " << '\t'<< pn <<  endl;
+		}
+	
+// calculate new diffusion tensors	
+	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+		{
+			if(cluster[i].clicked == 1 ) {
+		
+			remove("new_cluster.dat");
+			remove("hydro++input.txt");
+
+			std::ofstream outFile7("new_cluster.dat");
+			std::ofstream outFile4("hydro++input.txt");
+
+			outFile7<<1<<",    !Unit of length for coordinates and radii, cm (10 A)"<<endl;
+			outFile7<<(cluster[i].Sub_Length)*apct_rt<<",        !Number of beads"<<endl;
+
+			cluster[i].radii_gyr=0.0;
+		
+			for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+				{
+					for (double eb = (-1*extra_beads); eb < (extra_beads+1 ); eb++)
+
+						{
+
+							vctr3D extd_rod_pos = particle[cluster[i].sub[j]].pos_bdyfxd+particle[cluster[i].sub[j]].dir*(eb)*r_min ;
+
+							outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<particle[cluster[i].sub[j]].radius<<std::endl;
+
+							cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length)*apct_rt);
+
+						}
+						
+				}		
+		
+	outFile7.close();
+	
+	cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/(apct_rt*cluster[i].Sub_Length));  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
+	        																					// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
+
+    outFile4<<"Square Tetramer                 Title"<<endl;
+	outFile4<<"12-cluster                  filename for output files"<<endl;
+	outFile4<<"new_cluster.dat              Structural (bead coords) file"<<endl;
+	outFile4<<"12                              ICASE"<<endl;
+	outFile4<<26.8500<<"                             Temperature, centigrade"<<endl;
+	outFile4<<eta<<"                           Solvent viscosity"<<endl;
+	outFile4<<cluster[i].Sub_Length*apct_rt<<"                          Molecular weight"<<endl;
+	outFile4<<0.01<<"                           Specific volume of macromolecule"<<endl;
+	outFile4<<"1.0                             Solution density"<<endl;
+	outFile4<<"1,                 Number of values of H"<<endl;
+	outFile4<<"0,             HMAX"<<endl;
+	outFile4<<"1,                 Number of intervals for the distance distribution"<<endl;
+	outFile4<<"0              RMAX"<<endl;
+	outFile4<<"0,             (ONLY IF ISCA IS NOT ZERO) NTRIALS"<<endl;
+	outFile4<<"1                   IDIF=1 (yes) for full diffusion tensors"<<endl;
+	outFile4<<"*           End of file"<<endl;
+	outFile4.close();
+
+	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+
+ // cout<<"Done hydro"<<endl;
+	std::ifstream dataFile("12-cluster-res.txt");
+
+    if(!dataFile.good())
+
+        {
+
+            std::cerr<<"Given file is corrupt /n"<<std::endl;
+        }
+    else
+
+        {
+
+            std::string line;
+
+            for (int n=0;n<56;n++)
+
+                {
+
+            		std::getline(dataFile,line);
+	            }
+
+            for (int n=0;n<3;n++)
+
+                {
+
+            		std::getline(dataFile,line);
+    	            std::istringstream currentLine(line);
+                    currentLine >> cluster[i].mobility_tnsr.comp[n][0];
+                    currentLine >> cluster[i].mobility_tnsr.comp[n][1];
+                    currentLine >> cluster[i].mobility_tnsr.comp[n][2];
+                }
+
+            for (int n=0;n<2;n++)
+
+                {
+
+            		std::getline(dataFile,line);
+	            }
+
+            for (int n=0;n<3;n++)
+
+                {
+
+            		std::getline(dataFile,line);
+    	            std::istringstream currentLine(line);
+                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
+                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
+                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
+                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
+                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][1];
+                    currentLine >> cluster[i].rot_mobility_tnsr.comp[n][2];
+
+                }
+
+        }
+
+    cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1.0*10.0*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
+	cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1.0*10.0*2414323832351.228);		// outputed by hydro++
+	cluster[i].mobility_tnsr_sqrt=null33D;
+	MatrixXd temp(3,3), temp_sqrt(3,3);
+
+    for (int k=0;k<3;k++)
+
+        {
+			for (int l=0;l<3;l++)
+
+                {
+
+	        		temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
+
+                }
+		}
+
+	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
+	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
+
+	for (int k=0;k<3;k++)
+
+        {
+
+			for (int l=0;l<3;l++)
+
+                {
+
+				    cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
+
+    			}
+
+		}
+
+	cluster[i].rot_mobility_tnsr_sqrt=null33D;
+
+	for (int k=0;k<3;k++)
+
+        {
+
+			for (int l=0;l<3;l++)
+
+                {
+
+				    temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k][l];
+
+    			}
+
+		}
+
+	Eigen::SelfAdjointEigenSolver<MatrixXd> ROT_MOBL_MAT(temp);
+	temp_sqrt = ROT_MOBL_MAT.operatorSqrt();
+
+	for (int k=0;k<3;k++)
+
+        {
+
+			for (int l=0;l<3;l++)
+
+                {
+
+    		        cluster[i].rot_mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
+
+                }
+
+		}	
+	
+    cluster[i].quat={ 1.0 , 0.0 , 0.0 , 0.0 };
+
+	// update A matrix
+
+    cluster[i].quat2rotmat();
+
+	}
+		cluster[i].clicked = 0; 
+	}
+	
 	}
 
 	// convert subforces into total generalized forces on particles 
