@@ -215,9 +215,9 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
 		if (cluster[i].Sub_Length>1) 
-			{
-				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
-	
+			{	
+				cluster[i].pos+= (cluster[i].rotmat*cluster[i].rotmat*(cluster[i].frc*(mu*pow(cluster[i].Sub_Length,-1.0/1.8))*dt) + 
+								  cluster[i].rotmat*pow(cluster[i].Sub_Length,-0.5/1.8)*(rand*mu_sqrt*kbT_dt) );
 				if(xx_rotation)	
 				{
 			// update Q
@@ -226,7 +226,9 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
+					cluster[i].theta   	= 	cluster[i].rotmat*(cluster[i].trq*(mu_r*pow(cluster[i].Sub_Length,-1.0/1.8))*dt) + 
+											(rand1*mu_r_sqrt*pow(cluster[i].Sub_Length,-0.5/1.8)*kbT_dt);
+
 				cluster[i].quat		=	cluster[i].theta2quat();
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
@@ -698,116 +700,6 @@ do {
 	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 		{
 			if(cluster[i].clicked == 1 ) {
-		remove("new_cluster.dat");
-		remove("hydro++input.txt");
-
-		std::ofstream outFile7("new_cluster.dat");
-		std::ofstream outFile4("hydro++input.txt");
-
-		outFile7<<1<<",    !Unit of length for coordinates and radii, cm (10 A)"<<endl;
-		outFile7<<cluster[i].Sub_Length<<",        !Number of beads"<<endl;
-		
-		for (int  k=0; k<cluster[i].Sub_Length; k++) {
-
-		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
-		
-		} 
-		
-		outFile7.close();
-
-		outFile4<<"Square Tetramer                 Title"<<endl;
-		outFile4<<"12-cluster                  filename for output files"<<endl;
-		outFile4<<"new_cluster.dat              Structural (bead coords) file"<<endl;
-		outFile4<<"12                              ICASE"<<endl;
-		outFile4<<26.8500<<"                             Temperature, centigrade"<<endl;
-		outFile4<<eta<<"                           Solvent viscosity"<<endl;
-		outFile4<<cluster[i].Sub_Length<<"                          Molecular weight"<<endl;
-		outFile4<<0.01<<"                           Specific volume of macromolecule"<<endl;
-		outFile4<<"1.0                             Solution density"<<endl;
-		outFile4<<"1,                 Number of values of H"<<endl;
-		outFile4<<"0,             HMAX"<<endl;
-		outFile4<<"1,                 Number of intervals for the distance distribution"<<endl;
-		outFile4<<"0              RMAX"<<endl;
-		outFile4<<"0,             (ONLY IF ISCA IS NOT ZERO) NTRIALS"<<endl;
-		outFile4<<"1                   IDIF=1 (yes) for full diffusion tensors"<<endl;
-		outFile4<<"*           End of file"<<endl;
-		outFile4.close();
-		
-		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-	//	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
-
-		// cout<<"Done hydro"<<endl;
-		std::ifstream dataFile("12-cluster-res.txt");
-if(!dataFile.good()) {
-	std::cerr<<"Given file is corrupt /n"<<std::endl;
-}
-else {
-    std::string line;
-    for (int n=0;n<56;n++) {
-		std::getline(dataFile,line);
-	}
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr.comp[n][2];
-    }
-   for (int n=0;n<2;n++) {
-		std::getline(dataFile,line);
-	}
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][1];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][2];
- 
-    }
-}	 
-		cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
-		cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1*10*2414323832351.228);		// outputed by hydro++
-		cluster[i].mobility_tnsr_sqrt=null33D;
-		MatrixXd temp(3,3), temp_sqrt(3,3);
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
-			//	cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
-
-			}
-		}
-	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
-	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
-	//	temp_sqrt=temp.sqrt();
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-		//		cluster[i].mobility_tnsr_sqrt.comp[k][k]=sqrt(cluster[i].mobility_tnsr.comp[k][k]);
-		//		cout<<cluster[i].mobility_tnsr_sqrt.comp[k][k]<<endl;
-			}
-		}
-		
-		cluster[i].rot_mobility_tnsr_sqrt=null33D;
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k][l];
-		//		cout<<cluster[i].rot_mobility_tnsr.comp[k][l]<<endl;
-
-			}
-		}
-		Eigen::SelfAdjointEigenSolver<MatrixXd> ROT_MOBL_MAT(temp);
-		temp_sqrt = ROT_MOBL_MAT.operatorSqrt();
-	//	temp_sqrt=temp.sqrt();
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].rot_mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-			//	cluster[i].rot_mobility_tnsr_sqrt.comp[k][k]=sqrt(cluster[i].rot_mobility_tnsr.comp[k][k]);
-		//		cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k][k]<<endl;
-			}
-		}
 		
 		cluster[i].quat={1.0,0.0,0.0,0.0};
 
