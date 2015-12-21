@@ -439,7 +439,7 @@ else {
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[1];
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[2];
 					particle[cluster[i].sub[j]].mass=1.0;
-					particle[cluster[i].sub[j]].radius=0.56;					
+					particle[cluster[i].sub[j]].radius=0.5;					
 					particle[cluster[i].sub[j]].cluster=i;					
 				}
     }
@@ -514,7 +514,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			cluster[i].sub[j]=i;
 			particle[cluster[i].sub[j]].cluster=i;
 			particle[cluster[i].sub[j]].mass=cluster[i].mass;
-			particle[cluster[i].sub[j]].radius=0.56;
+			particle[cluster[i].sub[j]].radius=0.5;
 			cluster[i].radii=0.56;
 			// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
 			particle[cluster[i].sub[j]].vel=cluster[i].vel;

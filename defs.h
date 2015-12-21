@@ -9,7 +9,7 @@ const int NrParticles=xxNrParticles;
 const double r_cut  = pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0;
-const double r_min = pow(2.0,(1.0/6.0))*sigma;
+const double r_min = 1.0; //pow(2.0,(1.0/6.0))*sigma;
 const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
@@ -29,7 +29,7 @@ const int  MaxPerCell = 10;
 const double Lx=box_Lx, Ly=box_Ly, Lz=box_Lz;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
 const double Volume =Lx*Ly*Lz;
 const double Volume_inv = 1.0/ Volume;
-const double Particle_radius = 0.56; // sigma/2.0;
+const double Particle_radius = 0.5 ; // sigma/2.0;
 const double Particle_vol = 4.0*pi*(Particle_radius*Particle_radius*Particle_radius)/3.0;
 const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv;
 const int cellx=(int) ceil(Lx/r_cut);
