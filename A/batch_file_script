@@ -1,13 +1,13 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 171
+@ a = 191
 @ init = $a 
-@ nrparticles = 5000
-while ( $a < 172 )
+@ nrparticles = 16384
+while ( $a < 202 )
 	mkdir $a
 	cd $a
 	@ ifcreate = 1; 
-	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<=1000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<=1000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
 	sed "s/xxshift/1/ ; s/xxclustering/0/" ../../pairforce.h > pairforce.h
 
 	@ cubic = 1
@@ -40,13 +40,13 @@ while ( $a < 172 )
   @ a = $a + 1
 end
 wait
-@ a = 171
+@ a = 191
 @ init = $a 
 
-while ( $a < 172 )
+while ( $a < 202 )
   cd $a
   @ ifcreate = 0; 
-  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=30000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=30000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/" ../../pairforce.h > pairforce.h
  
  	@ cubic = 1
