@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-#include<Eigen/Eigenvalues>
+#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+//#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -718,7 +718,7 @@ do {
 		outFile4<<"Square Tetramer                 Title"<<endl;
 		outFile4<<"12-cluster                  filename for output files"<<endl;
 		outFile4<<"new_cluster.dat              Structural (bead coords) file"<<endl;
-		outFile4<<"12                              ICASE"<<endl;
+		outFile4<<"20                              ICASE"<<endl;
 		outFile4<<26.8500<<"                             Temperature, centigrade"<<endl;
 		outFile4<<eta<<"                           Solvent viscosity"<<endl;
 		outFile4<<cluster[i].Sub_Length<<"                          Molecular weight"<<endl;
@@ -733,8 +733,8 @@ do {
 		outFile4<<"*           End of file"<<endl;
 		outFile4.close();
 		
-		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-	//	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+	//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
 		// cout<<"Done hydro"<<endl;
 		std::ifstream dataFile("12-cluster-res.txt");
@@ -877,9 +877,9 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 if (step%frame==0) 
 	{ 
 
-        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
-		outFile5<<NrParticles<<std::endl;
-		outFile5<<"X Y Z co-ordinates"<<std::endl;
+    //  std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+   	//	outFile5<<NrParticles<<std::endl;
+   	//	outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
@@ -893,12 +893,12 @@ if (step%frame==0)
 				{
 				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
 				}
-			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+	/*		    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
 					
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
-			}
+	*/		}
 
 
 /*		for ( int i = 0 ; i < NrParticles; i ++ )
@@ -910,9 +910,9 @@ if (step%frame==0)
 			}
  */
  
-      	outFile5<<'\n'<<std::endl;
+    // 	outFile5<<'\n'<<std::endl;
 		outFile1<<p_energy<<std::endl;
-		outFile5.close();
+	//	outFile5.close();
 		outFile9.close();
 		
 		// store info to restart file End_Position_Full.xyz

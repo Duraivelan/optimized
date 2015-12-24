@@ -1,9 +1,9 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 171
+@ a = 151
 @ init = $a 
-@ nrparticles = 5000
-while ( $a < 172 )
+@ nrparticles = 16384
+while ( $a < 157 )
 	mkdir $a
 	cd $a
 	@ ifcreate = 1; 
@@ -12,7 +12,7 @@ while ( $a < 172 )
 
 	@ cubic = 1
 	
-	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.001+0.05))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.001+0.001))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	
@@ -40,10 +40,10 @@ while ( $a < 172 )
   @ a = $a + 1
 end
 wait
-@ a = 171
+@ a = 151
 @ init = $a 
 
-while ( $a < 172 )
+while ( $a < 157 )
   cd $a
   @ ifcreate = 0; 
   sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=30000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
@@ -51,7 +51,7 @@ while ( $a < 172 )
  
  	@ cubic = 1
 	
-	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.001+0.05))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.001+0.001))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	
