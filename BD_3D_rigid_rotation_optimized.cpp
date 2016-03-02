@@ -738,12 +738,34 @@ do {
 
 		// cout<<"Done hydro"<<endl;
 		std::ifstream dataFile("12-cluster-res.txt");
+        std::string tmp;
+        vctr3D CoD;
 if(!dataFile.good()) {
 	std::cerr<<"Given file is corrupt /n"<<std::endl;
 }
 else {
     std::string line;
-    for (int n=0;n<56;n++) {
+    for (int n=0;n<47;n++) {
+		std::getline(dataFile,line);
+	}
+    for (int n=0;n<3;n++) {
+        std::getline(dataFile,line);
+//        std::cout<<line<<std::endl;
+        std::istringstream currentLine(line);
+        currentLine >> tmp;
+        currentLine >> tmp;
+        currentLine >> tmp;
+        currentLine >> tmp;
+      //std::cout<<tmp<<std::endl;
+        currentLine >> CoD.comp[n];
+      //std::cout<<CoD<<std::endl;
+    }
+	cluster[i].pos+=CoD;
+    for (int  k=0; k<cluster[i].Sub_Length; k++) {
+    particle[cluster[i].sub[k]].pos_bdyfxd-=CoD;
+    }
+    
+    for (int n=0;n<6;n++) {
 		std::getline(dataFile,line);
 	}
     for (int n=0;n<3;n++) {
@@ -877,9 +899,9 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 if (step%frame==0) 
 	{ 
 
-    //  std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
-   	//	outFile5<<NrParticles<<std::endl;
-   	//	outFile5<<"X Y Z co-ordinates"<<std::endl;
+//      std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+//   		outFile5<<NrParticles<<std::endl;
+//   		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
@@ -893,12 +915,12 @@ if (step%frame==0)
 				{
 				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
 				}
-	/*		    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+			/*    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
 					
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
-	*/		}
+		*/	}
 
 
 /*		for ( int i = 0 ; i < NrParticles; i ++ )
@@ -910,9 +932,9 @@ if (step%frame==0)
 			}
  */
  
-    // 	outFile5<<'\n'<<std::endl;
+ //    	outFile5<<'\n'<<std::endl;
 		outFile1<<p_energy<<std::endl;
-	//	outFile5.close();
+//		outFile5.close();
 		outFile9.close();
 		
 		// store info to restart file End_Position_Full.xyz
