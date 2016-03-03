@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-//#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
-#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
+//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
 //#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
@@ -362,7 +362,7 @@ void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& partic
 
 		        {
 
-                    cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
+                    cluster[i].radii	=	0.5;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
     			    cluster[i].pos+=cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt;
 	    		    cluster[i].pos.PBC(box,rbox);
 		    	    *KE_rot += 	(cluster[i].omega)*(cluster[i].angmom)*0.5;
@@ -441,14 +441,14 @@ if(!xxcluster_restart)	{
 				
 		for (double j=-1*extra_beads-1; j< extra_beads; j++) {
 							
-		outFile7<<(j+1.0)*r_min<<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.56<<std::endl;
+		outFile7<<(j+1.0)*r_min<<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.5<<std::endl;
 			
 			}		 
 		
 		outFile4<<"Square Tetramer                 Title"<<endl;
 		outFile4<<"12-cluster                  filename for output files"<<endl;
 		outFile4<<"new_cluster.dat              Structural (bead coords) file"<<endl;
-		outFile4<<"12                              ICASE"<<endl;
+		outFile4<<"20                              ICASE"<<endl;
 		outFile4<<26.8500<<"                             Temperature, centigrade"<<endl;
 		outFile4<<eta<<"                           Solvent viscosity"<<endl;
 		outFile4<<apct_rt<<"                          Molecular weight"<<endl;
@@ -463,21 +463,43 @@ if(!xxcluster_restart)	{
 		outFile4<<"*           End of file"<<endl;
 		outFile4.close();
 		
-//		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+//		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
 		// cout<<"Done hydro"<<endl;
 		
 		mtrx3D temp_diff ; 
 		mtrx3D temp_diff_rot ; 
 		std::ifstream dataFile("12-cluster-res.txt");
+		std::string tmp;
+        vctr3D CoD;
 if(!dataFile.good()) {
 	std::cerr<<"Given file is corrupt /n"<<std::endl;
 }
 else {
     std::string line;
-    for (int n=0;n<56;n++) {
-		std::getline(dataFile,line);
+       for (int n=0;n<47;n++) {
+ 		std::getline(dataFile,line);
+ 	}
+     for (int n=0;n<3;n++) {
+         std::getline(dataFile,line);
+ //        std::cout<<line<<std::endl;
+         std::istringstream currentLine(line);
+         currentLine >> tmp;
+         currentLine >> tmp;
+         currentLine >> tmp;
+         currentLine >> tmp;
+       //std::cout<<tmp<<std::endl;
+         currentLine >> CoD.comp[n];
+       //std::cout<<CoD<<std::endl;
+     }
+/* 	cluster[i].pos+=CoD;
+     for (int  k=0; k<cluster[i].Sub_Length; k++) {
+     particle[cluster[i].sub[k]].pos_bdyfxd-=CoD;
+     }
+ */    
+     for (int n=0;n<6;n++) {
+    	std::getline(dataFile,line);
 	}
     for (int n=0;n<3;n++) {
 		std::getline(dataFile,line);
@@ -668,7 +690,7 @@ else {
        				        currentLine8 >> particle[cluster[i].sub[j]].dir.comp[1];
        				        currentLine8 >> particle[cluster[i].sub[j]].dir.comp[2];
 					particle[cluster[i].sub[j]].mass=1.0;
-					particle[cluster[i].sub[j]].radius=0.56;
+					particle[cluster[i].sub[j]].radius=0.5;
 					particle[cluster[i].sub[j]].cluster=i;
 				}
     }
@@ -752,8 +774,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			cluster[i].sub[j]=i;
 			particle[cluster[i].sub[j]].cluster=i;
 			particle[cluster[i].sub[j]].mass=cluster[i].mass;
-			particle[cluster[i].sub[j]].radius=0.56;
-			cluster[i].radii=0.56;
+			particle[cluster[i].sub[j]].radius=0.5;
+			cluster[i].radii=0.5;
 			// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
 			particle[cluster[i].sub[j]].vel=cluster[i].vel;
 			particle[cluster[i].sub[j]].pos_bdyfxd={0.0,0.0,0.0};//cluster[i].sub[j].pos;
@@ -990,12 +1012,13 @@ do {
 	outFile4<<"*           End of file"<<endl;
 	outFile4.close();
 
-//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+//	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
  // cout<<"Done hydro"<<endl;
 	std::ifstream dataFile("12-cluster-res.txt");
-
+		std::string tmp;
+        vctr3D CoD;
     if(!dataFile.good())
 
         {
@@ -1007,8 +1030,28 @@ do {
         {
 
             std::string line;
-
-            for (int n=0;n<56;n++)
+            
+                   for (int n=0;n<47;n++) {
+ 		std::getline(dataFile,line);
+ 	}
+     for (int n=0;n<3;n++) {
+         std::getline(dataFile,line);
+ //        std::cout<<line<<std::endl;
+         std::istringstream currentLine(line);
+         currentLine >> tmp;
+         currentLine >> tmp;
+         currentLine >> tmp;
+         currentLine >> tmp;
+       //std::cout<<tmp<<std::endl;
+         currentLine >> CoD.comp[n];
+       //std::cout<<CoD<<std::endl;
+     }
+ 	cluster[i].pos+=CoD;
+     for (int  k=0; k<cluster[i].Sub_Length; k++) {
+     particle[cluster[i].sub[k]].pos_bdyfxd-=CoD;
+     }
+     
+			for (int n=0;n<6;n++) 
 
                 {
 
@@ -1205,18 +1248,18 @@ if (step%frame==0)
 				}
 			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
-					
-					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
-					for (double l=0; l< extra_beads; l++) {
+						double l =extra_beads-1;
+			//		outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
+			//		for (double l=0; l< extra_beads; l++) {
 			outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]+particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*r_min <<'\t'
 			<<particle[cluster[i].sub[j]].pos.comp[1] +particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*r_min<<'\t'<<
 			particle[cluster[i].sub[j]].pos.comp[2] +particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*r_min<<'\t'<<i<<std::endl;			
-			}
-			for (double l=0; l< extra_beads; l++) {
+	//		}
+	//		for (double l=0; l< extra_beads; l++) {
 			outFile5<<"He"<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]-particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*r_min <<'\t'
 			<<particle[cluster[i].sub[j]].pos.comp[1] - particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*r_min<<'\t'<<
 			particle[cluster[i].sub[j]].pos.comp[2] - particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*r_min<<'\t'<<i<<std::endl;		
-			}		
+	//		}		
 					
 					
 					}

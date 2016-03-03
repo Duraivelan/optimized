@@ -45,7 +45,7 @@ dr=particle[i].pos-(particle[j].pos+dR);
             lamdaj = particle[j].dir *( dr + particle[i].dir*lamda1 ); 
 
             if (fabs(lamdaj) < lh ) {
-               dt = dr + particle[i].dir *lamda1 + particle[j].dir*lamdaj ; 
+               dt = dr + particle[i].dir *lamda1 - particle[j].dir*lamdaj ; 
                r2 =  dt.norm2();
 		   } 
             else
