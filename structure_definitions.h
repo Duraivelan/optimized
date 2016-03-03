@@ -131,7 +131,7 @@ struct SubData
   int cluster;
   vctr3D dir;
   vctr3D dir_bdyfxd;
-
+  int ParType;
 
 /*double sigma;
   double eps;
@@ -162,6 +162,7 @@ struct ParticleData
   double radii;
   double radii_gyr;
   double mass;
+  int nreqsphere;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -112,7 +112,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 	vctr3D old_pos= cluster[i].pos;
 	vctr3D dr;
 	double temp_r, r;
-
+	cluster[i].nreqsphere =0;
     L_before= ((cluster[i].pos^cluster[i].vel)*cluster[i].mass + cluster[i].Iner_tnsr*cluster[i].omega +
 	    	   (cluster[j].pos.revPBC(old_pos,box,rbox)^cluster[j].vel)*cluster[j].mass + cluster[j].Iner_tnsr*cluster[j].omega );
 
@@ -139,8 +139,12 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 	for (int  k=0; k<cluster[i].Sub_Length; k++)
 
-        {
-
+        {	
+			if (particle[cluster[i].sub[k]].parType == 0 ) {
+			cluster[i].nreqsphere+=apct_rt;
+			} else {
+			cluster[i].nreqsphere+=1;
+			}
     		particle[cluster[i].sub[k]].dir_bdyfxd = particle[cluster[i].sub[k]].dir ;
 
     		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
@@ -151,7 +155,12 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
     for (int  k=cluster[i].Sub_Length; k<cluster[i].Sub_Length+cluster[j].Sub_Length; k++)
 
-        {
+        {			
+			if (particle[cluster[i].sub[k]].parType == 0 ) {
+			cluster[i].nreqsphere+=apct_rt;
+			} else {
+			cluster[i].nreqsphere+=1;
+			}
 
             cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
 
@@ -523,12 +532,18 @@ else {
  
     }
 }	 
-
+for (int i=NrParticles/2;i<NrParticles;i++) {
+particle[i].ParType = 0;
+}
+for (int i=NrParticles/2;i<NrParticles;i++) {
+particle[i].ParType = 1;
+}
 double temp_diff_xx=temp_diff.comp[0][0]*(1.0*10.0*2414323832351.228) , temp_diff_xy= temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228), temp_diff_rot_xx=temp_diff_rot.comp[0][0]*(1.0*10.0*2414323832351.228) , 
 temp_diff_rot_xy=temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228) , temp_diff_sqrt_xx= sqrt(temp_diff_xx) , temp_diff_sqrt_xy= sqrt(temp_diff_xy), 
 temp_diff_rot_sqrt_xx= sqrt(temp_diff_rot_xx) , temp_diff_rot_sqrt_xy= sqrt(temp_diff_rot_xy) ;
 
 for (int i=0;i<NrParticles;i++) {
+		if (particle[i].ParType == 0){
 		cluster[i].mobility_tnsr = null33D;
 		cluster[i].mobility_tnsr_sqrt = null33D;
 		cluster[i].rot_mobility_tnsr = null33D;
@@ -548,6 +563,7 @@ for (int i=0;i<NrParticles;i++) {
 		cluster[i].rot_mobility_tnsr_sqrt.comp[1][1]=temp_diff_rot_sqrt_xy;
 		cluster[i].rot_mobility_tnsr_sqrt.comp[2][2]=temp_diff_rot_sqrt_xy; 
 	}
+}
 
 }
 if(ifrestart)	{
@@ -565,6 +581,7 @@ else {
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);
+        currentLine >> particle[i].ParType;
         currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[2];
@@ -572,8 +589,9 @@ else {
         currentLine >> cluster[i].quat.comp[1];
         currentLine >> cluster[i].quat.comp[2];
         currentLine >> cluster[i].quat.comp[3];
+        if (particle[i].ParType == 0) {
         particle[i].dir = {1.0,0.0,0.0} ;
-        particle[i].dir_bdyfxd = particle[i].dir;
+        particle[i].dir_bdyfxd = particle[i].dir; }
        // cout<<particle[i].dir.comp[0]<<endl;
 
     }    
@@ -676,6 +694,7 @@ else {
 					std::istringstream currentLine1(line1);    
 					cluster[i].sub[j]=n;
 					n+=1;
+					currentLine >> particle[cluster[i].sub[j]].ParType;
 					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[0];
 					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[1];
 					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[2];
@@ -684,11 +703,13 @@ else {
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[0];
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[1];
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[2];
+					if (particle[cluster[i].sub[j]].ParType == 0) {
 					std::getline(dataFile,line8);
 					std::istringstream currentLine8(line8);
-				        currentLine8 >> particle[cluster[i].sub[j]].dir.comp[0];
-       				        currentLine8 >> particle[cluster[i].sub[j]].dir.comp[1];
-       				        currentLine8 >> particle[cluster[i].sub[j]].dir.comp[2];
+				    currentLine8 >> particle[cluster[i].sub[j]].dir.comp[0];
+       				currentLine8 >> particle[cluster[i].sub[j]].dir.comp[1];
+       				currentLine8 >> particle[cluster[i].sub[j]].dir.comp[2];
+					}
 					particle[cluster[i].sub[j]].mass=1.0;
 					particle[cluster[i].sub[j]].radius=0.5;
 					particle[cluster[i].sub[j]].cluster=i;
@@ -714,14 +735,16 @@ else {
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);
+        currentLine >> particle[i].ParType;
         currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[2];
+        if (particle[i].ParType == 0) {
         currentLine >> particle[i].dir.comp[0];
         currentLine >> particle[i].dir.comp[1];
         currentLine >> particle[i].dir.comp[2];
         particle[i].dir_bdyfxd = particle[i].dir;
-
+	}
     }
 }
 }
@@ -975,6 +998,7 @@ do {
 		
 			for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 				{
+					if (particle[cluster[i].sub[j]].ParType == 0) {
 					for (double eb = (-1*extra_beads); eb < (extra_beads+1 ); eb++)
 
 						{
@@ -983,10 +1007,14 @@ do {
 
 							outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<particle[cluster[i].sub[j]].radius<<std::endl;
 
-							cluster[i].radii_gyr+=extd_rod_pos.norm2()/((cluster[i].Sub_Length)*apct_rt);
+							cluster[i].radii_gyr+=extd_rod_pos.norm2()/cluster[i].nreqsphere;
 
 						}
-						
+					} else {
+							
+							outFile7<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2] <<'\t'<<particle[cluster[i].sub[j]].radius<<std::endl;
+							cluster[i].radii_gyr+=particle[cluster[i].sub[j]].pos_bdyfxd.norm2()/cluster[i].nreqsphere;
+					}
 				}		
 		
 	outFile7.close();
