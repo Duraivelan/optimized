@@ -19,6 +19,9 @@ if (particle[i].cluster!=particle[j].cluster)
 // Minimum distance in the periodic system:
 	
 dr=particle[i].pos-(particle[j].pos+dR);
+if ((particle[i].ParType && particle[j].ParType ) != 1 ) { 		// if both particles are not spheres
+
+if ((particle[i].ParType + particle[j].ParType ) == 0 ) {		// if both particles are rods
 
 //---------------- Distance of two rods: -------------------------------------
   double lamda1, lamda2, lamdai, lamdaj, 
@@ -63,6 +66,16 @@ dr=particle[i].pos-(particle[j].pos+dR);
 			  }
 			}
 		}
+	} else { 
+		
+		if(particle[i].ParType == 1) {
+			r2 = (dr*particle[j].dir)*(dr*particle[j].dir);
+		} else {
+			r2 = (dr*particle[i].dir)*(dr*particle[i].dir);
+		
+		}
+	}
+}	
 /*
  double  xla,xmu,
   r2= dr.norm2(),

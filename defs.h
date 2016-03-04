@@ -45,6 +45,8 @@ const double sigma12 = sigma6*sigma6;
 const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
+const mtrx3D Sphere_trans_mu(mu,mu,mu);
+const mtrx3D Sphere_trans_mu_sqrt(mu_sqrt,mu_sqrt,mu_sqrt);
 
 
 

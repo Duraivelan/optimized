@@ -140,7 +140,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 	for (int  k=0; k<cluster[i].Sub_Length; k++)
 
         {	
-			if (particle[cluster[i].sub[k]].parType == 0 ) {
+			if (particle[cluster[i].sub[k]].ParType == 0 ) {
 			cluster[i].nreqsphere+=apct_rt;
 			} else {
 			cluster[i].nreqsphere+=1;
@@ -156,13 +156,15 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
     for (int  k=cluster[i].Sub_Length; k<cluster[i].Sub_Length+cluster[j].Sub_Length; k++)
 
         {			
-			if (particle[cluster[i].sub[k]].parType == 0 ) {
+
+            cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
+
+			if (particle[cluster[i].sub[k]].ParType == 0 ) {
 			cluster[i].nreqsphere+=apct_rt;
 			} else {
 			cluster[i].nreqsphere+=1;
 			}
 
-            cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
 
 			particle[cluster[i].sub[k]].dir_bdyfxd = particle[cluster[i].sub[k]].dir ;
 
@@ -189,14 +191,21 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
                 //	dr.PBC(box,rbox);
 				    double extd_dr=0;
-
-				    for (double j=-1*extra_beads-1; j< extra_beads; j++)
+				    int k_extra_beads=extra_beads; 
+					if (particle[cluster[i].sub[k]].ParType == 1 ) {
+						k_extra_beads=0;
+					} 
+				    for (double j=-1*k_extra_beads-1; j< k_extra_beads; j++)
 
 					    {
 
     						vctr3D extd_rod_pos_k = particle[cluster[i].sub[k]].pos_bdyfxd + particle[cluster[i].sub[k]].dir*(j+1.0)*r_min ;
-
-	    					for (double p =-1*extra_beads-1; p< 2; p++)
+							int l_extra_beads=extra_beads; 
+							if (particle[cluster[i].sub[l]].ParType == 1 ) {
+								l_extra_beads=0;
+								} 
+				
+	    					for (double p =-1*l_extra_beads-1; p< l_extra_beads; p++)
 
 							    {
 
@@ -532,10 +541,10 @@ else {
  
     }
 }	 
-for (int i=NrParticles/2;i<NrParticles;i++) {
+for (int i=0;i<NrParticles/2;i++) {
 particle[i].ParType = 0;
 }
-for (int i=NrParticles/2;i<NrParticles;i++) {
+for (int i=NrParticles/2+1;i<NrParticles;i++) {
 particle[i].ParType = 1;
 }
 double temp_diff_xx=temp_diff.comp[0][0]*(1.0*10.0*2414323832351.228) , temp_diff_xy= temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228), temp_diff_rot_xx=temp_diff_rot.comp[0][0]*(1.0*10.0*2414323832351.228) , 
@@ -562,6 +571,12 @@ for (int i=0;i<NrParticles;i++) {
 		cluster[i].rot_mobility_tnsr_sqrt.comp[0][0]=temp_diff_rot_sqrt_xx;
 		cluster[i].rot_mobility_tnsr_sqrt.comp[1][1]=temp_diff_rot_sqrt_xy;
 		cluster[i].rot_mobility_tnsr_sqrt.comp[2][2]=temp_diff_rot_sqrt_xy; 
+	} else {
+	
+		cluster[i].mobility_tnsr = Sphere_trans_mu;
+		cluster[i].mobility_tnsr_sqrt = Sphere_trans_mu_sqrt;
+		cluster[i].rot_mobility_tnsr = null33D;
+		cluster[i].rot_mobility_tnsr_sqrt = null33D; 
 	}
 }
 
@@ -694,7 +709,7 @@ else {
 					std::istringstream currentLine1(line1);    
 					cluster[i].sub[j]=n;
 					n+=1;
-					currentLine >> particle[cluster[i].sub[j]].ParType;
+					currentLine1 >> particle[cluster[i].sub[j]].ParType;
 					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[0];
 					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[1];
 					currentLine1 >> particle[cluster[i].sub[j]].pos.comp[2];
@@ -735,16 +750,16 @@ else {
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);
-        currentLine >> particle[i].ParType;
+     //   currentLine >> particle[i].ParType;
         currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[2];
-        if (particle[i].ParType == 0) {
+      //  if (particle[i].ParType == 0) {
         currentLine >> particle[i].dir.comp[0];
         currentLine >> particle[i].dir.comp[1];
         currentLine >> particle[i].dir.comp[2];
         particle[i].dir_bdyfxd = particle[i].dir;
-	}
+	// }
     }
 }
 }
@@ -992,7 +1007,7 @@ do {
 			std::ofstream outFile4("hydro++input.txt");
 
 			outFile7<<1<<",    !Unit of length for coordinates and radii, cm (10 A)"<<endl;
-			outFile7<<(cluster[i].Sub_Length)*apct_rt<<",        !Number of beads"<<endl;
+			outFile7<<cluster[i].nreqsphere<<",        !Number of beads"<<endl;
 
 			cluster[i].radii_gyr=0.0;
 		
@@ -1019,7 +1034,7 @@ do {
 		
 	outFile7.close();
 	
-	cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/(apct_rt*cluster[i].Sub_Length));  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
+	cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].nreqsphere);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
 	        																					// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
 
     outFile4<<"Square Tetramer                 Title"<<endl;
@@ -1028,7 +1043,7 @@ do {
 	outFile4<<"12                              ICASE"<<endl;
 	outFile4<<26.8500<<"                             Temperature, centigrade"<<endl;
 	outFile4<<eta<<"                           Solvent viscosity"<<endl;
-	outFile4<<cluster[i].Sub_Length*apct_rt<<"                          Molecular weight"<<endl;
+	outFile4<<cluster[i].nreqsphere<<"                          Molecular weight"<<endl;
 	outFile4<<0.01<<"                           Specific volume of macromolecule"<<endl;
 	outFile4<<"1.0                             Solution density"<<endl;
 	outFile4<<"1,                 Number of values of H"<<endl;
@@ -1276,8 +1291,11 @@ if (step%frame==0)
 				}
 			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
-						double l =extra_beads-1;
-			//		outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
+						
+				    double l=extra_beads-1.0; 
+					if (particle[cluster[i].sub[j]].ParType == 1 ) {
+						l=-1.0;
+					} 			//		outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 			//		for (double l=0; l< extra_beads; l++) {
 			outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]+particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*r_min <<'\t'
 			<<particle[cluster[i].sub[j]].pos.comp[1] +particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*r_min<<'\t'<<
@@ -1344,7 +1362,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	}
 	for (int i=0;i<NrParticles;i++)
 		{
-			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<'\t'<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
+			outFile10<<particle[i].ParType<<'\t'<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<'\t'<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
 
 		}
 outFile1.close();
