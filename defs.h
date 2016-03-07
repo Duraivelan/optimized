@@ -71,7 +71,7 @@ const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv * apct_
 
 const double lh = apct_rt*0.5*r_min; 
 const double DIAMpairlistSQ = r_min2; 
-
+const double segm_length = 5.0; 
 const int cellx=(int) ceil(Lx/(r_cut*apct_rt));
 const int celly=(int) ceil(Ly/(r_cut*apct_rt));
 const int cellz=(int) ceil(Lz/(r_cut*apct_rt));

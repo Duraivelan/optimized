@@ -70,9 +70,14 @@ if ((particle[i].ParType + particle[j].ParType ) == 0 ) {		// if both particles 
 		
 		if(particle[i].ParType == 1) {
 			r2 = (dr*particle[j].dir)*(dr*particle[j].dir);
+			if (r2 < (lh*lh)){
+				r2 = r_cut2*0.5;
+			}
 		} else {
 			r2 = (dr*particle[i].dir)*(dr*particle[i].dir);
-		
+			if (r2 < (lh*lh)){
+				r2 = r_cut2*0.5 ;
+			}
 		}
 	}
 }	
