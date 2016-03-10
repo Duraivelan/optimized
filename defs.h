@@ -22,7 +22,7 @@ const double kbT_dt=sqrt(2.0*kb*T0*dt);
 const double RPTOL = 1.0E-6 ;
 const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
-const int  MaxPerCell = 10;
+const int  MaxPerCell = 20;
 
 const double Lx=box_Lx, Ly=box_Ly, Lz=box_Lz;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
 const double Volume =Lx*Ly*Lz;
