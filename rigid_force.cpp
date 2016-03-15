@@ -36,7 +36,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
 
   for ( i = 0 ; i < 3 ; i++ )
   {
-    NrCells[i] = ceil ( box.comp[i] / (r_cut) ); // cellnr runs from 0 to NrCells-1
+    NrCells[i] = floor ( box.comp[i] / (r_cut*apct_rt) ); // cellnr runs from 0 to NrCells-1
     scale  [i] = NrCells[i] * rbox.comp[i];
     if ( NrCells[i] < 3 ) { cout << "*** NrCells[" << i << "] = " << NrCells[i] << endl ; abort(); }
   }

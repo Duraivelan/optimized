@@ -131,7 +131,7 @@ struct SubData
   int cluster;
   vctr3D dir;
   vctr3D dir_bdyfxd;
-  int ParType;
+  int ParType = 0;
 
 /*double sigma;
   double eps;

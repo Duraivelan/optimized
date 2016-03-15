@@ -16,7 +16,7 @@ while ( $a < 2010 )
     set ar = `echo "scale=3 ; $k/10 " |bc -l`
     set nrrods = `echo "scale=3 ; $nrrodeq/$ar " | bc -l`
 	
-	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.56^3)/(($init-$init)*0.001+0.004))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.56^3)/(($init-$init)*0.001+0.001))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	
@@ -53,7 +53,7 @@ wait
 while ( $a < 2010 )
   cd $a
   @ ifcreate = 0; 
-  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=100000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=10000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/ ; s/xxaspect_ratio/$ar/" ../../pairforce_rod.h > pairforce_rod.h
  
  	@ cubic = 1
@@ -61,7 +61,7 @@ while ( $a < 2010 )
     set ar = `echo "scale=3 ; $k/10 " |bc -l`
     set nrrods = `echo "scale=3 ; $nrrodeq/$ar " | bc -l`
 
-	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.56^3)/(($init-$init)*0.001+0.004))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.56^3)/(($init-$init)*0.001+0.001))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	

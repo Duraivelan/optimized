@@ -19,13 +19,13 @@ if (particle[i].cluster!=particle[j].cluster)
 // Minimum distance in the periodic system:
 	
 dr=particle[i].pos-(particle[j].pos+dR);
-if ((particle[i].ParType && particle[j].ParType ) != 1 ) { 		// if both particles are not spheres
+double r2= dr.norm2();
+if ((particle[i].ParType + particle[j].ParType ) < 2 ) { 		// if both particles are not spheres
 
-if ((particle[i].ParType + particle[j].ParType ) == 0 ) {		// if both particles are rods
+if ((particle[i].ParType == 0) && (particle[j].ParType  == 0) ) {		// if both particles are rods
 
 //---------------- Distance of two rods: -------------------------------------
   double lamda1, lamda2, lamdai, lamdaj, 
-  r2= dr.norm2(),
   rw1= dr*particle[i].dir,
   rw2= dr*particle[j].dir,
   uu = particle[i].dir*particle[j].dir,
@@ -66,17 +66,21 @@ if ((particle[i].ParType + particle[j].ParType ) == 0 ) {		// if both particles 
 			  }
 			}
 		}
-	} else { 
+	}  else { 
 		
 		if(particle[i].ParType == 1) {
-			r2 = (dr*particle[j].dir)*(dr*particle[j].dir);
-			if (r2 < (lh*lh)){
-				r2 = r_cut2*0.5;
+			double h_dis = dr*particle[j].dir ; 
+			if (h_dis*h_dis < (lh*lh)) {
+			r2 = (dr - particle[j].dir*(h_dis))*(dr -particle[j].dir*(h_dis));
+			}else {
+			r2 = r_cut2*2.0;
 			}
 		} else {
-			r2 = (dr*particle[i].dir)*(dr*particle[i].dir);
-			if (r2 < (lh*lh)){
-				r2 = r_cut2*0.5 ;
+			double h_dis = dr*particle[i].dir ; 
+			if (h_dis*h_dis < (lh*lh)) {
+			r2 = (dr - particle[i].dir*(h_dis))*(dr -particle[i].dir*(h_dis));
+			}else {
+			r2 = r_cut2*2.0;
 			}
 		}
 	}
@@ -96,9 +100,11 @@ if ((particle[i].ParType + particle[j].ParType ) == 0 ) {		// if both particles 
   if(rw1 && rw2) {
    xla= rw1/2.0;
    xmu= -rw2/2.0;
-  }
- }
-
+  } else {
+	    xla= 0.0;
+		xmu= 0.0;
+	}
+}
  else {
 
 // Step 1
@@ -116,19 +122,40 @@ if( fabs(xla)>lh || fabs(xmu)>lh ) {
   if((fabs(xla)-lh) > (fabs(xmu)-lh)) {
    xla= sign(lh,xla);
    xmu= xla*w1w2-rw2;
-   if( fabs(xmu)>lh ) xmu= sign(lh,xmu);
+   if( fabs(xmu)>lh ) {xmu= sign(lh,xmu);}
   }
   else {
    xmu= sign(lh,xmu);
    xla= xmu*w1w2+rw1;
-   if( fabs(xla)>lh ) xla= sign(lh,xla);
+   if( fabs(xla)>lh ) {xla= sign(lh,xla);}
   }
  }
+ r2+= (xla)*(xla)+(xmu)*(xmu) + 2.0 *(xmu*rw2 -xla*(rw1+xmu*w1w2));	
 
+
+} else { 
+		
+		if(particle[i].ParType == 1) {
+			double h_dis = dr*particle[j].dir ; 
+			if (h_dis*h_dis < (lh*lh)) {
+			r2 = (dr - particle[j].dir*(h_dis))*(dr -particle[j].dir*(h_dis));
+			}else {
+			r2 = r_cut2*2.0;
+			}
+		} else {
+			double h_dis = dr*particle[i].dir ; 
+			if (h_dis*h_dis < (lh*lh)) {
+			r2 = (dr - particle[i].dir*(h_dis))*(dr -particle[i].dir*(h_dis));
+			}else {
+			r2 = r_cut2*2.0;
+			}
+		}
+	}
+}	
+*/
 // Step 8
 
- r2+= (xla)*(xla)+(xmu)*(xmu) + 2.0 *(xmu*rw2 -xla*(rw1+xmu*w1w2));	
- */
+ 
  	 
 		r2-=r_min2*xxshift;
 

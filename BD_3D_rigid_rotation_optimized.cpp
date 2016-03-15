@@ -429,7 +429,7 @@ int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=1000;
+int step=0, nSteps=10000, frame=10000;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
@@ -541,12 +541,14 @@ else {
  
     }
 }	 
+
 for (int i=0;i<NrParticles/2;i++) {
 particle[i].ParType = 0;
 }
+
 for (int i=NrParticles/2+1;i<NrParticles;i++) {
 particle[i].ParType = 1;
-}
+} 
 double temp_diff_xx=temp_diff.comp[0][0]*(1.0*10.0*2414323832351.228) , temp_diff_xy= temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228), temp_diff_rot_xx=temp_diff_rot.comp[0][0]*(1.0*10.0*2414323832351.228) , 
 temp_diff_rot_xy=temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228) , temp_diff_sqrt_xx= sqrt(temp_diff_xx) , temp_diff_sqrt_xy= sqrt(temp_diff_xy), 
 temp_diff_rot_sqrt_xx= sqrt(temp_diff_rot_xx) , temp_diff_rot_sqrt_xy= sqrt(temp_diff_rot_xy) ;
