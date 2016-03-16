@@ -542,11 +542,11 @@ else {
     }
 }	 
 
-for (int i=0;i<NrParticles/2;i++) {
+for (int i=0;i<NrParticles/4;i++) {
 particle[i].ParType = 0;
 }
 
-for (int i=NrParticles/2+1;i<NrParticles;i++) {
+for (int i=NrParticles/4+1;i<NrParticles;i++) {
 particle[i].ParType = 1;
 } 
 double temp_diff_xx=temp_diff.comp[0][0]*(1.0*10.0*2414323832351.228) , temp_diff_xy= temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228), temp_diff_rot_xx=temp_diff_rot.comp[0][0]*(1.0*10.0*2414323832351.228) , 
