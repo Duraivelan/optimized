@@ -2,7 +2,7 @@
 alias clang++='clang++-3.5 -std=c++11'
 @ a = 1009
 @ init = $a 
-@ k = 90
+@ k = 1000
 @ nrrodeq = 2000 
 while ( $a < 1010 )
 	mkdir $a
@@ -16,7 +16,7 @@ while ( $a < 1010 )
     set ar = `echo "scale=3 ; $k/10 " |bc -l`
     set nrrods = `echo "scale=3 ; $nrrodeq/$ar " | bc -l`
 	
-	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.56^3)/(($init-$init)*0.001+0.01))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.56^3)/(($init-$init)*0.001+0.001))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	
@@ -49,7 +49,7 @@ end
 wait
 @ a = 1009
 @ init = $a 
-@ k = 90
+@ k = 1000
 while ( $a < 1010 )
   cd $a
   @ ifcreate = 0; 
@@ -61,7 +61,7 @@ while ( $a < 1010 )
     set ar = `echo "scale=3 ; $k/10 " |bc -l`
     set nrrods = `echo "scale=3 ; $nrrodeq/$ar " | bc -l`
 
-	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.56^3)/(($init-$init)*0.001+0.01))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.56^3)/(($init-$init)*0.001+0.001))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	

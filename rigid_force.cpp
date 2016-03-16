@@ -36,7 +36,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
 
   for ( i = 0 ; i < 3 ; i++ )
   {
-    NrCells[i] = ceil ( box.comp[i] / (r_cut*apct_rt) ); // cellnr runs from 0 to NrCells-1
+    NrCells[i] = floor ( box.comp[i]*Nsegm / (r_cut*apct_rt) ); // cellnr runs from 0 to NrCells-1
     scale  [i] = NrCells[i] * rbox.comp[i];
     if ( NrCells[i] < 3 ) { cout << "*** NrCells[" << i << "] = " << NrCells[i] << endl ; abort(); }
   }
@@ -78,23 +78,30 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
 
 for ( int i = 0 ; i < NrParticles ; i ++ )
   {
-	  
-    mi[x] = int ( (particle[i].pos.comp[x]+havbox.comp[x]) * scale[x] );
-    mi[y] = int ( (particle[i].pos.comp[y]+havbox.comp[y]) * scale[y] );
-    mi[z] = int ( (particle[i].pos.comp[z]+havbox.comp[z]) * scale[z] );       
-    
-    if ( int (grid[mi[x]][mi[y]][mi[z]][0]) >= MaxPerCell-1 )
-    {
-      cout << "*** cell overfull" << endl;
-      cout << mi[x] << "  " << mi[y] << "  " << mi[z] << endl;
-      abort();
-    }
 
+vctr3D r_segm ; 
+	for (int j =0 ; j < Nsegm ; j++ )
+		{
 
-    grid[mi[x]][mi[y]][mi[z]][0] ++ ;
-//  cout << i << "  " << mix << "  " << miy << "  " << miz << "  " << grid[mix][miy][miz][0] << endl;
-    grid[mi[x]][mi[y]][mi[z]][ int (grid[mi[x]][mi[y]][mi[z]][0])] = i;
+            r_segm = particle[i].pos + particle[i].dir* lh * ( (double(j) - 0.5) * NsegmINV - 0.5 ) ;
+			
+			r_segm.PBC(box,rbox);
+			
+			mi[x] = int ( (r_segm.comp[x]+havbox.comp[x]) * scale[x] );
+			mi[y] = int ( (r_segm.comp[y]+havbox.comp[y]) * scale[y] );
+			mi[z] = int ( (r_segm.comp[z]+havbox.comp[z]) * scale[z] );       
+		
+			if ( int (grid[mi[x]][mi[y]][mi[z]][0]) >= MaxPerCell-1 )
+				{
+					cout << "*** cell overfull" << endl;
+					cout << mi[x] << "  " << mi[y] << "  " << mi[z] << endl;
+					abort();
+				}
 
+			grid[mi[x]][mi[y]][mi[z]][0] ++ ;
+			//  cout << i << "  " << mix << "  " << miy << "  " << miz << "  " << grid[mix][miy][miz][0] << endl;
+			grid[mi[x]][mi[y]][mi[z]][ int (grid[mi[x]][mi[y]][mi[z]][0])] = i;
+		}
 } // i
 	//		 cout<<"exit grid "<<endl;
 
