@@ -2,7 +2,7 @@
 alias clang++='clang++-3.5 -std=c++11'
 @ a = 2009
 @ init = $a 
-@ k = 300
+@ k = 90
 @ nrrodeq = 3000 
 while ( $a < 2010 )
 	mkdir $a
@@ -49,7 +49,7 @@ end
 wait
 @ a = 2009
 @ init = $a 
-@ k = 300
+@ k = 90
 while ( $a < 2010 )
   cd $a
   @ ifcreate = 0; 
