@@ -131,7 +131,7 @@ struct SubData
   int cluster;
   vctr3D dir;
   vctr3D dir_bdyfxd;
-
+  vctr3D cross_box = null3D;
 
 /*double sigma;
   double eps;

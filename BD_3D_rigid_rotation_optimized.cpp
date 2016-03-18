@@ -347,11 +347,15 @@ void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& partic
 				    for (int j=0; j<cluster[i].Sub_Length; j++)
 
 				        {
-
+							vctr3D temp, pos_temp = particle[cluster[i].sub[j]].pos ; 
 					        particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
 						    particle[cluster[i].sub[j]].dir = cluster[i].rotmat*particle[cluster[i].sub[j]].dir_bdyfxd;
 						    particle[cluster[i].sub[j]].pos.PBC(box,rbox);
-
+							temp = (pos_temp - particle[cluster[i].sub[j]].pos)*(rbox.comp[0]);
+							particle[cluster[i].sub[j]].cross_box.comp[0] += round (temp.comp[0]);
+							particle[cluster[i].sub[j]].cross_box.comp[1] += round (temp.comp[1]);
+							particle[cluster[i].sub[j]].cross_box.comp[2] += round (temp.comp[2]);
+							
                         }
 
         		    cluster[i].pos.PBC(box,rbox);
@@ -439,10 +443,11 @@ if(!xxcluster_restart)	{
 		outFile7<<1<<",    !Unit of length for coordinates and radii, cm (10 A)"<<endl;
 		outFile7<<apct_rt<<",        !Number of beads"<<endl;
 				
-		for (double j=-1*extra_beads-1; j< extra_beads; j++) {
+		for (double j=-1.0*extra_beads-1.0; j< extra_beads-1.0; j++) {
 							
-		outFile7<<(j+1.0)*r_min<<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.5<<std::endl;
-			
+		outFile7<<(j+1.0)*r_min + 0.5 <<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.5<<std::endl;
+		cout<<(j+1.0)*r_min + 0.5 <<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.5<<std::endl;
+
 			}		 
 		
 		outFile4<<"Square Tetramer                 Title"<<endl;
@@ -491,13 +496,13 @@ else {
          currentLine >> tmp;
        //std::cout<<tmp<<std::endl;
          currentLine >> CoD.comp[n];
-       //std::cout<<CoD<<std::endl;
+      // std::cout<<CoD.comp[n]<<std::endl;
      }
-/* 	cluster[i].pos+=CoD;
+ /*	cluster[i].pos+=CoD;
      for (int  k=0; k<cluster[i].Sub_Length; k++) {
      particle[cluster[i].sub[k]].pos_bdyfxd-=CoD;
      }
- */    
+    */ 
      for (int n=0;n<6;n++) {
     	std::getline(dataFile,line);
 	}
@@ -523,12 +528,14 @@ else {
  
     }
 }	 
+ cout << temp_diff.comp[1][1] << '\t' << temp_diff.comp[0][0] << endl;
 
 double temp_diff_xx=temp_diff.comp[0][0]*(1.0*10.0*2414323832351.228) , temp_diff_xy= temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228), temp_diff_rot_xx=temp_diff_rot.comp[0][0]*(1.0*10.0*2414323832351.228) , 
 temp_diff_rot_xy=temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228) , temp_diff_sqrt_xx= sqrt(temp_diff_xx) , temp_diff_sqrt_xy= sqrt(temp_diff_xy), 
 temp_diff_rot_sqrt_xx= sqrt(temp_diff_rot_xx) , temp_diff_rot_sqrt_xy= sqrt(temp_diff_rot_xy) ;
-
+ cout << temp_diff_xy << '\t' << temp_diff_xx << endl;
 for (int i=0;i<NrParticles;i++) {
+
 		cluster[i].mobility_tnsr = null33D;
 		cluster[i].mobility_tnsr_sqrt = null33D;
 		cluster[i].rot_mobility_tnsr = null33D;
@@ -761,8 +768,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 
 				// intialize Q, A matrix
 
-			//	cluster[i].quat={1.0,0.0,0.0,0.0};
-				cluster[i].quat={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5) ,((double) rand()/(RAND_MAX)-0.5)} ;
+				cluster[i].quat={1.0,0.0,0.0,0.0};
+			//	cluster[i].quat={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5) ,((double) rand()/(RAND_MAX)-0.5)} ;
 				double temp_quat_norm = sqrt(cluster[i].quat.norm2());
 				cluster[i].quat*=(1.0/temp_quat_norm);
 				
@@ -790,6 +797,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 std::ofstream outFile1(dataFileName+"/PE_energy.dat");
 std::ofstream outFile10(dataFileName+"/End_positions.dat");
 std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
+std::ofstream outFile12(dataFileName+"/dir_vctr.dat");
 
 // perfrom MD steps
 /*	if (ifrestart) {
@@ -1226,6 +1234,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
         outFile_inter_rand_state.close();
          outFile_inter_endfile.close();
         }
+	// outFile12<<'\t'<<particle[0].dir.comp[0]<<'\t'<<particle[0].dir.comp[1]<<'\t'<<particle[0].dir.comp[2]<<std::endl;
+	outFile12<<'\t'<<particle[0].pos.comp[0] + particle[0].cross_box.comp[0]*box.comp[0] <<'\t'<<particle[0].pos.comp[1] + particle[0].cross_box.comp[1]*box.comp[1] <<'\t'<<particle[0].pos.comp[2] + particle[0].cross_box.comp[2]*box.comp[2]<<std::endl;
 
 if (step%frame==0) 
 	{ 
