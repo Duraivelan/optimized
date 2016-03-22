@@ -441,7 +441,7 @@ if(!xxcluster_restart)	{
 				
 		for (double j=-1*extra_beads-1; j< extra_beads; j++) {
 							
-		outFile7<<(j+1.0)*r_min<<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.5<<std::endl;
+		outFile7<<(j+1.0)*r_min + 0.5 <<'\t'<<0.0<<'\t'<<0.0<<'\t'<<0.5<<std::endl;
 			
 			}		 
 		

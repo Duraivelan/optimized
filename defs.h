@@ -6,10 +6,10 @@ const double m =1.0;
 const double inv_mass =1.0/m;
 const double dt=0.0001;
 const int NrParticles=xxNrParticles;
-const double r_cut  = 0.5; // pow(2.0,(1.0/6.0));
+const double r_cut  = 1.0; // pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0;
-const double r_min = 0.5; //pow(2.0,(1.0/6.0))*sigma;
+const double r_min = 1.0; //pow(2.0,(1.0/6.0))*sigma;
 const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
