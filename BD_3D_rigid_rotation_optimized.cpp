@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
-//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+//#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
+#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
 //#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
@@ -481,8 +481,8 @@ if(!xxcluster_restart)	{
 		outFile4<<"*           End of file"<<endl;
 		outFile4.close();
 		
-		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-//		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+//		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
 		// cout<<"Done hydro"<<endl;
 		
@@ -542,11 +542,12 @@ else {
     }
 }	 
 
-for (int i=0;i<NrParticles/4;i++) {
+cout<<NrParticles*rod_to_sphere_ratio<<endl;
+for (int i=0;i<NrParticles*rod_to_sphere_ratio;i++) {
 particle[i].ParType = 0;
 }
 
-for (int i=NrParticles/4+1;i<NrParticles;i++) {
+for (int i=NrParticles*rod_to_sphere_ratio+1;i<NrParticles;i++) {
 particle[i].ParType = 1;
 } 
 double temp_diff_xx=temp_diff.comp[0][0]*(1.0*10.0*2414323832351.228) , temp_diff_xy= temp_diff.comp[1][1]*(1.0*10.0*2414323832351.228), temp_diff_rot_xx=temp_diff_rot.comp[0][0]*(1.0*10.0*2414323832351.228) , 
@@ -890,6 +891,8 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	outFile8<<"Viscosity, eta"<<'\t'<<eta<<std::endl;
 	outFile8<<"aspect ratio, AR"<<'\t'<<apct_rt<<std::endl;
 	outFile8<<"Mobility , mu"<<'\t'<<mu<<std::endl;
+	outFile8<<"Rod-to-sphere number ratio , rod_to_sphere_ratio"<<'\t'<<rod_to_sphere_ratio<<std::endl;
+	outFile8<<"No. of segments for rod , Nsegm"<<'\t'<<Nsegm<<std::endl;
 	outFile8<<'\n'<<" Data Folder and Git Vesrion : "<<'\n';
 	system(" echo >> logfile & git log --pretty=format:'%h' -n 1 >> logfile   & echo >> logfile  &  pwd >> logfile & ");
 	outFile8.close();
@@ -1057,8 +1060,8 @@ do {
 	outFile4<<"*           End of file"<<endl;
 	outFile4.close();
 
-	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-//	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
  // cout<<"Done hydro"<<endl;
 	std::ifstream dataFile("12-cluster-res.txt");
