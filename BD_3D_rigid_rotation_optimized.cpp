@@ -206,7 +206,7 @@ std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
 
-void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale) {
+void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale , double *min_Rg) {
 double a, b , c, lambda;
 vctr4D quat_old;
 *KE_rot=0;
@@ -215,9 +215,10 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
 		if (cluster[i].Sub_Length>1) 
-			{	
-				cluster[i].pos+= (cluster[i].rotmat*cluster[i].rotmat*(cluster[i].frc*(mu*pow(cluster[i].Sub_Length,-1.0/1.8))*dt) + 
-								  cluster[i].rotmat*pow(cluster[i].Sub_Length,-0.5/1.8)*(rand*mu_sqrt*kbT_dt) );
+			{
+                double temp_mu = (*min_Rg)/cluster[i].radii_gyr;
+				cluster[i].pos+= (cluster[i].rotmat*cluster[i].rotmat*(cluster[i].frc*(temp_mu)*dt) + 
+								  cluster[i].rotmat*sqrt(temp_mu)*(rand*kbT_dt) );
 				if(xx_rotation)	
 				{
 			// update Q
@@ -296,7 +297,7 @@ int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=1000;
+int step=0, nSteps=10000, frame=10000;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
@@ -308,7 +309,7 @@ double dr=0.05; // step size for RDF calculation
 // std::vector<int> RDF((int)  floor(sqrt((Lx/2)*(Lx/2)+(Ly/2)*(Ly/2)+(Lz/2)*(Lz/2)))/dr,0), RDF1((int)  floor(sqrt(Lx*Lx+Ly*Ly))/dr,0);
 double KE_rot=0;
 int NrSubs=NrParticles;
-
+double min_Rg =0.0 ;
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
 int combine_now=0;
@@ -598,7 +599,7 @@ simu_time =dt;
 do {
 	p_energy=0;	
 
-	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
+	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale, &min_Rg )	;
 	combine_now=0;
  	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 	if (xxclustering && combine_now>0) 
@@ -700,7 +701,22 @@ do {
 	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 		{
 			if(cluster[i].clicked == 1 ) {
-		
+
+
+            cluster[i].radii_gyr=0.0;
+
+            for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+                {
+
+                            cluster[i].radii_gyr+=particle[cluster[i].sub[j]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length);
+                }
+
+    cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/(cluster[i].Sub_Length));     // volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
+                                                                                                // Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
+
+    min_Rg = cluster[i].radii_gyr ;
+
+
 		cluster[i].quat={1.0,0.0,0.0,0.0};
 
 		// update A matrix
@@ -709,7 +725,6 @@ do {
 	}
 		cluster[i].clicked = 0; 
 	}
-	
 	}
 
 	// convert subforces into total generalized forces on particles 
@@ -719,6 +734,14 @@ do {
 	cluster[i].frc=null3D;
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
+
+    if(cluster[i].Sub_Length > 1)
+        {
+            if (cluster[i].radii_gyr < min_Rg)
+             {
+                    min_Rg = cluster[i].radii_gyr;
+             }
+    }
 
     for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
     {
@@ -769,9 +792,9 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 if (step%frame==0) 
 	{ 
 
-        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
-		outFile5<<NrParticles<<std::endl;
-		outFile5<<"X Y Z co-ordinates"<<std::endl;
+//        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+//		outFile5<<NrParticles<<std::endl;
+//		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
@@ -785,12 +808,12 @@ if (step%frame==0)
 				{
 				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
 				}
-			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+/*			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
 					
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
-			}
+*/			}
 
 
 /*		for ( int i = 0 ; i < NrParticles; i ++ )
@@ -801,10 +824,10 @@ if (step%frame==0)
 									   + particle[i].vel.comp[2]*particle[i].vel.comp[2]);
 			}
  */
- 
-      	outFile5<<'\n'<<std::endl;
+
+//     	outFile5<<'\n'<<std::endl;
 		outFile1<<p_energy<<std::endl;
-		outFile5.close();
+//		outFile5.close();
 		outFile9.close();
 		
 		// store info to restart file End_Position_Full.xyz
