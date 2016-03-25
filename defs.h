@@ -47,11 +47,7 @@ const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
 const mtrx3D Sphere_trans_mu(mu,mu,mu);
 const mtrx3D Sphere_trans_mu_sqrt(mu_sqrt,mu_sqrt,mu_sqrt);
-
-
-
-	
-  const int dm[13][3] = { {  0,  0,  1 },
+const int dm[13][3] = { {  0,  0,  1 },
                        {  1,  0, -1 },
                        {  1,  0,  0 },
                        {  1,  0,  1 },
@@ -67,16 +63,17 @@ const mtrx3D Sphere_trans_mu_sqrt(mu_sqrt,mu_sqrt,mu_sqrt);
 	
 const double apct_rt = xxaspect_ratio ;   // aspect ratio of rods
 const double extra_beads = floor(apct_rt*0.5) ;   // aspect ratio of rods
-const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv * apct_rt ;
 
 const double lh = apct_rt*0.5*r_min; 
 const double DIAMpairlistSQ = r_min2; 
 const double Nsegm = 10.0;
-const double rod_to_sphere_ratio = 0.25; 
+const double rod_to_sphere_ratio = 1.0/xxrodsphere_ratio; 
 const double NsegmINV = 1.0/Nsegm ; 
 const int cellx=(int) ceil(Lx/(r_cut*apct_rt));
 const int celly=(int) ceil(Ly/(r_cut*apct_rt));
 const int cellz=(int) ceil(Lz/(r_cut*apct_rt));
+
+const double vol_frac = (double) NrParticles *(apct_rt*rod_to_sphere_ratio - rod_to_sphere_ratio + 1) * Particle_vol * Volume_inv  ;
 
 #endif
 
