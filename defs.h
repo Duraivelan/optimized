@@ -66,12 +66,12 @@ const double extra_beads = floor(apct_rt*0.5) ;   // aspect ratio of rods
 
 const double lh = apct_rt*0.5*r_min; 
 const double DIAMpairlistSQ = r_min2; 
-const double Nsegm = 10.0;
+const double Nsegm = 15.0;
 const double rod_to_sphere_ratio = 1.0/xxrodsphere_ratio; 
 const double NsegmINV = 1.0/Nsegm ; 
-const int cellx=(int) ceil(Lx/(r_cut*apct_rt));
-const int celly=(int) ceil(Ly/(r_cut*apct_rt));
-const int cellz=(int) ceil(Lz/(r_cut*apct_rt));
+const int cellx=floor ( box.comp[0]*Nsegm / (r_cut*apct_rt) );
+const int celly=floor ( box.comp[1]*Nsegm / (r_cut*apct_rt) );
+const int cellz=floor ( box.comp[2]*Nsegm / (r_cut*apct_rt) );
 
 const double vol_frac = (double) NrParticles *(apct_rt*rod_to_sphere_ratio - rod_to_sphere_ratio + 1) * Particle_vol * Volume_inv  ;
 

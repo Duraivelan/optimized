@@ -1,11 +1,11 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 5003
+@ a = 5002
 @ init = $a 
 @ k = 300
 @ rsr = 10              # number of spheres divided by number of rods 
 @ nrrodeq = 122880
-while ( $a < 5004 )
+while ( $a < 5003 )
 	mkdir $a
 	cd $a
 	@ ifcreate = 1; 
@@ -48,10 +48,10 @@ while ( $a < 5004 )
     echo $a
 end
 wait
-@ a = 5003
+@ a = 5002
 @ init = $a 
 @ k = 300
-while ( $a < 5004 )
+while ( $a < 5003 )
   cd $a
   @ ifcreate = 0; 
   sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=100000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp

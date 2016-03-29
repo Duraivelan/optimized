@@ -797,7 +797,12 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 		if (!xxcluster_restart) 
 			{
 				cluster[i].Sub_Length=1;		// initially each cluster has size one
+		if (particle[i].ParType == 0){
+				cluster[i].mass=1.0*apct_rt;
+                }
+		if (particle[i].ParType == 1){
 				cluster[i].mass=1.0;
+                }
 				cluster[i].vel={0.0,0.0,0.0};
 
 				// intialize Q, A matrix
@@ -1015,7 +1020,7 @@ do {
 			outFile7<<cluster[i].nreqsphere<<",        !Number of beads"<<endl;
 
 			cluster[i].radii_gyr=0.0;
-		
+
 			for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 				{
 					if (particle[cluster[i].sub[j]].ParType == 0) {
@@ -1031,14 +1036,14 @@ do {
 
 						}
 					} else {
-							
+
 							outFile7<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2] <<'\t'<<particle[cluster[i].sub[j]].radius<<std::endl;
 							cluster[i].radii_gyr+=particle[cluster[i].sub[j]].pos_bdyfxd.norm2()/cluster[i].nreqsphere;
 					}
-				}		
-		
+				}
+
 	outFile7.close();
-	
+
 	cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].nreqsphere);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
 	        																					// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
 
@@ -1275,44 +1280,40 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
          outFile_inter_endfile.close();
         }
 
-if (step%frame==0) 
-	{ 
+if (step%frame==0)
+	{
 
-        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");
 		outFile5<<NrParticles*apct_rt<<std::endl;
 		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
-		
+
 		std::ofstream outFile9(dataFileName+"/Cluster_dist"+ std::to_string(step/frame) +".dat");
 
 		K_Energy=0;
 
 		for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			{
-				if(cluster[i].Sub_Length>1)
-				{
-				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
-				}
+				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].mass<<std::endl;
+
 			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
-						
-				    double l=extra_beads-1.0; 
+
+				    double l=extra_beads-1.0;
 					if (particle[cluster[i].sub[j]].ParType == 1 ) {
 						l=-1.0;
 					} 			//		outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 			//		for (double l=0; l< extra_beads; l++) {
 			outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]+particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*r_min <<'\t'
 			<<particle[cluster[i].sub[j]].pos.comp[1] +particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*r_min<<'\t'<<
-			particle[cluster[i].sub[j]].pos.comp[2] +particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*r_min<<'\t'<<i<<std::endl;			
+			particle[cluster[i].sub[j]].pos.comp[2] +particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*r_min<<'\t'<<i<<std::endl;
 	//		}
 	//		for (double l=0; l< extra_beads; l++) {
 			outFile5<<"He"<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]-particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*r_min <<'\t'
 			<<particle[cluster[i].sub[j]].pos.comp[1] - particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*r_min<<'\t'<<
-			particle[cluster[i].sub[j]].pos.comp[2] - particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*r_min<<'\t'<<i<<std::endl;		
-	//		}		
-					
-					
+			particle[cluster[i].sub[j]].pos.comp[2] - particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*r_min<<'\t'<<i<<std::endl;
+	//		}
 					}
 			}
 
