@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
-//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+//#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
+#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
 //#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
@@ -411,7 +411,7 @@ int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=1000;
+int step=0, nSteps=10000, frame=10000;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
@@ -423,6 +423,12 @@ double dr=0.05; // step size for RDF calculation
 // std::vector<int> RDF((int)  floor(sqrt((Lx/2)*(Lx/2)+(Ly/2)*(Ly/2)+(Lz/2)*(Lz/2)))/dr,0), RDF1((int)  floor(sqrt(Lx*Lx+Ly*Ly))/dr,0);
 double KE_rot=0;
 int NrSubs=NrParticles;
+
+if ( (apct_rt/Nsegm) <  1.0 )
+   {
+        cout << "*** segmenation length smaller than aspect ratio" << endl;
+        abort();
+   }
 
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
@@ -463,8 +469,8 @@ if(!xxcluster_restart)	{
 		outFile4<<"*           End of file"<<endl;
 		outFile4.close();
 		
-		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-//		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+//		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
 		// cout<<"Done hydro"<<endl;
 		
@@ -1012,8 +1018,8 @@ do {
 	outFile4<<"*           End of file"<<endl;
 	outFile4.close();
 
-	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-//	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
  // cout<<"Done hydro"<<endl;
 	std::ifstream dataFile("12-cluster-res.txt");
@@ -1230,9 +1236,9 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 if (step%frame==0) 
 	{ 
 
-        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
-		outFile5<<NrParticles*apct_rt<<std::endl;
-		outFile5<<"X Y Z co-ordinates"<<std::endl;
+//        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+//		outFile5<<NrParticles*apct_rt<<std::endl;
+//		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
@@ -1246,7 +1252,7 @@ if (step%frame==0)
 				{
 				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
 				}
-			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+/*			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
 						double l =extra_beads-1;
 			//		outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
@@ -1263,7 +1269,7 @@ if (step%frame==0)
 					
 					
 					}
-			}
+*/			}
 
 
 /*		for ( int i = 0 ; i < NrParticles; i ++ )
@@ -1274,10 +1280,10 @@ if (step%frame==0)
 									   + particle[i].vel.comp[2]*particle[i].vel.comp[2]);
 			}
  */
- 
-      	outFile5<<'\n'<<std::endl;
+
+//      	outFile5<<'\n'<<std::endl;
 		outFile1<<p_energy<<std::endl;
-		outFile5.close();
+//		outFile5.close();
 		outFile9.close();
 
 	}
