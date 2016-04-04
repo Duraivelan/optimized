@@ -1,10 +1,10 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 3009
+@ a = 30051
 @ init = $a 
-@ k = 90
-@ nrrodeq = 2000 
-while ( $a < 3010 )
+@ k = 50
+@ nrrodeq = 81920
+while ( $a < 30056 )
 	mkdir $a
 	cd $a
 	@ ifcreate = 1; 
@@ -16,7 +16,7 @@ while ( $a < 3010 )
     set ar = `echo "scale=3 ; $k/10 " |bc -l`
     set nrrods = `echo "scale=3 ; $nrrodeq/$ar " | bc -l`
 	
-	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.5^3)/(($init-$init)*0.001+0.001))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.5^3)/(($init-$init)*0.002+0.002))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	
@@ -40,20 +40,20 @@ while ( $a < 3010 )
     g++ -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o ${a}_BD_3D_rigid_rotation_optimized.out
     ./${a}_BD_3D_rigid_rotation_optimized.out >>& log -a &
     echo $k
-    @ k = $k + 20    
+#    @ k = $k + 20    
     cd ..
     echo $a
-    @ a = $a + 2
+    @ a = $a + 1
     echo $a
 end
 wait
-@ a = 3009
+@ a = 30051
 @ init = $a 
-@ k = 90
-while ( $a < 3010 )
+@ k = 50
+while ( $a < 30056 )
   cd $a
   @ ifcreate = 0; 
-  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=1000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=100000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/0/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/ ; s/xxaspect_ratio/$ar/" ../../pairforce_rod.h > pairforce_rod.h
  
  	@ cubic = 1
@@ -61,7 +61,7 @@ while ( $a < 3010 )
     set ar = `echo "scale=3 ; $k/10 " |bc -l`
     set nrrods = `echo "scale=3 ; $nrrodeq/$ar " | bc -l`
 
-	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.5^3)/(($init-$init)*0.001+0.001))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.5^3)/(($init-$init)*0.002+0.002))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	
@@ -86,8 +86,8 @@ while ( $a < 3010 )
 
     ./${a}_BD_3D_rigid_rotation_optimized.out >>& log -a &
 
-  @ k = $k + 20    
+#  @ k = $k + 20    
   cd ..
-  @ a = $a + 2 
+  @ a = $a + 1 
 end
 
