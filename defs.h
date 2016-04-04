@@ -49,9 +49,10 @@ const double sigma12 = sigma6*sigma6;
 const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
-
-
-
+const double shear_rate =50.0;
+const mtrx3D shear_rate_dt({0,shear_rate*dt,0},{0,shear_rate*dt,0},{0,0,0}); // reference Thesis : Dynamics of Semi-Flexible Fibres in Viscous Flow; Samantha Mary Harris
+const mtrx3D rate_rot_dt({0,-shear_rate*dt,0},{0,shear_rate*dt,0},{0,0,0});  // Page no.10
+const vctr3D vorc_vec_dt(0.0,0.0,-shear_rate*dt) ;                             
 	
   const int dm[13][3] = { {  0,  0,  1 },
                        {  1,  0, -1 },

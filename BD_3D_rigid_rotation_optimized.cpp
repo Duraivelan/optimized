@@ -216,8 +216,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
 		if (cluster[i].Sub_Length>1) 
 			{
-				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
-	
+				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt) + shear_rate_dt*cluster[i].pos;
+
 				if(xx_rotation)	
 				{
 			// update Q
@@ -226,7 +226,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt) + vorc_vec_dt ;
 				cluster[i].quat		=	cluster[i].theta2quat();
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
@@ -246,7 +246,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					{
 					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
-						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
+					//	particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
 				cluster[i].pos.PBC(box,rbox);
 			} 
@@ -289,7 +289,7 @@ int if_create_particles = xxcreate, ifrestart=xxrestart;
 double tauT=0.1;
 int cluster_combine;
 double Temp=T0;
-double shear_rate = 0.0; //shear rate
+//double shear_rate = 0.0; //shear rate
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
@@ -551,10 +551,11 @@ forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 
     for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
     {
+//        particle[cluster[i].sub[j]].frc+= shear_rate_dt*particle[cluster[i].sub[j]].pos;
 		dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
 		dr_vec.PBC(box,rbox);
-		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;		
-		cluster[i].trq +=                                               dr_vec^particle[cluster[i].sub[j]].frc;
+		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;
+		cluster[i].trq +=                                               (dr_vec^particle[cluster[i].sub[j]].frc);
 		mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
 		cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass; 	//	refer following paper , page 3 equa. 3 for interia tensor formula
 																												//	Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
@@ -852,10 +853,11 @@ else {
 
     for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
     {
+//        particle[cluster[i].sub[j]].frc+= shear_rate_dt*particle[cluster[i].sub[j]].pos;
 		dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
 		dr_vec.PBC(box,rbox);
-		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;		
-		cluster[i].trq +=                                               dr_vec^particle[cluster[i].sub[j]].frc;
+		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;
+		cluster[i].trq +=                                               (dr_vec^particle[cluster[i].sub[j]].frc);
 		mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
 		cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass; 	//	refer following paper , page 3 equa. 3 for interia tensor formula
 																												//	Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
@@ -899,9 +901,9 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 if (step%frame==0) 
 	{ 
 
-//      std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
-//   		outFile5<<NrParticles<<std::endl;
-//   		outFile5<<"X Y Z co-ordinates"<<std::endl;
+      std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+   		outFile5<<NrParticles<<std::endl;
+   		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
@@ -915,12 +917,12 @@ if (step%frame==0)
 				{
 				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
 				}
-			/*    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
 					
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
-		*/	}
+			}
 
 
 /*		for ( int i = 0 ; i < NrParticles; i ++ )
@@ -932,9 +934,9 @@ if (step%frame==0)
 			}
  */
  
- //    	outFile5<<'\n'<<std::endl;
+     	outFile5<<'\n'<<std::endl;
 		outFile1<<p_energy<<std::endl;
-//		outFile5.close();
+		outFile5.close();
 		outFile9.close();
 		
 		// store info to restart file End_Position_Full.xyz
