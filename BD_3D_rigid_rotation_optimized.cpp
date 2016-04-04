@@ -799,9 +799,11 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				cluster[i].Sub_Length=1;		// initially each cluster has size one
 		if (particle[i].ParType == 0){
 				cluster[i].mass=1.0*apct_rt;
-                }
+                cluster[i].radii_gyr = rod_radii_gyr;
+                 }
 		if (particle[i].ParType == 1){
 				cluster[i].mass=1.0;
+                cluster[i].radii_gyr = sphere_radii_gyr;
                 }
 				cluster[i].vel={0.0,0.0,0.0};
 
@@ -1032,19 +1034,19 @@ do {
 
 							outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<particle[cluster[i].sub[j]].radius<<std::endl;
 
-							cluster[i].radii_gyr+=extd_rod_pos.norm2()/cluster[i].nreqsphere;
+							cluster[i].radii_gyr+=extd_rod_pos.norm2()/cluster[i].mass;
 
 						}
 					} else {
 
 							outFile7<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2] <<'\t'<<particle[cluster[i].sub[j]].radius<<std::endl;
-							cluster[i].radii_gyr+=particle[cluster[i].sub[j]].pos_bdyfxd.norm2()/cluster[i].nreqsphere;
+							cluster[i].radii_gyr+=particle[cluster[i].sub[j]].pos_bdyfxd.norm2()/cluster[i].mass;
 					}
 				}
 
 	outFile7.close();
 
-	cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].nreqsphere);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
+	cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].mass);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
 	        																					// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
 
     outFile4<<"Square Tetramer                 Title"<<endl;

@@ -72,7 +72,9 @@ const double NsegmINV = 1.0/Nsegm ;
 const int cellx=floor ( box.comp[0]*Nsegm / (r_cut*apct_rt) );
 const int celly=floor ( box.comp[1]*Nsegm / (r_cut*apct_rt) );
 const int cellz=floor ( box.comp[2]*Nsegm / (r_cut*apct_rt) );
-
+const double sphere_radii_gyr = sqrt(3.0*Particle_radius*Particle_radius/5.0);        
+const double sphere_radii_gyr2 = sphere_radii_gyr*sphere_radii_gyr;        // single particle radius of gyration based J. Phys. Chem. B 2007, 111, 955
+const double rod_radii_gyr =  sqrt(((extra_beads*(extra_beads+1)*(2*extra_beads+1)/6)*2*r_min2 + sphere_radii_gyr2)/apct_rt);
 const double vol_frac = (double) NrParticles *(apct_rt*rod_to_sphere_ratio - rod_to_sphere_ratio + 1) * Particle_vol * Volume_inv  ;
 
 #endif
