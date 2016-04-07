@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-//#include<Eigen/Eigenvalues>
+//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -206,7 +206,7 @@ std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
 
-void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale) {
+void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale , double *strain) {
 double a, b , c, lambda;
 vctr4D quat_old;
 *KE_rot=0;
@@ -216,7 +216,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
 		if (cluster[i].Sub_Length>1) 
 			{
-				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt) + shear_rate_dt*cluster[i].pos;
+				cluster[i].pos+=(cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)) ; //+ shear_rate_dt*cluster[i].pos) ;
+				cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
 
 				if(xx_rotation)	
 				{
@@ -226,7 +227,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt) + vorc_vec_dt ;
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
 				cluster[i].quat		=	cluster[i].theta2quat();
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
@@ -246,14 +247,15 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					{
 					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
-					//	particle[cluster[i].sub[j]].pos.PBC(box,rbox);
+						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
 				cluster[i].pos.PBC(box,rbox);
 			} 
 			else 
 			{
 				cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
-				cluster[i].pos+=cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt;
+				cluster[i].pos+= (cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt) ; //+ shear_rate_dt*cluster[i].pos);
+				cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
 				cluster[i].pos.PBC(box,rbox);
 				*KE_rot += 	(cluster[i].omega)*(cluster[i].angmom)*0.5;	
 				for (int j=0; j< cluster[i].Sub_Length; j++) 
@@ -298,6 +300,8 @@ int step=0, nSteps=10000, frame=1000;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
+int IIX = 0;
+double strain ; 
 std::cout<<'\n'<<cellx<<'\t'<<celly<<'\t'<<cellz<<std::endl;
 double  T_Energy, K_Energy, P_Energy, p_energy=0;
 vctr3D dR, dr2 , dr_vec;
@@ -499,8 +503,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			{
 				cluster[i].Sub_Length=1;		// initially each cluster has size one
 				cluster[i].mass=1.0;
-				cluster[i].vel={0.0,0.0,0.0};
-
+				//cluster[i].vel={0.0,0.0,0.0};
+				cluster[i].vel={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
 				// intialize Q, A matrix
 
 				cluster[i].quat={1.0,0.0,0.0,0.0};
@@ -539,7 +543,7 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 
 step = restart_frame_offset*frame+1;
 
-forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+forceUpdate( particle, &p_energy, &combine_now , combine, &step , &IIX);
 
 	// convert subforces into total generalized forces on particles 
 
@@ -597,9 +601,9 @@ simu_time =dt;
 do {
 	p_energy=0;	
 
-	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
+	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale , &strain )	;
 	combine_now=0;
- 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+ 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , &IIX);
 	if (xxclustering && combine_now>0) 
 		{	
 		//	cout<<combine_now<<endl;
@@ -734,8 +738,8 @@ do {
 		outFile4<<"*           End of file"<<endl;
 		outFile4.close();
 		
-	//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+	//	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
 		// cout<<"Done hydro"<<endl;
 		std::ifstream dataFile("12-cluster-res.txt");
@@ -984,6 +988,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	}
 	
 	simu_time+=dt;
+	strain = shear_rate*simu_time;
+	IIX = int ((strain - round(strain))/box.comp[0] + 1 )* cellx;
 	step+=1;
 
 } while(xxnstep);

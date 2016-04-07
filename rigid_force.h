@@ -3,6 +3,6 @@
 
 # include "defs.h"
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy , int* combine_now , int combine[][4], int* step);
+void forceUpdate( vector<SubData>& particle,  double *p_energy , int* combine_now , int combine[][4], int* step , int* IIX);
 
 #endif

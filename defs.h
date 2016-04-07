@@ -13,7 +13,7 @@ const double r_min = 1.0 ; //  pow(2.0,(1.0/6.0))*sigma;
 const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
-const double eta=0.1;
+const double eta=0.01;
 const double mu = 1.0/(6.0*pi*eta*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions
 const double mu_sqrt=sqrt(mu);
 const double kb=1.0;
@@ -30,9 +30,9 @@ const double Volume_inv = 1.0/ Volume;
 const double Particle_radius = 0.5 ; // sigma/2.0;
 const double Particle_vol = 4.0*pi*(Particle_radius*Particle_radius*Particle_radius)/3.0;
 const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv;
-const int cellx=(int) ceil(Lx/r_cut);
-const int celly=(int) ceil(Ly/r_cut);
-const int cellz=(int) ceil(Lz/r_cut);
+const int cellx=(int) floor(Lx/r_cut);
+const int celly=(int) floor(Ly/r_cut);
+const int cellz=(int) floor(Lz/r_cut);
 
 const vctr3D box(Lx, Ly, Lz);
 const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
@@ -49,8 +49,8 @@ const double sigma12 = sigma6*sigma6;
 const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
-const double shear_rate =50.0;
-const mtrx3D shear_rate_dt({0,shear_rate*dt,0},{0,shear_rate*dt,0},{0,0,0}); // reference Thesis : Dynamics of Semi-Flexible Fibres in Viscous Flow; Samantha Mary Harris
+const double shear_rate =5.0;
+const mtrx3D shear_rate_dt({0,0,0},{0,shear_rate*dt,0},{0,0,0}); // reference Thesis : Dynamics of Semi-Flexible Fibres in Viscous Flow; Samantha Mary Harris
 const mtrx3D rate_rot_dt({0,-shear_rate*dt,0},{0,shear_rate*dt,0},{0,0,0});  // Page no.10
 const vctr3D vorc_vec_dt(0.0,0.0,-shear_rate*dt) ;                             
 	
@@ -67,10 +67,7 @@ const vctr3D vorc_vec_dt(0.0,0.0,-shear_rate*dt) ;
                        {  1,  1, -1 },
                        {  1,  1,  0 },
                        {  1,  1,  1 } };
-	
-
-
-
+                       
 
 #endif
 

@@ -29,7 +29,7 @@ r2=dr.norm2();
 							//	if(cell[neighborList[i][j][k][m][0]][neighborList[i][j][k][m][1]][neighborList[i][j][k][m][2]][lC2] > cell[i][j][k][lC1]) {
 								*p_energy+= phis - phicut + Fs*(rs-r)*(rs-r);
 							} 
-		/*	else {				
+			else {				
 									
 				r2inv=1.0/r2;
         		r6inv 	= 	r2inv*r2inv*r2inv;
@@ -46,7 +46,7 @@ r2=dr.norm2();
 				particle[i].frc+=Fij;
 				particle[j].frc-=Fij;
 				*p_energy+=4.0*epsilon*(sigma12*r12inv-sigma6*r6inv) - phicut;
-			} */
+			} 
 			
 		}
 
