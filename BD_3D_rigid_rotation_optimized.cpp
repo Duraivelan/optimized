@@ -216,7 +216,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
 		if (cluster[i].Sub_Length>1) 
 			{
-				cluster[i].pos+=(cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)) ; //+ shear_rate_dt*cluster[i].pos) ;
+				cluster[i].pos+=(cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt) + shear_rate_dt*cluster[i].pos) ;
 				cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
 
 				if(xx_rotation)	
@@ -254,7 +254,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			else 
 			{
 				cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
-				cluster[i].pos+= (cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt) ; //+ shear_rate_dt*cluster[i].pos);
+				cluster[i].pos+= (cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt + shear_rate_dt*cluster[i].pos);
 				cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
 				cluster[i].pos.PBC(box,rbox);
 				*KE_rot += 	(cluster[i].omega)*(cluster[i].angmom)*0.5;	
