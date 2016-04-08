@@ -227,8 +227,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
-				cluster[i].quat		=	cluster[i].theta2quat();
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt) ;
+				cluster[i].quat		=	cluster[i].theta2quat() + cluster[i].theta_space2quat(vorc_vec_dt);
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
 			// assuming qi(t+dt) = ~qi + lambda*qi(t);

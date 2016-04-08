@@ -291,7 +291,7 @@ struct ParticleData
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  vctr4D theta2quat() // for 3D box: translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
+  vctr4D theta2quat() // for 3D box: translate body-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
 					  // based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 					  // J. Chem. Phys. 142, 114103 (2015)
   {
@@ -306,6 +306,26 @@ struct ParticleData
     result.comp[1] =   quat.comp[0] * theta.comp[x] - quat.comp[3] * theta.comp[y] + quat.comp[2] * theta.comp[z]; // + quat.comp[1] * 0.
     result.comp[2] =   quat.comp[3] * theta.comp[x] + quat.comp[0] * theta.comp[y] - quat.comp[1] * theta.comp[z]; // + quat.comp[2] * 0.
     result.comp[3] = - quat.comp[2] * theta.comp[x] + quat.comp[1] * theta.comp[y] + quat.comp[0] * theta.comp[z]; // + quat.comp[3] * 0.
+    result *= 0.5;
+    return result;
+  }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  vctr4D theta_space2quat(const vctr3D& inp) // for 3D box: translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
+					  // based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
+					  // J. Chem. Phys. 142, 114103 (2015)
+  {
+/*
+			  ( q0 -q1 -q2 -q3 ) 
+			1 ( q1  q0  q3 -q2 ) 
+    C  =    - ( q2 -q3  q0  q1 )   
+            2 ( q3  q2 -q1  q0 ) 
+*/
+    vctr4D result;
+    result.comp[0] = - quat.comp[1] * inp.comp[x] - quat.comp[2] * inp.comp[y] - quat.comp[3] * inp.comp[z]; // + quat.comp[0] * 0.
+    result.comp[1] =   quat.comp[0] * inp.comp[x] + quat.comp[3] * inp.comp[y] - quat.comp[2] * inp.comp[z]; // + quat.comp[1] * 0.
+    result.comp[2] = - quat.comp[3] * inp.comp[x] + quat.comp[0] * inp.comp[y] + quat.comp[1] * inp.comp[z]; // + quat.comp[2] * 0.
+    result.comp[3] =   quat.comp[2] * inp.comp[x] - quat.comp[1] * inp.comp[y] + quat.comp[0] * inp.comp[z]; // + quat.comp[3] * 0.
     result *= 0.5;
     return result;
   }
