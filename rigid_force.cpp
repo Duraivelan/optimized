@@ -83,7 +83,7 @@ vctr3D r_segm ;
 	for (int j =0 ; j < Nsegm ; j++ )
 		{
 
-            r_segm = particle[i].pos + particle[i].dir* lh * ( (double(j) - 0.5) * NsegmINV - 0.5 ) ;
+            r_segm = particle[i].pos + particle[i].dir* lh * ( (double(j) + 0.5) * NsegmINV - 0.5 ) ;
 			
 			r_segm.PBC(box,rbox);
 			
