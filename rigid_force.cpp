@@ -20,7 +20,7 @@ using namespace std;
         }   
     } ;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], int* step, int *IIX) {
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], int* step, int *IIX , int *ifshear) {
   int dm_top [16][3] = {{ 1			,  0,  0 },
                        {  1 - *IIX	,  1,  0 },
                        {  0 - *IIX	,  1,  0 },
@@ -190,12 +190,21 @@ for ( mi[y] = NrCells[y] - 1 ; mi[y] < NrCells[y] ; mi[y]++ ) // just top row ; 
           for ( m = 0 ; m < 16 ; m++ )
           {
 		  if ((mi[x] + dm_top[m][x] + 1) >= 0) {
+           if (ifshear) {
             mj[x]      = periodN[ mi[x] + dm_top[m][x] + 1 ][x];
             mj[y]      = periodN[ mi[y] + dm_top[m][y] + 1 ][y];
             mj[z]      = periodN[ mi[z] + dm_top[m][z] + 1 ][z];
             dR.comp[x] = periodR[ mi[x] + dm_top[m][x] + 1 ][x];
             dR.comp[y] = periodR[ mi[y] + dm_top[m][y] + 1 ][y];
             dR.comp[z] = periodR[ mi[z] + dm_top[m][z] + 1 ][z];
+            } else {
+            mj[x]      = periodN[ mi[x] + dm[m][x] + 1 ][x];
+            mj[y]      = periodN[ mi[y] + dm[m][y] + 1 ][y];
+            mj[z]      = periodN[ mi[z] + dm[m][z] + 1 ][z];
+            dR.comp[x] = periodR[ mi[x] + dm[m][x] + 1 ][x];
+            dR.comp[y] = periodR[ mi[y] + dm[m][y] + 1 ][y];
+            dR.comp[z] = periodR[ mi[z] + dm[m][z] + 1 ][z];
+            }
             for ( jj = 1 ; jj <= grid[mj[x]][mj[y]][mj[z]][0] ; jj++ )
             {
 				j = grid[mj[x]][mj[y]][mj[z]][jj];

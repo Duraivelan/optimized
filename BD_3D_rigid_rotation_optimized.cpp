@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-#include<Eigen/Eigenvalues>
+#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+//#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -293,10 +293,11 @@ int cluster_combine;
 double Temp=T0;
 //double shear_rate = 0.0; //shear rate
 int ifshear = 0;// set equal to 1 for shear
+double shear_start = 100, shear_end = 150;
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=1000;
+int step=0, nSteps=10000, frame=10000;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
@@ -543,7 +544,7 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 
 step = restart_frame_offset*frame+1;
 
-forceUpdate( particle, &p_energy, &combine_now , combine, &step , &IIX);
+forceUpdate( particle, &p_energy, &combine_now , combine, &step , &IIX , &ifshear);
 
 	// convert subforces into total generalized forces on particles 
 
@@ -585,6 +586,7 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	outFile8<<"Temperature (T0) ,"<<'\t'<<T0<<std::endl;
 	outFile8<<"box size (abosute units)"<<'\t'<<box.comp[0]<<'\t'<<box.comp[1]<<'\t'<<box.comp[2]<<std::endl;
 	outFile8<<"shear rate"<<'\t'<<shear_rate<<std::endl;
+	outFile8<<"shearing start and end times"<<'\t'<<shear_start<<'\t'<<shear_end<<std::endl;
 	outFile8<<"Cut-off for Interaction Potetntial , R_cut"<<'\t'<<r_cut<<std::endl;
 	outFile8<<"Saturation point for Interaction Potetntial , rs"<<'\t'<<rs<<std::endl;
 	outFile8<<"epsilon"<<'\t'<<epsilon<<std::endl;
@@ -603,7 +605,7 @@ do {
 
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale , &strain )	;
 	combine_now=0;
- 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , &IIX);
+ 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , &IIX, &ifshear);
 	if (xxclustering && combine_now>0) 
 		{	
 		//	cout<<combine_now<<endl;
@@ -738,8 +740,8 @@ do {
 		outFile4<<"*           End of file"<<endl;
 		outFile4.close();
 		
-		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-	//	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+	//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
 		// cout<<"Done hydro"<<endl;
 		std::ifstream dataFile("12-cluster-res.txt");
@@ -990,7 +992,13 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	simu_time+=dt;
 	strain = shear_rate*simu_time;
 	IIX = int ((strain - round(strain))/box.comp[0] + 1 )* cellx;
-	step+=1;
+    IIX *=ifshear;
+    step+=1;
+    if (simu_time > shear_start && simu_time < shear_end) {
+    ifshear = 1;
+    } else {
+    ifshear = 0;
+    }
 
 } while(xxnstep);
 
