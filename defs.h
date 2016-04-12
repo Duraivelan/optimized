@@ -73,7 +73,7 @@ const double DIAMpairlistSQ = r_min2;
 const int cellx=(int) ceil(Lx/(r_cut*apct_rt));
 const int celly=(int) ceil(Ly/(r_cut*apct_rt));
 const int cellz=(int) ceil(Lz/(r_cut*apct_rt));
-const double Nsegm = 1.0; 
+const double Nsegm = 3.0; 
 const double NsegmINV = 1.0/Nsegm ; 
 
 #endif

@@ -850,6 +850,7 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	outFile8<<"Timestep, dt"<<'\t'<<dt<<std::endl;
 	outFile8<<"Viscosity, eta"<<'\t'<<eta<<std::endl;
 	outFile8<<"aspect ratio, AR"<<'\t'<<apct_rt<<std::endl;
+	outFile8<<"No. of rod segments, Nsegm"<<'\t'<<Nsegm<<std::endl;
 	outFile8<<"Mobility , mu"<<'\t'<<mu<<std::endl;
 	outFile8<<'\n'<<" Data Folder and Git Vesrion : "<<'\n';
 	system(" echo >> logfile & git log --pretty=format:'%h' -n 1 >> logfile   & echo >> logfile  &  pwd >> logfile & ");
