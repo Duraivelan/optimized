@@ -206,7 +206,7 @@ std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
 
-void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale , double *strain) {
+void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale , double *strain , int *ifshear) {
 double a, b , c, lambda;
 vctr4D quat_old;
 *KE_rot=0;
@@ -216,8 +216,12 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
 		if (cluster[i].Sub_Length>1) 
 			{
+                if (*ifshear){
 				cluster[i].pos+=(cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt) + shear_rate_dt*cluster[i].pos) ;
-				cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
+                }  else {
+				cluster[i].pos+=(cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt) ) ;
+				}
+                cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
 
 				if(xx_rotation)	
 				{
@@ -228,8 +232,12 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// J. Chem. Phys. 142, 114103 (2015)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt) ;
+                if (*ifshear) {
 				cluster[i].quat		=	cluster[i].theta2quat() + cluster[i].theta_space2quat(vorc_vec_dt);
-			// lagragian normalization of quaternions; see your notes;
+                } else  {
+				cluster[i].quat		=	cluster[i].theta2quat();
+			    }
+            // lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
 			// assuming qi(t+dt) = ~qi + lambda*qi(t);
 			// hence 	|qi(t+dt)| = |~qi + lambda*qi(t)| =1;
@@ -254,9 +262,13 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			else 
 			{
 				cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
-				cluster[i].pos+= (cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt + shear_rate_dt*cluster[i].pos);
+                if(*ifshear) {
+                cluster[i].pos+= (cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt + shear_rate_dt*cluster[i].pos);
 				cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
-				cluster[i].pos.PBC(box,rbox);
+				} else {
+                cluster[i].pos+= (cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt) ;
+                }
+                cluster[i].pos.PBC(box,rbox);
 				*KE_rot += 	(cluster[i].omega)*(cluster[i].angmom)*0.5;	
 				for (int j=0; j< cluster[i].Sub_Length; j++) 
 					{
@@ -293,7 +305,7 @@ int cluster_combine;
 double Temp=T0;
 //double shear_rate = 0.0; //shear rate
 int ifshear = 0;// set equal to 1 for shear
-double shear_start = 100, shear_end = 150;
+double shear_start = 600, shear_end = 650;
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
@@ -603,7 +615,7 @@ simu_time =dt;
 do {
 	p_energy=0;	
 
-	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale , &strain )	;
+	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale , &strain , &ifshear  )	;
 	combine_now=0;
  	forceUpdate( particle, &p_energy, &combine_now , combine, &step , &IIX, &ifshear);
 	if (xxclustering && combine_now>0) 
@@ -994,7 +1006,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	IIX = int ((strain - round(strain))/box.comp[0] + 1 )* cellx;
     IIX *=ifshear;
     step+=1;
-    if (simu_time > shear_start && simu_time < shear_end) {
+    if ((simu_time > shear_start) && (simu_time < shear_end)) {
     ifshear = 1;
     } else {
     ifshear = 0;
