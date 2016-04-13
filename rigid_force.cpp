@@ -80,7 +80,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
   {
 
 vctr3D r_segm ; 
-	for (int j =0 ; j < Nsegm ; j++ )
+	for (int j = 1 ; j <= Nsegm ; j++ )
 		{
 
             r_segm = particle[i].pos + particle[i].dir* lh * ( (double(j) - 0.5) * NsegmINV - 0.5 ) ;
