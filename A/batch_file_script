@@ -12,7 +12,7 @@ while ( $a < 6009 )
 
 	@ cubic = 1
 	
-	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.01+0.001))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.01+0.002))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	
@@ -51,7 +51,7 @@ while ( $a < 6009 )
  
  	@ cubic = 1
 	
-	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.01+0.001))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.01+0.002))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	

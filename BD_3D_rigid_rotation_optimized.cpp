@@ -218,10 +218,10 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			{
                 if (*ifshear){
 				cluster[i].pos+=(cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt) + shear_rate_dt*cluster[i].pos) ;
+                cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
                 }  else {
 				cluster[i].pos+=(cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt) ) ;
 				}
-                cluster[i].pos.comp[0] -= round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*dt*box.comp[0] ; 
 
 				if(xx_rotation)	
 				{
@@ -516,8 +516,8 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			{
 				cluster[i].Sub_Length=1;		// initially each cluster has size one
 				cluster[i].mass=1.0;
-				//cluster[i].vel={0.0,0.0,0.0};
-				cluster[i].vel={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
+				cluster[i].vel={0.0,0.0,0.0};
+				//cluster[i].vel={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
 				// intialize Q, A matrix
 
 				cluster[i].quat={1.0,0.0,0.0,0.0};
