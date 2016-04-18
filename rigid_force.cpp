@@ -187,7 +187,7 @@ for ( mi[y] = NrCells[y] - 1 ; mi[y] < NrCells[y] ; mi[y]++ ) // just top row ; 
           } // jj
 
           // particle j in neighbour cell to i
-           if (ifshear) {
+           if (*ifshear) {
           for ( m = 0 ; m < 16 ; m++ )
           {
 		  if ((mi[x] + dm_top[m][x] + 1) >= 0) {

@@ -305,7 +305,7 @@ int cluster_combine;
 double Temp=T0;
 //double shear_rate = 0.0; //shear rate
 int ifshear = 0;// set equal to 1 for shear
-double shear_start = 100, shear_end = 150;
+double shear_start = 600, shear_end = 650;
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
