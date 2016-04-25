@@ -46,10 +46,7 @@ const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
 
-
-
-	
-  const int dm[13][3] = { {  0,  0,  1 },
+const int dm[13][3] = { {  0,  0,  1 },
                        {  1,  0, -1 },
                        {  1,  0,  0 },
                        {  1,  0,  1 },
@@ -62,19 +59,19 @@ const mtrx3D Unit_diag(1.0,1.0,1.0);
                        {  1,  1, -1 },
                        {  1,  1,  0 },
                        {  1,  1,  1 } };
-	
+
 const double apct_rt = xxaspect_ratio ;   // aspect ratio of rods
 const double extra_beads = floor(apct_rt*0.5) ;   // aspect ratio of rods
 const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv * apct_rt ;
 
-const double lh = apct_rt*0.5*r_min; 
-const double DIAMpairlistSQ = r_min2; 
+const double lh = apct_rt*0.5*r_min;
+const double DIAMpairlistSQ = r_min2;
 
 const int cellx=(int) ceil(Lx/(r_cut*apct_rt));
 const int celly=(int) ceil(Ly/(r_cut*apct_rt));
 const int cellz=(int) ceil(Lz/(r_cut*apct_rt));
 const double Nsegm = 3.0;
-const double NsegmINV = 1.0/Nsegm ; 
+const double NsegmINV = 1.0/Nsegm ;
 
 #endif
 

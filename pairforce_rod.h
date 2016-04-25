@@ -18,8 +18,9 @@ if (particle[i].cluster!=particle[j].cluster)
 
 // Minimum distance in the periodic system:
 	
-dr=particle[i].pos-(particle[j].pos+dR);
-
+//dr=particle[i].pos-(particle[j].pos+dR);
+    dr = particle[i].pos - particle[j].pos ;
+    dr.PBC(box,rbox);
 //---------------- Distance of two rods: -------------------------------------
   double lamda1, lamda2, lamdai, lamdaj, 
   r2= dr.norm2(),
