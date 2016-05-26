@@ -11,8 +11,8 @@
 #include <array>
 # include "defs.h"
 # include "rigid_force.h"
-//#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
-#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+#include</home/duraivelan/Downloads/eigen-eigen-10219c95fe65/Eigen/Eigenvalues>
+//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
 //#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
@@ -309,7 +309,7 @@ void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& partic
 
                 {
 
-	    			cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
+	    		//	cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
 
 		        	if(xx_rotation)
 
@@ -469,8 +469,8 @@ if(!xxcluster_restart)	{
 		outFile4<<"*           End of file"<<endl;
 		outFile4.close();
 		
-//		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+		system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+//		system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
 		// cout<<"Done hydro"<<endl;
 		
@@ -574,18 +574,17 @@ else {
         currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[2];
-        currentLine >> cluster[i].quat.comp[0];
-        currentLine >> cluster[i].quat.comp[1];
-        currentLine >> cluster[i].quat.comp[2];
-        currentLine >> cluster[i].quat.comp[3];
-        particle[i].dir = {1.0,0.0,0.0} ;
+        currentLine >> particle[i].dir.comp[0];
+        currentLine >> particle[i].dir.comp[1];
+        currentLine >> particle[i].dir.comp[2];
+//        particle[i].dir = {1.0,0.0,0.0} ;
         particle[i].dir_bdyfxd = particle[i].dir;
        // cout<<particle[i].dir.comp[0]<<endl;
 
     }    
 }	
 }  else { 
-std::string fileName=dataFileName+"/End_Position_Full.xyz";
+std::string fileName=dataFileName+"/End_Position_Full_rods.xyz";
 
 //read x,y positions from XY.dat
 std::ifstream dataFile(fileName);
@@ -866,7 +865,7 @@ simu_time =dt;
 do {
 	p_energy=0;	
 
-	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
+	// brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
 	combine_now=0;
  	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 	if (xxclustering && combine_now>0) 
@@ -879,15 +878,15 @@ do {
 						{
 							temp_combine[pn][j]=combine[pn][j];
 						}
-					//	cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide main beroe sort"<<endl;
+						cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide main beroe sort"<<endl;
 				}			
 		
 	if(combine_now>1) {	sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
 	
-			/*	for (int pn = 1; pn<=combine_now ; pn++) 
+				for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
-				}	*/
+				}	
 
 	if(combine_now>1) {	
 	int count=1;
@@ -907,10 +906,10 @@ do {
 			count=count+1;			
 		} while (count<combine_now);
 	}	
-			/*	for (int pn = 1; pn<=combine_now ; pn++) 
+				for (int pn = 1; pn<=combine_now ; pn++) 
 				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide mainf after unique"<<endl;
-				} */
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<temp_combine[pn][2]<<'\t'<<temp_combine[pn][3]<<'\t'<<"insdide mainf after unique"<<endl;
+				} 
 	// collision detection
 	 	//		cout<<combine_now<<endl;
 
@@ -957,12 +956,12 @@ do {
 				}	
 					//	sort (temp_combine.begin()+pn+1,temp_combine.end(), RowSort());
 
-				/*	for (int px = 1; px<=combine_now ; pn++) 
+	/*				for (int px = 1; px<=combine_now ; pn++) 
 				{ 		
 						cout<<temp_combine[px][0]<<'\t'<<temp_combine[px][1]<<'\t'<<" after combine"<<endl;
-				} */
-			//	cout << "Doner one combine " << '\t'<< pn <<  endl;
-		}
+				} 
+				cout << "Doner one combine " << '\t'<< pn <<  endl; 
+	*/	}
 	
 // calculate new diffusion tensors	
 	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
@@ -1019,8 +1018,8 @@ do {
 	outFile4<<"*           End of file"<<endl;
 	outFile4.close();
 
-//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
-	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
+	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+//	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
  // cout<<"Done hydro"<<endl;
 	std::ifstream dataFile("12-cluster-res.txt");
@@ -1237,9 +1236,9 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 if (step%frame==0) 
 	{ 
 
-//        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
-//		outFile5<<NrParticles*apct_rt<<std::endl;
-//		outFile5<<"X Y Z co-ordinates"<<std::endl;
+        std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+		outFile5<<NrParticles*apct_rt<<std::endl;
+		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
@@ -1253,7 +1252,7 @@ if (step%frame==0)
 				{
 				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
 				}
-/*			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
 						double l =extra_beads-1;
 			//		outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
@@ -1270,7 +1269,7 @@ if (step%frame==0)
 					
 					
 					}
-*/			}
+			}
 
 
 /*		for ( int i = 0 ; i < NrParticles; i ++ )
@@ -1284,7 +1283,7 @@ if (step%frame==0)
 
 //      	outFile5<<'\n'<<std::endl;
 		outFile1<<p_energy<<std::endl;
-//		outFile5.close();
+		outFile5.close();
 		outFile9.close();
 
 	}
@@ -1323,7 +1322,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	}
 	for (int i=0;i<NrParticles;i++)
 		{
-			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<'\t'<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
+			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<'\t'<<particle[i].dir.comp[0]<<'\t'<<particle[i].dir.comp[1]<<'\t'<<particle[i].dir.comp[2]<<std::endl;
 
 		}
 outFile1.close();

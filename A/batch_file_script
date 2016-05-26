@@ -1,67 +1,23 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 120910
+@ a = 1215000
 @ init = $a 
 @ k = 90
-@ nrrodeq = 147456
-while ( $a < 120916 )
-	mkdir $a
-	cd $a
-	@ ifcreate = 1; 
-	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<=1000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
-	sed "s/xxshift/1/ ; s/xxclustering/0/ " ../../pairforce_rod.h > pairforce_rod.h
-
-	@ cubic = 1
-       
-    set ar = `echo "scale=3 ; $k/10 " |bc -l`
-    set nrrods = `echo "scale=3 ; $nrrodeq/$ar " | bc -l`
-	
-	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.5^3)/(($init-$init)*0.001+0.002))/(3))" | bc -l`
-	echo $box_Lx
-	if ($cubic) then
-	
-	set box_Ly = $box_Lx ;
-	set box_Lz = $box_Lx ;
-	
-	endif
-	 
-    sed "s/xxNrParticles/$nrrods/ ; s/box_Lx/$box_Lx/ ; s/box_Ly/$box_Ly/ ; s/box_Lz/$box_Lz/ ;  s/xxaspect_ratio/$ar/ " ../../defs.h > defs.h
-  
-    cp ../../rigid_force.h .
-    cp ../../structure_definitions.h .
-    cp ../../rigid_force.cpp .
-    cp ../../vctr3D.h .
-    cp ../../vctr4D.h .
-
-    if ( $ifcreate == 1 ) then
-		rm -f log
-    endif
-
-    g++ -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o ${a}_BD_3D_rigid_rotation_optimized.out
-    ./${a}_BD_3D_rigid_rotation_optimized.out >>& log -a &
-    echo $k
-#    @ k = $k + 20    
-    cd ..
-    echo $a
-    @ a = $a + 1
-    echo $a
-end
-wait
-@ a = 120910
-@ init = $a 
-@ k = 90
-while ( $a < 120916 )
+@ nrrodeq = 9000
+while ( $a < 1215001 )
   cd $a
   @ ifcreate = 0; 
-  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=1000000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+
+  set ar = `echo "scale=3 ; $k/10 " |bc -l`
+
+  sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>=0/ ; s/xxnstep/step<=1/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
   sed "s/xxshift/0/ ; s/xxclustering/1/ ; s/xxaspect_ratio/$ar/" ../../pairforce_rod.h > pairforce_rod.h
  
  	@ cubic = 1
 
-    set ar = `echo "scale=3 ; $k/10 " |bc -l`
     set nrrods = `echo "scale=3 ; $nrrodeq/$ar " | bc -l`
 
-	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.5^3)/(($init-$init)*0.001+0.002))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrrodeq*(4/3)*3.142*(0.5^3)/(($init-$init)*0.001+0.005))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	

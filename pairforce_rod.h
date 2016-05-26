@@ -20,7 +20,11 @@ if (particle[i].cluster!=particle[j].cluster)
 	
 //dr=particle[i].pos-(particle[j].pos+dR);
     dr = particle[i].pos - particle[j].pos ;
-    dr.PBC(box,rbox);
+//    dr.PBC(box,rbox);
+    
+//    dr = particle[i].pos + particle[i].dir* lh * ( (double(i_seg) + 0.5) * NsegmINV - 0.5 )  - (particle[j].pos + particle[j].dir* lh * ( (double(j_seg) + 0.5) * NsegmINV - 0.5 )) ;
+		
+	dr.PBC(box,rbox);    
 //---------------- Distance of two rods: -------------------------------------
   double lamda1, lamda2, lamdai, lamdaj, 
   r2= dr.norm2(),
@@ -113,7 +117,7 @@ if( fabs(xla)>lh || fabs(xmu)>lh ) {
  r2+= (xla)*(xla)+(xmu)*(xmu) + 2.0 *(xmu*rw2 -xla*(rw1+xmu*w1w2));	
  */
  	 
-		r2-=r_min2*xxshift;
+//		r2-=r_min2*xxshift;
 
 		if (r2<(r_cut2)) 
 		{

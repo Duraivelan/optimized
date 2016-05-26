@@ -27,7 +27,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
   int    NrCells[3],MaxNrCells;
   double scale[3];
 
-	int    i,j;
+	int    i,j,i_seg,j_seg;
 	int    ii,jj;
 	int    mi[3],m,mj[3];
 	double F,r2, r;
@@ -63,6 +63,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
 
 // generate grid list
  	int grid[NrCells[x]][NrCells[y]][NrCells[z]][MaxPerCell+1];
+ 	int seg_grid[NrCells[x]][NrCells[y]][NrCells[z]][MaxPerCell+1];
 
   for ( mi[x] = 0 ; mi[x] < NrCells[x] ; mi[x]++ )
   {
@@ -72,6 +73,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
       {
 
         grid[mi[x]][mi[y]][mi[z]][0] = 0;
+        seg_grid[mi[x]][mi[y]][mi[z]][0] = 0;
       } // miz
     } // miy
   } // mix
@@ -101,6 +103,7 @@ vctr3D r_segm ;
 			grid[mi[x]][mi[y]][mi[z]][0] ++ ;
 			//  cout << i << "  " << mix << "  " << miy << "  " << miz << "  " << grid[mix][miy][miz][0] << endl;
 			grid[mi[x]][mi[y]][mi[z]][ int (grid[mi[x]][mi[y]][mi[z]][0])] = i;
+			seg_grid[mi[x]][mi[y]][mi[z]][ int (grid[mi[x]][mi[y]][mi[z]][0])] = j;
 		}
 } // i
 	//		 cout<<"exit grid "<<endl;
@@ -123,12 +126,14 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
         for ( ii = 1 ; ii <= grid[mi[x]][mi[y]][mi[z]][0] ; ii++ )
         {
           i = grid[mi[x]][mi[y]][mi[z]][ii];
+          i_seg = seg_grid[mi[x]][mi[y]][mi[z]][ii];
 
           // particle j in same cell as i
           dR = null3D;
           for ( jj = ii + 1 ; jj <= grid[mi[x]][mi[y]][mi[z]][0] ; jj++ )
           {
 			j = grid[mi[x]][mi[y]][mi[z]][jj];
+			j_seg = seg_grid[mi[x]][mi[y]][mi[z]][jj];
 		//	if (particle[i].cluster!=particle[j].cluster)
 			//	{
 					#include "pairforce_rod.h"
@@ -147,6 +152,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
             for ( jj = 1 ; jj <= grid[mj[x]][mj[y]][mj[z]][0] ; jj++ )
             {
 				j = grid[mj[x]][mj[y]][mj[z]][jj];
+				j_seg = seg_grid[mj[x]][mj[y]][mj[z]][jj];
 		//	if (particle[i].cluster!=particle[j].cluster)
 			//	{
 					#include "pairforce_rod.h"
