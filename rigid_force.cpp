@@ -85,14 +85,16 @@ vctr3D r_segm ;
 	for (int j =0 ; j < Nsegm ; j++ )
 		{
 
-            r_segm = particle[i].pos + particle[i].dir* lh * ( (double(j) + 0.5) * NsegmINV - 0.5 ) ;
+            r_segm = particle[i].pos + particle[i].dir*2.0 *lh * ( (double(j) + 0.5) * NsegmINV - 0.5 ) ;
 			
 			r_segm.PBC(box,rbox);
 			
 			mi[x] = int ( (r_segm.comp[x]+havbox.comp[x]) * scale[x] );
 			mi[y] = int ( (r_segm.comp[y]+havbox.comp[y]) * scale[y] );
 			mi[z] = int ( (r_segm.comp[z]+havbox.comp[z]) * scale[z] );       
-		
+			if (i==473 | i == 876) {
+							cout << i << " " << mi[x] << "  " << mi[y] << "  " << mi[z] << '\t' << "grid value" << endl;
+			}
 			if ( int (grid[mi[x]][mi[y]][mi[z]][0]) >= MaxPerCell-1 )
 				{
 					cout << "*** cell overfull" << endl;
