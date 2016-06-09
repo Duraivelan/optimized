@@ -36,7 +36,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
 
   for ( i = 0 ; i < 3 ; i++ )
   {
-    NrCells[i] = floor ( box.comp[i]*Nsegm / (r_cut*apct_rt) ); // cellnr runs from 0 to NrCells-1
+    NrCells[i] = floor ( box.comp[i]*Nsegm / (r_cut*(apct_rt-2.0*r_min)) ); // cellnr runs from 0 to NrCells-1
     scale  [i] = NrCells[i] * rbox.comp[i];
     if ( NrCells[i] < 3 ) { cout << "*** NrCells[" << i << "] = " << NrCells[i] << endl ; abort(); }
   }
@@ -83,7 +83,7 @@ vctr3D r_segm ;
 	for (int j =0 ; j < Nsegm ; j++ )
 		{
 
-            r_segm = particle[i].pos + particle[i].dir* lh * ( (double(j) + 0.5) * NsegmINV - 0.5 ) ;
+            r_segm = particle[i].pos + particle[i].dir * apct_rt * ( (double(j) + 0.5) * NsegmINV - 0.5 ) ;
 			
 			r_segm.PBC(box,rbox);
 			

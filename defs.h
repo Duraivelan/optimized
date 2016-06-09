@@ -64,8 +64,8 @@ const double apct_rt = xxaspect_ratio ;   // aspect ratio of rods
 const double extra_beads = floor(apct_rt*0.5) ;   // aspect ratio of rods
 const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv * apct_rt ;
 
-const double lh = apct_rt*0.5*r_min;
 const double DIAMpairlistSQ = r_min2;
+const double lh = 0.5*(apct_rt*r_min - r_min) ;  // lh = 0.5 * (Lengthofrod - diameter) 
 
 const int cellx=(int) ceil(Lx/(r_cut*apct_rt));
 const int celly=(int) ceil(Ly/(r_cut*apct_rt));
