@@ -963,6 +963,12 @@ do {
 				cout << "Doner one combine " << '\t'<< pn <<  endl; 
 	*/	}
 	
+				for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<temp_combine[pn][2]<<'\t'<<temp_combine[pn][3]<<'\t'<<"Done after combine "<<endl;
+				} 	
+	
+	
 // calculate new diffusion tensors	
 	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 		{
@@ -1018,7 +1024,7 @@ do {
 	outFile4<<"*           End of file"<<endl;
 	outFile4.close();
 
-	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
 //	system("/tmp/hydro++10-lnx.exe < /tmp/input.txt  > /dev/null ");
 
  // cout<<"Done hydro"<<endl;
@@ -1185,9 +1191,14 @@ do {
 	cluster[i].frc=null3D;
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
+						
+	cout<<i<<'\t'<<"cluster No. "<<endl;
 
     for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
     {
+
+		cout<<i<<'\t'<<j<<'\t'<<cluster[i].sub[j]<<'\t'<<"cluster No. "<<endl;
+
 		dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
 		dr_vec.PBC(box,rbox);
 		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;		

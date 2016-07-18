@@ -40,6 +40,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
     scale  [i] = NrCells[i] * rbox.comp[i];
     if ( NrCells[i] < 3 ) { cout << "*** NrCells[" << i << "] = " << NrCells[i] << endl ; abort(); }
   }
+					cout << NrCells[x] << "  " << NrCells[y] << "  " << NrCells[z] << endl;
 
 // periodic boundary conditions
 
@@ -98,7 +99,7 @@ vctr3D r_segm ;
 			if ( int (grid[mi[x]][mi[y]][mi[z]][0]) >= MaxPerCell-1 )
 				{
 					cout << "*** cell overfull" << endl;
-					cout << mi[x] << "  " << mi[y] << "  " << mi[z] << endl;
+					cout << mi[x] << "  " << mi[y] << "  " << mi[z] << " " << grid[mi[x]][mi[y]][mi[z]][0] <<endl;
 					abort();
 				}
 
