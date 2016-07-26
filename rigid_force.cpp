@@ -36,8 +36,8 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
 
   for ( i = 0 ; i < 3 ; i++ )
   {
-    NrCells[i] = floor ( box.comp[i]*Nsegm / (r_cut*(apct_rt-2.0*r_min)) ); // cellnr runs from 0 to NrCells-1
-    scale  [i] = NrCells[i] * rbox.comp[i];
+    NrCells[i] = floor ( box.comp[i]*Nsegm / (r_cut*(apct_rt+3.0*r_min)) ); // cellnr runs from 0 to NrCells-1
+    scale  [i] =  ( NrCells[i] * rbox.comp[i] ) ;
     if ( NrCells[i] < 3 ) { cout << "*** NrCells[" << i << "] = " << NrCells[i] << endl ; abort(); }
   }
 
@@ -84,13 +84,13 @@ vctr3D r_segm ;
 		{
 
             r_segm = particle[i].pos + particle[i].dir * apct_rt * ( (double(j) + 0.5) * NsegmINV - 0.5 ) ;
-			
+
 			r_segm.PBC(box,rbox);
-			
-			mi[x] = int ( (r_segm.comp[x]+havbox.comp[x]) * scale[x] );
-			mi[y] = int ( (r_segm.comp[y]+havbox.comp[y]) * scale[y] );
-			mi[z] = int ( (r_segm.comp[z]+havbox.comp[z]) * scale[z] );       
-		
+
+			mi[x] = int ( floor((r_segm.comp[x]+havbox.comp[x]) * scale[x] ));
+			mi[y] = int ( floor((r_segm.comp[y]+havbox.comp[y]) * scale[y] ));
+			mi[z] = int ( floor((r_segm.comp[z]+havbox.comp[z]) * scale[z] ));
+
 			if ( int (grid[mi[x]][mi[y]][mi[z]][0]) >= MaxPerCell-1 )
 				{
 					cout << "*** cell overfull" << endl;

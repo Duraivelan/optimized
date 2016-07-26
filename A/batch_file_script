@@ -1,10 +1,10 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 1209102
+@ a = 990923
 @ init = $a 
 @ k = 90
 @ nrrodeq = 147456
-while ( $a < 1209103 )
+while ( $a < 990925 )
 	mkdir $a
 	cd $a
 	@ ifcreate = 1; 
@@ -47,10 +47,10 @@ while ( $a < 1209103 )
     echo $a
 end
 wait
-@ a = 1209102
+@ a = 990923
 @ init = $a 
 @ k = 90
-while ( $a < 1209103 )
+while ( $a < 990925 )
   cd $a
   @ ifcreate = 0; 
   sed "s/xxx/$a/ ; s/xxxnew/$a/ ; s/xxclustering/step>1000/ ; s/xxnstep/step<=1000000000/ ; s/xxcreate/0/ ; s/xxrestart/1/ ; s/xxthermo/step<1000/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/" ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp

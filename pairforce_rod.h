@@ -29,9 +29,8 @@ if (particle[i].cluster!=particle[j].cluster)
   uu = particle[i].dir*particle[j].dir,
   uu2 = 1.0/(1.0-(uu)*(uu));
   vctr3D dt; 
-
-            lamda1 = ( -rw1 + rw2*uu ) * uu2 ;
-            lamda2 = (  rw2 - rw1*uu ) * uu2 ;
+            lamda1 = (dr*(  particle[j].dir*uu -particle[i].dir  ) ) * uu2 ;
+            lamda2 = (dr*(  particle[j].dir - particle[i].dir*uu ) ) * uu2 ;
             dt = dr + particle[i].dir*lamda1 - particle[j].dir*lamda2 ;
             r2 =  dt.norm2();
             if ((fabs(lamda1) < lh && fabs(lamda2) < lh ) ||  r2 > DIAMpairlistSQ ) 

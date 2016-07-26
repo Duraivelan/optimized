@@ -70,7 +70,7 @@ const double lh = 0.5*(apct_rt*r_min - r_min) ;  // lh = 0.5 * (Lengthofrod - di
 const int cellx=(int) ceil(Lx/(r_cut*apct_rt));
 const int celly=(int) ceil(Ly/(r_cut*apct_rt));
 const int cellz=(int) ceil(Lz/(r_cut*apct_rt));
-const double Nsegm = 3.0;
+const double Nsegm = 1.0;
 const double NsegmINV = 1.0/Nsegm ;
 
 #endif

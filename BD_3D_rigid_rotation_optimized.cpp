@@ -423,13 +423,13 @@ double dr=0.05; // step size for RDF calculation
 // std::vector<int> RDF((int)  floor(sqrt((Lx/2)*(Lx/2)+(Ly/2)*(Ly/2)+(Lz/2)*(Lz/2)))/dr,0), RDF1((int)  floor(sqrt(Lx*Lx+Ly*Ly))/dr,0);
 double KE_rot=0;
 int NrSubs=NrParticles;
-
+/*
 if ( (apct_rt/Nsegm) <  1.0 )
    {
         cout << "*** segmenation length smaller than aspect ratio" << endl;
         abort();
    }
-
+*/
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
 int combine_now=0;
