@@ -129,6 +129,7 @@ struct SubData
   int PartNum;
   double radius;
   int cluster;
+  vctr3D bdyfxd_jet_dir;
 
 /*double sigma;
   double eps;
