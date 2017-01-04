@@ -2,7 +2,7 @@
 alias clang++='clang++-3.5 -std=c++11'
 @ a = 251
 @ init = $a 
-@ nrparticles = 16384
+@ nrparticles = 256
 while ( $a < 252 )
 	mkdir $a
 	cd $a
@@ -33,7 +33,7 @@ while ( $a < 252 )
 		rm -f log
   endif
 
-  g++ -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o ${a}_BD_3D_rigid_rotation_optimized.out
+  g++ -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o ${a}_BD_3D_rigid_rotation_optimized.out -llapack
   ./${a}_BD_3D_rigid_rotation_optimized.out >>& log -a &
 
   cd ..
@@ -72,7 +72,7 @@ while ( $a < 252 )
 		rm -f log
   endif
   
-  icpc -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o ${a}_BD_3D_rigid_rotation_optimized.out
+  g++ -std=c++11 BD_3D_rigid_rotation_optimized.cpp rigid_force.cpp -O3 -o ${a}_BD_3D_rigid_rotation_optimized.out -llapack
 
     ./${a}_BD_3D_rigid_rotation_optimized.out >>& log -a &
 

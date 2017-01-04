@@ -162,7 +162,6 @@ vctr3D& revPBC(const vctr3D& inp,const vctr3D& box, const vctr3D& rbox)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
 struct mtrx3D
 {
   double comp[3][3];
@@ -418,4 +417,124 @@ void writeToFile(ofstream &outputFile)
     return result;
   }
 */
+struct vctr5D
+{
+
+// data
+
+  double comp[5];
+
+// constructors
+
+  vctr5D() {} 
+
+  vctr5D( const double inp0, const double inp1, const double inp2, const double inp3, const double inp4 )
+  {
+    comp[0] = inp0;
+    comp[1] = inp1;
+    comp[2] = inp2;
+    comp[3] = inp3;
+    comp[4] = inp4;
+  }
+};
+
+struct mtrx35D
+{
+  double comp[3][5];
+
+// constructors
+
+  mtrx35D() {};
+  
+  //         full definition, vectors = rows
+  mtrx35D ( const vctr5D& inp0, const vctr5D& inp1, const vctr5D& inp2 )
+  {
+    comp[0][0] = inp0.comp[0];
+    comp[0][1] = inp0.comp[1];
+    comp[0][2] = inp0.comp[2];
+    comp[0][3] = inp0.comp[3];
+    comp[0][4] = inp0.comp[4];
+    comp[1][0] = inp1.comp[0];
+    comp[1][1] = inp1.comp[1];
+    comp[1][2] = inp1.comp[2];
+    comp[1][3] = inp1.comp[3];
+    comp[1][4] = inp1.comp[4];
+    comp[2][0] = inp2.comp[0];
+    comp[2][1] = inp2.comp[1];
+    comp[2][2] = inp2.comp[2];
+    comp[2][3] = inp2.comp[3];
+    comp[2][4] = inp2.comp[4];    
+  }
+
+};
+
+struct mtrx53D
+{
+  double comp[5][3];
+
+// constructors
+
+  mtrx53D() {};
+  
+  //         full definition, vectors = columns
+  mtrx53D ( const vctr5D& inp0, const vctr5D& inp1, const vctr5D& inp2 )
+  {
+    comp[0][0] = inp0.comp[0];
+    comp[0][1] = inp1.comp[0];
+    comp[0][2] = inp2.comp[0];
+    comp[1][0] = inp0.comp[1];
+    comp[1][1] = inp1.comp[1];
+    comp[1][2] = inp2.comp[1];
+    comp[2][0] = inp0.comp[2];
+    comp[2][1] = inp1.comp[2];
+    comp[2][2] = inp2.comp[2];      
+    comp[3][0] = inp0.comp[3];
+    comp[3][1] = inp1.comp[3];
+    comp[3][2] = inp2.comp[3];   
+    comp[4][0] = inp0.comp[4];
+    comp[4][1] = inp1.comp[4];
+    comp[4][2] = inp2.comp[4];  
+  }
+
+};
+
+struct mtrx55D
+{
+  double comp[5][5];
+
+// constructors
+
+  mtrx55D() {};
+  
+  //         full definition, vectors = columns
+  mtrx55D ( const vctr5D& inp0, const vctr5D& inp1, const vctr5D& inp2, const vctr5D& inp3, const vctr5D& inp4 )
+  {
+    comp[0][0] = inp0.comp[0];
+    comp[0][1] = inp1.comp[0];
+    comp[0][2] = inp2.comp[0];
+    comp[0][3] = inp3.comp[0];
+    comp[0][4] = inp4.comp[0];
+    comp[1][0] = inp0.comp[1];
+    comp[1][1] = inp1.comp[1];
+    comp[1][2] = inp2.comp[1];
+    comp[1][3] = inp3.comp[1];
+    comp[1][4] = inp4.comp[1];
+    comp[2][0] = inp0.comp[2];
+    comp[2][1] = inp1.comp[2];
+    comp[2][2] = inp2.comp[2];      
+    comp[2][3] = inp3.comp[2];
+    comp[2][4] = inp4.comp[2];  
+    comp[3][0] = inp0.comp[3];
+    comp[3][1] = inp1.comp[3];
+    comp[3][2] = inp2.comp[3];   
+    comp[3][3] = inp3.comp[3];
+    comp[3][4] = inp4.comp[3];
+    comp[4][0] = inp0.comp[4];
+    comp[4][1] = inp1.comp[4];
+    comp[4][2] = inp2.comp[4];  
+    comp[4][3] = inp3.comp[4];
+    comp[4][4] = inp4.comp[4]; 
+  }
+
+};
 
