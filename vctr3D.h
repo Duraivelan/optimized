@@ -466,6 +466,17 @@ struct mtrx35D
     comp[2][4] = inp2.comp[4];    
   }
 
+
+//       matrix - vector multiplication
+  vctr3D operator * ( const vctr5D& inp ) const
+  {
+    vctr3D result;
+    result.comp[0] = comp[0][0] * inp.comp[0] + comp[0][1] * inp.comp[1] + comp[0][2] * inp.comp[2] + comp[0][3] * inp.comp[3] + comp[0][4] * inp.comp[4];
+    result.comp[1] = comp[1][0] * inp.comp[0] + comp[1][1] * inp.comp[1] + comp[1][2] * inp.comp[2] + comp[1][3] * inp.comp[3] + comp[1][4] * inp.comp[4];
+    result.comp[2] = comp[2][0] * inp.comp[0] + comp[2][1] * inp.comp[1] + comp[2][2] * inp.comp[2] + comp[2][3] * inp.comp[3] + comp[2][4] * inp.comp[4];
+    return result;
+  }
+
 };
 
 struct mtrx53D

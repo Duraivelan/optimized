@@ -173,10 +173,10 @@ else {
 // the five base matrices for strain tensor // option 5 :  equation 419 wouter's tex version clusterdyn_110816_1556
 
 	double e[5][3][3]= {
+							{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
 							{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
 							{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
 							{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
-							{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
 							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
 						};
 
@@ -204,6 +204,13 @@ else {
 // important all lengths have been normalized by particle radius as metioned in Page 46, Appendix A - Durlofsky, Louis, John F. Brady, and Georges Bossis. 
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
+
+				double	a_norm = 1.0/(6.0*M_PI*eta_0*particle[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r
+				double	b_norm = 1.0/(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r2
+				double	c_norm = 1.0/(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius*particle[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r3
+				double	g_norm = 1.0/(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius*particle[0].radius);						//		assuming correction factor of 6*pi*mu*r3	
+				double	h_norm = 1.0/(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius*particle[0].radius);						//		assuming correction factor of 6*pi*mu*r3				
+				double	m_norm = 1.0/(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius*particle[0].radius);						//		assuming correction factor of 6*pi*mu*r3	
 		
 for (int a=0; a<NrParticles; a++)
 	{
@@ -220,11 +227,7 @@ for (int a=0; a<NrParticles; a++)
 				
 				e_ab_unit = e_ab*sqrt(e_ab2_inv); 
 				if(a==b) {	e_ab_unit = e_ab*0.0; }	
-				temp1=1.0/(8.0*M_PI*eta_0);
 				tau = 1.0/(6.0*M_PI*eta_0*particle[a].radius);
-				temp=temp1/(sqrt(e_ab2));
-				temp2=temp1/(particle[a].radius*particle[a].radius*particle[a].radius);
-				temp3=temp/(2.0*(e_ab2));
 			    double r 	= sqrt(e_ab2)/particle[a].radius;			// distance between particle vector 'r' magnitude |r| normalized by particle radius 'a' ;
 			    double r_1 	= 1.0/(r);
 			    double r_2 	= 1.0/(r*r);			    
@@ -246,44 +249,8 @@ for (int a=0; a<NrParticles; a++)
 				double y_h[2][2] = {{	0.0		,  -9.0*r_3/8.0							},{-9.0*r_3/8.0							,	0.0		} };
 				double x_m[2][2] = {{	9.0/10.0,  -9.0*r_3/2.0		+ 	54.0*r_5/5.0	},{-9.0*r_3/2.0		+ 	54.0*r_5/5.0	,	9.0/10.0} };
 				double y_m[2][2] = {{	9.0/10.0,   9.0*r_3/4.0		- 	36.0*r_5/5.0	},{ 9.0*r_3/4.0		- 	36.0*r_5/5.0	,	9.0/10.0} };
-				double z_m[2][2] = {{	9.0/10.0,  					 	 9.0*r_5/5.0	},{ 				 	 9.0*r_5/5.0	,	9.0/10.0} };
+				double z_m[2][2] = {{	9.0/10.0,  					 	 9.0*r_5/5.0	},{ 				 	 9.0*r_5/5.0	,	9.0/10.0} };					
 
-				// resistance scalar values - as defined in Page 280, book of Kim and Karrila
-
-				double X_A[2][2] = {{	1.0		,  -3.0*r_1/2.0		-	19.0*r_3/8.0	},{-3.0*r_1/2.0		-	19.0*r_3/8.0	,	1.0		} }; 	// normalised by 6*pi*r
-				double Y_A[2][2] = {{	1.0		,  -3.0*r_1/4.0		-	59.0*r_3/16.0	},{-3.0*r_1/4.0		-	59.0*r_3/16.0	,	1.0		} }; 
-				double Y_B[2][2] = {{	0.0		,  -r_2									},{-r_2									,	0.0		} }; 
-				double X_C[2][2] = {{	4.0/3.0	,  -4.0*r_3/3.0							},{-4.0*r_3/3.0							,  	4.0/3.0	} }; 
-				double Y_C[2][2] = {{	4.0/3.0	,   2.0*r_3/3.0							},{ 2.0*r_3/3.0							,  	4.0/3.0	} }; 
-
-
-				double X_G[2][2] = {{	0.0		,  -15.0*r_2/4.0	/*-	39.0*r_4/16.0*/	},{-15.0*r_2/4.0	/*-	39.0*r_4/16.0*/	,	0.0		} };
-				double Y_G[2][2] = {{	0.0		,  0.0/*-2.0*r_4*/								},{0.0/*-2.0*r_4*/								,	0.0		} };
-				double Y_H[2][2] = {{	0.0		,   5.0*r_3/3.0							},{ 5.0*r_3/3.0							,	0.0		} };
-				double X_M[2][2] = {{	1.0		,   5.0*r_3			/*- 	51.0*r_5/8.0*/	},{ 5.0*r_3			/*- 	51.0*r_5/8.0*/	,	1.0		} };
-				double Y_M[2][2] = {{	1.0		,  -5.0*r_3/2.0		/*+ 	8.0*r_5*/			},{-5.0*r_3/2.0		/*+	8.0*r_5*/			,	1.0		} };
-				double Z_M[2][2] = {{	1.0		,  					0.0/*-	2.0*r_5*/			},{ 				0.0/*-	 2.0*r_5*/		,	1.0		} };
-				
-				//				cout << x_a[0][1] << "x-comp"<<endl; 
-				
-				double	a_norm = 1.0/(6.0*M_PI*eta_0*particle[a].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r
-				double	b_norm = 1.0/(6.0*M_PI*eta_0*particle[a].radius*particle[a].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r2
-				double	c_norm = 1.0/(6.0*M_PI*eta_0*particle[a].radius*particle[a].radius*particle[a].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r3
-				double	g_norm = 1.0/(6.0*M_PI*eta_0*particle[a].radius*particle[a].radius*particle[a].radius);						//		assuming correction factor of 6*pi*mu*r3	
-				double	h_norm = 1.0/(6.0*M_PI*eta_0*particle[a].radius*particle[a].radius*particle[a].radius);						//		assuming correction factor of 6*pi*mu*r3				
-			//	double	g_norm = 20.0/18.0;											//		assuming correction factor of 6*pi*mu*r3/(20*pi*mu*r3/3)	
-			//	double	h_norm = 20.0/18.0;											//		assuming correction factor of 6*pi*mu*r3/(20*pi*mu*r3/3)	
-				double	m_norm = 1.0/(6.0*M_PI*eta_0*particle[a].radius*particle[a].radius*particle[a].radius);						//		assuming correction factor of 6*pi*mu*r3	
-
-				double	A_Norm = (6.0*M_PI*eta_0*particle[a].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r
-				double	B_Norm = (6.0*M_PI*eta_0*particle[a].radius*particle[a].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r2
-				double	C_Norm = (6.0*M_PI*eta_0*particle[a].radius*particle[a].radius*particle[a].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r3
-				double	G_Norm = (4.0*M_PI*eta_0*particle[a].radius*particle[a].radius);						//		assuming correction factor of 4*pi*mu*r2	
-				double	H_Norm = (6.0*M_PI*eta_0*particle[a].radius*particle[a].radius*particle[a].radius);						//		assuming correction factor of 6*pi*mu*r3				
-			//	double	g_norm = 20.0/18.0;											//		assuming correction factor of 6*pi*mu*r3/(20*pi*mu*r3/3)	
-			//	double	h_norm = 20.0/18.0;											//		assuming correction factor of 6*pi*mu*r3/(20*pi*mu*r3/3)	
-				double	M_Norm = (20.0*M_PI*eta_0*particle[a].radius*particle[a].radius*particle[a].radius/3.0);						//		assuming correction factor of 20*pi*mu*r3/3	
-				
 				if(a==b) {
 
 				Mobility_Tnsr_tr	= 		null33D ;
@@ -305,7 +272,7 @@ for (int a=0; a<NrParticles; a++)
 										ep_jkl_e_l	+=	Levi_Civi[j][k][l]*e_ab_unit.comp[l];
 										ep_ikl_e_l	+=	Levi_Civi[i][k][l]*e_ab_unit.comp[l];
 										
-										m_ijkl[i][j][k][l]	=	m_norm*((3.0/2.0)*x_m[1][1]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 					-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
+										m_ijkl[i][j][k][l]	=	((3.0/2.0)*x_m[1][1]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 					-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
 																-(1.0/3.0)*kron_del[k][l])
 																+(1.0/2.0)*y_m[1][1]*(e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	+	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
 																					+ e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	+ 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
@@ -322,17 +289,17 @@ for (int a=0; a<NrParticles; a++)
 									
 								ep_ijk_e_k					+=	Levi_Civi[i][j][k]*e_ab_unit.comp[k];
 								
-								g_ijk[i][j][k]				=	g_norm*(x_g[1][1]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
+								g_ijk[i][j][k]				=	(x_g[1][1]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
 																+ 		y_g[1][1]*(e_ab_unit.comp[i]*kron_del[j][k]		+ 	e_ab_unit.comp[j]*kron_del[i][k]	-	2.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]	)	);
 										
-								h_ijk[i][j][k]				= 	h_norm*(y_h[1][1]*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
+								h_ijk[i][j][k]				= 	(y_h[1][1]*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
 							}	// k		
 
-							Mobility_Tnsr_tt.comp[i][j]		=	a_norm*(x_a[1][1]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_a[1][1]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
+							Mobility_Tnsr_tt.comp[i][j]		=	(x_a[1][1]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_a[1][1]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
 							
-							Mobility_Tnsr_rt.comp[i][j]		=	b_norm*(													y_b[1][1]*ep_ijk_e_k													);
+							Mobility_Tnsr_rt.comp[i][j]		=	(													y_b[1][1]*ep_ijk_e_k													);
 						
-							Mobility_Tnsr_rr.comp[i][j]		=	c_norm*(x_c[1][1]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_c[1][1]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
+							Mobility_Tnsr_rr.comp[i][j]		=	(x_c[1][1]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_c[1][1]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
 						}	// j
 					}	// i
 
@@ -355,7 +322,7 @@ for (int a=0; a<NrParticles; a++)
 										ep_jkl_e_l	+=	Levi_Civi[j][k][l]*e_ab_unit.comp[l];
 										ep_ikl_e_l	+=	Levi_Civi[i][k][l]*e_ab_unit.comp[l];
 										
-										m_ijkl[i][j][k][l]	=	 m_norm*((3.0/2.0)*x_m[1][0]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 			-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
+										m_ijkl[i][j][k][l]	=	 ((3.0/2.0)*x_m[1][0]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 			-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
 																-(1.0/3.0)*kron_del[k][l])
 																+(1.0/2.0)*y_m[1][0]*(e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	+	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
 																					+ e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	+ 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
@@ -372,17 +339,17 @@ for (int a=0; a<NrParticles; a++)
 									
 								ep_ijk_e_k					+=	Levi_Civi[i][j][k]*e_ab_unit.comp[k];
 								
-								g_ijk[i][j][k]				=	g_norm*(x_g[1][0]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
+								g_ijk[i][j][k]				=	(x_g[1][0]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
 																+ 		y_g[1][0]*(e_ab_unit.comp[i]*kron_del[j][k]		+ 	e_ab_unit.comp[j]*kron_del[i][k]	-	2.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]	)	);
 										
-								h_ijk[i][j][k]				= 	h_norm*(y_h[1][0]*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
+								h_ijk[i][j][k]				= 	(y_h[1][0]*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
 							}	// k		
 
-							Mobility_Tnsr_tt.comp[i][j]		=	a_norm*(x_a[1][0]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_a[1][0]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
+							Mobility_Tnsr_tt.comp[i][j]		=	(x_a[1][0]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_a[1][0]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
 							
-							Mobility_Tnsr_rt.comp[i][j]		=	b_norm*(													y_b[1][0]*ep_ijk_e_k													);
+							Mobility_Tnsr_rt.comp[i][j]		=	(													y_b[1][0]*ep_ijk_e_k													);
 						
-							Mobility_Tnsr_rr.comp[i][j]		=	c_norm*(x_c[1][0]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_c[1][0]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
+							Mobility_Tnsr_rr.comp[i][j]		=	(x_c[1][0]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_c[1][0]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
 									
 							Mobility_Tnsr_tr	= 	    Mobility_Tnsr_rt*(1.0);		
 									
@@ -390,115 +357,6 @@ for (int a=0; a<NrParticles; a++)
 					}	// i	
 				}				
 
-// Resistance matrix calculation
-
-				if(a==b) {
-
-				Resistance_Tnsr_tr	= 		null33D ;
-					
-				for (int i=0; i<3; i++)
-					{
-					for (int j=0; j<3; j++)
-						{
-							double ep_ijk_e_k = 0.0;
-							
-						for (int k=0; k<3; k++)
-							{	
-
-								double ep_jkl_e_l = 0.0;
-								double ep_ikl_e_l = 0.0;
-								
-								for (int l=0; l<3; l++)
-									{
-										ep_jkl_e_l	+=	Levi_Civi[j][k][l]*e_ab_unit.comp[l];
-										ep_ikl_e_l	+=	Levi_Civi[i][k][l]*e_ab_unit.comp[l];
-										
-										M_IJKL[i][j][k][l]	=	M_Norm*((3.0/2.0)*X_M[1][1]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 					-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
-																-(1.0/3.0)*kron_del[k][l])
-																+(1.0/2.0)*Y_M[1][1]*(e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	+	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
-																					+ e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	+ 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
-																					- 4.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]	)
-																			
-																+(1.0/2.0)*Z_M[1][1]*(kron_del[i][k]*kron_del[j][l]		+ 	kron_del[j][k]*kron_del[i][l]	- 	kron_del[i][j]*kron_del[k][l]
-																+ e_ab_unit.comp[i]*e_ab_unit.comp[j]*kron_del[k][l]	+	kron_del[i][j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]	
-																+ e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]
-																- e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	- 	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
-																- e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	- 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
-																));																																																
-									}	// l
-									
-								ep_ijk_e_k					+=	Levi_Civi[i][j][k]*e_ab_unit.comp[k];
-								
-								G_IJK[i][j][k]				=	G_Norm*(X_G[1][1]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
-																+ 		Y_G[1][1]*(e_ab_unit.comp[i]*kron_del[j][k]		+ 	e_ab_unit.comp[j]*kron_del[i][k]	-	2.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]	)	);
-										
-								H_IJK[i][j][k]				= 	H_Norm*(Y_H[1][1]*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
-							}	// k		
-
-							Resistance_Tnsr_tt.comp[i][j]		=	A_Norm*(X_A[1][1]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	Y_A[1][1]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
-							
-						//	Resistance_Tnsr_rt.comp[i][j]		=	B_Norm*(													Y_B[1][1]*ep_ijk_e_k													);
-						
-							Resistance_Tnsr_rr.comp[i][j]		=	C_Norm*(X_C[1][1]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	Y_C[1][1]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
-							
-							Resistance_Tnsr_rt	= 		null33D ;
-						}	// j
-					}	// i
-
-			 } else {
-				 					
-				for (int i=0; i<3; i++)
-					{
-					for (int j=0; j<3; j++)
-						{
-							double ep_ijk_e_k = 0.0;
-							
-						for (int k=0; k<3; k++)
-							{	
-
-								double ep_jkl_e_l = 0.0;
-								double ep_ikl_e_l = 0.0;
-								
-								for (int l=0; l<3; l++)
-									{
-										ep_jkl_e_l	+=	Levi_Civi[j][k][l]*e_ab_unit.comp[l];
-										ep_ikl_e_l	+=	Levi_Civi[i][k][l]*e_ab_unit.comp[l];
-										
-										M_IJKL[i][j][k][l]	=	 M_Norm*((3.0/2.0)*X_M[1][0]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 			-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
-																-(1.0/3.0)*kron_del[k][l])
-																+(1.0/2.0)*Y_M[1][0]*(e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	+	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
-																					+ e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	+ 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
-																					- 4.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]	)
-																			
-																+(1.0/2.0)*Z_M[1][0]*(kron_del[i][k]*kron_del[j][l]		+ 	kron_del[j][k]*kron_del[i][l]	- 	kron_del[i][j]*kron_del[k][l]
-																+ e_ab_unit.comp[i]*e_ab_unit.comp[j]*kron_del[k][l]	+	kron_del[i][j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]	
-																+ e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]
-																- e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	- 	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
-																- e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	- 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
-																));
-																																							
-									}	// l
-									
-								ep_ijk_e_k					+=	Levi_Civi[i][j][k]*e_ab_unit.comp[k];
-								
-								G_IJK[i][j][k]				=	G_Norm*(X_G[1][0]*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
-																+ 		Y_G[1][0]*(e_ab_unit.comp[i]*kron_del[j][k]		+ 	e_ab_unit.comp[j]*kron_del[i][k]	-	2.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]	)	);
-										
-								H_IJK[i][j][k]				= 	H_Norm*(Y_H[1][0]*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
-							}	// k		
-
-							Resistance_Tnsr_tt.comp[i][j]		=	A_Norm*(X_A[1][0]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	Y_A[1][0]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
-							
-							Resistance_Tnsr_rt.comp[i][j]		=	B_Norm*(													Y_B[1][0]*ep_ijk_e_k													);
-						
-							Resistance_Tnsr_rr.comp[i][j]		=	C_Norm*(X_C[1][0]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	Y_C[1][0]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
-									
-							Resistance_Tnsr_tr	= 	    Resistance_Tnsr_rt*(1.0);		
-								
-						}	// j
-					}	// i	
-		}
-	
 //	extract the reduced index mobility tesnors from g_ijk, h_ijk and m_ijkl
 
 // based on the equation mu^dt_{\p\g} = (e^p)_{\a\b}*mu^dt_{\a\b\g}	, etc in wouter notes equation no : 422 , version : 110816_1556
@@ -523,11 +381,6 @@ for (int a=0; a<NrParticles; a++)
 						Mobility_Tnsr_dr.comp[p][g]		+=		e[p][a][b]*h_ijk[a][b][g];		
 						Mobility_Tnsr_td.comp[g][p]		+=		e[p][a][b]*g_ijk[a][b][g];	
 						Mobility_Tnsr_rd.comp[g][p]		+=		e[p][a][b]*h_ijk[a][b][g];
-								
-						Resistance_Tnsr_dt.comp[p][g]		+=		e[p][a][b]*G_IJK[a][b][g];	
-						Resistance_Tnsr_dr.comp[p][g]		+=		e[p][a][b]*H_IJK[a][b][g];		
-						Resistance_Tnsr_td.comp[g][p]		+=		e[p][a][b]*G_IJK[a][b][g];	
-						Resistance_Tnsr_rd.comp[g][p]		+=		e[p][a][b]*H_IJK[a][b][g];
 					}
 				}				
 			}
@@ -542,87 +395,17 @@ for (int a=0; a<NrParticles; a++)
 						for (int d=0; d<3; d++)
 							{							
 								Mobility_Tnsr_dd.comp[p][s]		+=		e[p][a][b]*m_ijkl[a][b][g][d]*e[s][g][d];			
-								Resistance_Tnsr_dd.comp[p][s]		+=		e[p][a][b]*M_IJKL[a][b][g][d]*e[s][g][d];			
 							}
 						}													
 					}
 				}
 			}
 		}		
-	
-				for (int l=0; l<3; l++)
-				{
-					for (int k=0; k<3; k++)
-						{
-					/*		mu_6N[l+3*k+9*j+i*9*NrParticles] 								=	 Mobility_Tnsr_tt.comp[k][l];
-							mu_6N[l+3*k+9*j+i*9*NrParticles+ 9*NrParticles*NrParticles] 	=	 Mobility_Tnsr_tr.comp[k][l];
-							mu_6N[l+3*k+9*j+i*9*NrParticles+18*NrParticles*NrParticles] 	=	 Mobility_Tnsr_rt.comp[k][l];
-							mu_6N[l+3*k+9*j+i*9*NrParticles+27*NrParticles*NrParticles] 	=	 Mobility_Tnsr_rr.comp[k][l];		*/					
-							// 11N column major format
-							rho_11N[k	+	11*NrParticles*l	+	3*a	+	33*NrParticles*b														] 	=	 Resistance_Tnsr_tt.comp[k][l];
-							rho_11N[k	+	11*NrParticles*l	+	3*a	+	33*NrParticles*b	+	33*NrParticles*NrParticles						] 	=	 Resistance_Tnsr_tr.comp[k][l];
-							rho_11N[k	+	11*NrParticles*l	+	3*a	+	33*NrParticles*b	+	3*NrParticles									] 	=	 Resistance_Tnsr_rt.comp[k][l];
-							rho_11N[k	+	11*NrParticles*l	+	3*a	+	33*NrParticles*b	+	33*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Resistance_Tnsr_rr.comp[k][l];							
-							rho_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a														] 	=	 Resistance_Tnsr_tt.comp[k][l];
-							rho_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a	+	33*NrParticles*NrParticles						] 	=	-Resistance_Tnsr_rt.comp[k][l];
-							rho_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a	+	3*NrParticles									] 	=	-Resistance_Tnsr_rt.comp[k][l];
-							rho_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a	+	33*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Resistance_Tnsr_rr.comp[k][l];
-/*							// 6N column major format
-							rho_11N[k	+	6*NrParticles*l	+	3*a	+	18*NrParticles*b														] 	=	 Resistance_Tnsr_tt.comp[k][l];
-							rho_11N[k	+	6*NrParticles*l	+	3*a	+	18*NrParticles*b	+	18*NrParticles*NrParticles						] 	=	 Resistance_Tnsr_tr.comp[k][l];
-							rho_11N[k	+	6*NrParticles*l	+	3*a	+	18*NrParticles*b	+	3*NrParticles									] 	=	 Resistance_Tnsr_rt.comp[k][l];
-							rho_11N[k	+	6*NrParticles*l	+	3*a	+	18*NrParticles*b	+	18*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Resistance_Tnsr_rr.comp[k][l];							
-							rho_11N[k	+	6*NrParticles*l	+	3*b	+	18*NrParticles*a														] 	=	 Resistance_Tnsr_tt.comp[k][l];
-							rho_11N[k	+	6*NrParticles*l	+	3*b	+	18*NrParticles*a	+	18*NrParticles*NrParticles						] 	=	 -Resistance_Tnsr_rt.comp[k][l];
-							rho_11N[k	+	6*NrParticles*l	+	3*b	+	18*NrParticles*a	+	3*NrParticles									] 	=	 -Resistance_Tnsr_rt.comp[k][l];
-							rho_11N[k	+	6*NrParticles*l	+	3*b	+	18*NrParticles*a	+	18*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Resistance_Tnsr_rr.comp[k][l];
-*/						}
-				}
-
-				
-			for (int l=0; l<5; l++)
-				{
-				for (int k=0; k<3; k++)
-					{				
-						// column major format
-						rho_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles						] 	=	 Resistance_Tnsr_td.comp[k][l];
-						rho_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Resistance_Tnsr_rd.comp[k][l];
-						rho_11N[k	+	11*NrParticles*l	+	3*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles						] 	=	 Resistance_Tnsr_td.comp[k][l];
-						rho_11N[k	+	11*NrParticles*l	+	3*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Resistance_Tnsr_rd.comp[k][l];
-						
-					}
-				}					
-			for (int l=0; l<3; l++)
-				{
-				for (int k=0; k<5; k++)
-					{				
-						// column major format
-						rho_11N[k	+	11*NrParticles*l	+	5*a	+	33*NrParticles*b	+	6*NrParticles									] 	=	 Resistance_Tnsr_dt.comp[k][l];
-						rho_11N[k	+	11*NrParticles*l	+	5*a	+	33*NrParticles*b	+	33*NrParticles*NrParticles	+	6*NrParticles	] 	=	 Resistance_Tnsr_dr.comp[k][l];
-						rho_11N[k	+	11*NrParticles*l	+	5*b	+	33*NrParticles*a	+	6*NrParticles									] 	=	 Resistance_Tnsr_dt.comp[k][l];
-						rho_11N[k	+	11*NrParticles*l	+	5*b	+	33*NrParticles*a	+	33*NrParticles*NrParticles	+	6*NrParticles	] 	=	 Resistance_Tnsr_dr.comp[k][l];						
-					}
-				}
-			for (int l=0; l<5; l++)
-				{
-				for (int k=0; k<5; k++)
-					{				
-						// column major format
-						rho_11N[k	+	11*NrParticles*l	+	5*a	+	55*NrParticles*b	+	66*NrParticles				+	6*NrParticles	] 	=	 Resistance_Tnsr_dd.comp[k][l];
-						rho_11N[k	+	11*NrParticles*l	+	5*b	+	55*NrParticles*a	+	66*NrParticles				+	6*NrParticles	] 	=	 Resistance_Tnsr_dd.comp[k][l];
-					}
-				}
-
-
 				
 			for (int l=0; l<3; l++)
 				{
 					for (int k=0; k<3; k++)
-						{
-					/*		mu_6N[l+3*k+9*j+i*9*NrParticles] 								=	 Mobility_Tnsr_tt.comp[k][l];
-							mu_6N[l+3*k+9*j+i*9*NrParticles+ 9*NrParticles*NrParticles] 	=	 Mobility_Tnsr_tr.comp[k][l];
-							mu_6N[l+3*k+9*j+i*9*NrParticles+18*NrParticles*NrParticles] 	=	 Mobility_Tnsr_rt.comp[k][l];
-							mu_6N[l+3*k+9*j+i*9*NrParticles+27*NrParticles*NrParticles] 	=	 Mobility_Tnsr_rr.comp[k][l];		*/					
+						{		
 							// 11N column major format
 							zeta_11N[k	+	11*NrParticles*l	+	3*a	+	33*NrParticles*b														] 	=	 Mobility_Tnsr_tt.comp[k][l];
 							zeta_11N[k	+	11*NrParticles*l	+	3*a	+	33*NrParticles*b	+	33*NrParticles*NrParticles						] 	=	 Mobility_Tnsr_tr.comp[k][l];
@@ -649,10 +432,10 @@ for (int a=0; a<NrParticles; a++)
 				for (int k=0; k<3; k++)
 					{				
 						// column major format
-						zeta_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles						] 	=	 Mobility_Tnsr_td.comp[k][l];
-						zeta_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Mobility_Tnsr_rd.comp[k][l];
-						zeta_11N[k	+	11*NrParticles*l	+	3*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles						] 	=	 Mobility_Tnsr_td.comp[k][l];
-						zeta_11N[k	+	11*NrParticles*l	+	3*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Mobility_Tnsr_rd.comp[k][l];
+						zeta_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles						] 	=	 -Mobility_Tnsr_dt.comp[k][l];
+						zeta_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Mobility_Tnsr_dr.comp[k][l];
+						zeta_11N[k	+	11*NrParticles*l	+	3*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles						] 	=	 Mobility_Tnsr_dt.comp[k][l];
+						zeta_11N[k	+	11*NrParticles*l	+	3*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Mobility_Tnsr_dr.comp[k][l];
 						
 					}
 				}					
@@ -661,7 +444,7 @@ for (int a=0; a<NrParticles; a++)
 				for (int k=0; k<5; k++)
 					{				
 						// column major format
-						zeta_11N[k	+	11*NrParticles*l	+	5*a	+	33*NrParticles*b	+	6*NrParticles									] 	=	 Mobility_Tnsr_dt.comp[k][l];
+						zeta_11N[k	+	11*NrParticles*l	+	5*a	+	33*NrParticles*b	+	6*NrParticles									] 	=	 -Mobility_Tnsr_dt.comp[k][l];
 						zeta_11N[k	+	11*NrParticles*l	+	5*a	+	33*NrParticles*b	+	33*NrParticles*NrParticles	+	6*NrParticles	] 	=	 Mobility_Tnsr_dr.comp[k][l];
 						zeta_11N[k	+	11*NrParticles*l	+	5*b	+	33*NrParticles*a	+	6*NrParticles									] 	=	 Mobility_Tnsr_dt.comp[k][l];
 						zeta_11N[k	+	11*NrParticles*l	+	5*b	+	33*NrParticles*a	+	33*NrParticles*NrParticles	+	6*NrParticles	] 	=	 Mobility_Tnsr_dr.comp[k][l];						
@@ -672,8 +455,8 @@ for (int a=0; a<NrParticles; a++)
 				for (int k=0; k<5; k++)
 					{				
 						// column major format
-						zeta_11N[k	+	11*NrParticles*l	+	5*a	+	55*NrParticles*b	+	66*NrParticles				+	6*NrParticles	] 	=	 Mobility_Tnsr_dd.comp[k][l];
-						zeta_11N[k	+	11*NrParticles*l	+	5*b	+	55*NrParticles*a	+	66*NrParticles				+	6*NrParticles	] 	=	 Mobility_Tnsr_dd.comp[k][l];
+						zeta_11N[k	+	11*NrParticles*l	+	5*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles	+	6*NrParticles	] 	=	 Mobility_Tnsr_dd.comp[k][l];
+						zeta_11N[k	+	11*NrParticles*l	+	5*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles	+	6*NrParticles	] 	=	 Mobility_Tnsr_dd.comp[k][l];
 					}
 				}
 
@@ -693,11 +476,6 @@ for (int a=0; a<NrParticles; a++)
 	mtrx55D Friction_Tnsr_dd	=	null55D;
 
 	inverse ( zeta_11N ,11*NrParticles )	 ; 	
-
-	for (int i=0; i<11*NrParticles*11*NrParticles; i++)
-		{
-			zeta_11N[i] = rho_11N[i] ;
-		}	
 	
 	for (int i=0; i<NrParticles; i++)
 		{
@@ -721,15 +499,23 @@ for (int a=0; a<NrParticles; a++)
 //hence	(del_j)_{\alpha,p}							= 	(e_p)_{\alpha\beta}	*	r_\beta	
 
 					mtrx35D	Delj;
+					mtrx53D	Deli;
+					mtrx53D	Unit_tnsr_Redc;
 					
 						for (int k=0; k<5; k++)
 						{							
 							for (int a=0; a<3; a++)
 							{
 								Delj.comp[a][k]	=	0.0	;
+								Deli.comp[k][a]	=	0.0	;
 								for (int b=0; b<3; b++)
 								{
 									Delj.comp[a][k]	+=	e_l[k][a][b]	*	particle[j].pos.comp[b]	;
+									Deli.comp[k][a]	+=	e_l[k][a][b]		*	particle[i].pos.comp[b]	;
+									for (int c=0; c<3; c++)
+									{
+										Unit_tnsr_Redc.comp[k][a]	+=	e_l[k][b][c]		* (b==c)	*	particle[i].pos.comp[a]	;	
+									}
 								}
 							}		
 						}
@@ -784,7 +570,7 @@ for (int a=0; a<NrParticles; a++)
 							for (int k=0; k<5; k++)
 								{				
 									// column major format
-									Resistance_Tnsr_dd.comp[k][l] =	zeta_11N[k	+	11*NrParticles*l	+	5*i	+	55*NrParticles*j	+	66*NrParticles				+	6*NrParticles	];
+									Resistance_Tnsr_dd.comp[k][l] =	zeta_11N[k	+	11*NrParticles*l	+	5*i	+	55*NrParticles*j	+	66*NrParticles*NrParticles	+	6*NrParticles	];
 								}
 						}						
 					
@@ -804,20 +590,32 @@ for (int a=0; a<NrParticles; a++)
 									Friction_Tnsr_dr.comp[l][k]	-= 	Resistance_Tnsr_dt.comp[l][m]*Aj.comp[m][k];
 									for (int n=0; n<3; n++)
 									{
-										Friction_Tnsr_rd.comp[k][l]	+=	Ai.comp[k][n]	*	(	Resistance_Tnsr_tt.comp[n][m]	*	Delj.comp[m][l]	+	Resistance_Tnsr_td.comp[k][l]	)	;
+										Friction_Tnsr_rd.comp[k][l]	+=	Ai.comp[k][n]	*	(	Resistance_Tnsr_tt.comp[n][m]	*	Delj.comp[m][l]	+	Resistance_Tnsr_td.comp[n][l]	)	;
 									}									
 								}
 								Friction_Tnsr_td.comp[k][l]	+=	Resistance_Tnsr_td.comp[k][l]	;
 								Friction_Tnsr_rd.comp[k][l]	+=	Resistance_Tnsr_rd.comp[k][l]	;								
 								Friction_Tnsr_dt.comp[k][l]	+=	Resistance_Tnsr_dt.comp[l][k]	;								
 								Friction_Tnsr_dr.comp[l][k]	+=	Resistance_Tnsr_dr.comp[l][k]	;								
-							}
+							} 
 						for (int k=0; k<5; k++)
 						{								
 							for (int m=0; m<3; m++)
 							{
-							//	Friction_Tnsr_dd.comp[l][k]	-= 	Resistance_Tnsr_dt.comp[l][m]*Delj.comp[m][k];
-							}	
+								Friction_Tnsr_dd.comp[l][k]	+= 	Resistance_Tnsr_dt.comp[l][m]*Delj.comp[m][k];
+									for (int n=0; n<3; n++)
+									{
+										Friction_Tnsr_dd.comp[l][k]	+=	(	0.5	*	(
+																				Deli.comp[l][m]	*	(	Resistance_Tnsr_tt.comp[m][n]	*	Delj.comp[n][k]	+	Resistance_Tnsr_td.comp[m][k]	)
+																				+
+																				Deli.comp[k][m]	*	(	Resistance_Tnsr_tt.comp[m][n]	*	Delj.comp[n][l]	+	Resistance_Tnsr_td.comp[m][l]	)
+																				)
+																		-	(1.0/3.0)	*	(
+																				Unit_tnsr_Redc.comp[l][m]	*	(	Resistance_Tnsr_tt.comp[m][n]	*	Delj.comp[n][k]	+	Resistance_Tnsr_td.comp[m][k]	)
+																				)
+																		) ;		
+									} 				
+							}
 						
 							Friction_Tnsr_dd.comp[l][k]	+=	Resistance_Tnsr_dd.comp[l][k]	;		
 						}						
@@ -828,7 +626,7 @@ for (int a=0; a<NrParticles; a++)
 		}
 					Friction_Tnsr_rt = ~Friction_Tnsr_tr;
 
-
+/*
 			for (int l=0; l<3; l++)
 				{
 					for (int k=0; k<3; k++)
@@ -867,7 +665,7 @@ for (int a=0; a<NrParticles; a++)
 						xi_11x11[k	+	11*l	+	66	+	6	] 	=	 Friction_Tnsr_dd.comp[k][l];
 					}
 				}
-/*
+*/
 	
 	 			// 6x6 format					
 	 				// column major format
@@ -911,144 +709,24 @@ for (int a=0; a<NrParticles; a++)
 					xi_11x11[33] = Friction_Tnsr_rr.comp[2][0] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
-*/	
 	
-	inverse ( xi_11x11 , 11 )	 ; 			
-	for (int i=0; i<121; i++)
+	
+	inverse ( xi_11x11 , 6 )	 ; 			
+	for (int i=0; i<36; i++)
 		{
 			xi_11x11[i]*=4.1419e-14;	// multiply by kbT in erg K-1
 		} 	
-/*
-// center of diffusion calculation based on "Hydrodynamic properties of rigid particles: comparison of different modeling and computational procedures." Biophysical journal 76.6 (1999): 3044-3057.			
-// Page 3046 equation 13.
-vctr3D ctr_diff ; 
-double temp_mat[3*3];
-temp_mat[0] =  xi_11x11[28] + xi_11x11[35]	;
-temp_mat[1] = -xi_11x11[27] 				; 
-temp_mat[2] = -xi_11x11[33]				; 
-temp_mat[3] = -xi_11x11[27]				;
-temp_mat[4] =  xi_11x11[21] + xi_11x11[35]	;
-temp_mat[5] = -xi_11x11[34]				;
-temp_mat[6] = -xi_11x11[33]				;
-temp_mat[7] = -xi_11x11[34]				;
-temp_mat[8] =  xi_11x11[28] + xi_11x11[21]	;
-
-inverse ( temp_mat , 3 )	 ; 	
-
-ctr_diff.comp[0] = temp_mat[0]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[3]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[6]*(xi_11x11[9] - xi_11x11[4]) ;
-ctr_diff.comp[1] = temp_mat[1]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[4]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[7]*(xi_11x11[9] - xi_11x11[4]) ;
-ctr_diff.comp[2] = temp_mat[2]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[5]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[8]*(xi_11x11[9] - xi_11x11[4]) ;
-
-mtrx3D D_tt, D_tr, D_rt , D_rr, U_OD;
-
-D_tt.comp[0][0] = xi_11x11[0];
-D_tt.comp[1][0] = xi_11x11[1];
-D_tt.comp[2][0] = xi_11x11[2];
-D_tt.comp[0][1] = xi_11x11[6];
-D_tt.comp[1][1] = xi_11x11[7];
-D_tt.comp[2][1] = xi_11x11[8];
-D_tt.comp[0][2] = xi_11x11[12];
-D_tt.comp[1][2] = xi_11x11[13];
-D_tt.comp[2][2] = xi_11x11[14];
-
-D_tr.comp[0][0] = xi_11x11[3];
-D_tr.comp[1][0] = xi_11x11[4];
-D_tr.comp[2][0] = xi_11x11[5];
-D_tr.comp[0][1] = xi_11x11[9];
-D_tr.comp[1][1] = xi_11x11[10];
-D_tr.comp[2][1] = xi_11x11[11];
-D_tr.comp[0][2] = xi_11x11[15];
-D_tr.comp[1][2] = xi_11x11[16];
-D_tr.comp[2][2] = xi_11x11[17];
-
-D_rt.comp[0][0] = xi_11x11[18];
-D_rt.comp[1][0] = xi_11x11[19];
-D_rt.comp[2][0] = xi_11x11[20];
-D_rt.comp[0][1] = xi_11x11[24];
-D_rt.comp[1][1] = xi_11x11[25];
-D_rt.comp[2][1] = xi_11x11[26];
-D_rt.comp[0][2] = xi_11x11[30];
-D_rt.comp[1][2] = xi_11x11[31];
-D_rt.comp[2][2] = xi_11x11[32];
-
-D_rr.comp[0][0] = xi_11x11[21];
-D_rr.comp[1][0] = xi_11x11[22];
-D_rr.comp[2][0] = xi_11x11[23];
-D_rr.comp[0][1] = xi_11x11[27];
-D_rr.comp[1][1] = xi_11x11[28];
-D_rr.comp[2][1] = xi_11x11[29];
-D_rr.comp[0][2] = xi_11x11[33];
-D_rr.comp[1][2] = xi_11x11[34];
-D_rr.comp[2][2] = xi_11x11[35];
-
-U_OD.comp[0][0] =  0.0;
-U_OD.comp[1][0] =  ctr_diff.comp[2];
-U_OD.comp[2][0] = -ctr_diff.comp[1];
-U_OD.comp[0][1] = -ctr_diff.comp[2];
-U_OD.comp[1][1] =  0.0;
-U_OD.comp[2][1] =  ctr_diff.comp[0];
-U_OD.comp[0][2] =  ctr_diff.comp[1];
-U_OD.comp[1][2] = -ctr_diff.comp[0];
-U_OD.comp[2][2] =  0.0;
-
-mtrx3D D_tt_CoD = D_tt -  U_OD*D_rr*U_OD + D_rt*U_OD - U_OD*D_tr ; 
-mtrx3D D_tr_CoD = D_tr +  D_rr*U_OD ;  // based on equations 42 from Wouter's notes "clusterdyn"
-mtrx3D D_rt_CoD = D_rt -  U_OD*D_rr ;  // based on equations 43 from Wouter's notes "clusterdyn"
-
-xi_11x11[0]  = D_tt_CoD.comp[0][0];
-xi_11x11[1]  = D_tt_CoD.comp[1][0];
-xi_11x11[2]  = D_tt_CoD.comp[2][0];
-xi_11x11[6]  = D_tt_CoD.comp[0][1];
-xi_11x11[7]  = D_tt_CoD.comp[1][1];
-xi_11x11[8]  = D_tt_CoD.comp[2][1];
-xi_11x11[12] = D_tt_CoD.comp[0][2];
-xi_11x11[13] = D_tt_CoD.comp[1][2];
-xi_11x11[14] = D_tt_CoD.comp[2][2];
-
-xi_11x11[3]  = D_tr_CoD.comp[0][0];
-xi_11x11[4]  = D_tr_CoD.comp[1][0];
-xi_11x11[5]  = D_tr_CoD.comp[2][0];
-xi_11x11[9]  = D_tr_CoD.comp[0][1];
-xi_11x11[10] = D_tr_CoD.comp[1][1];
-xi_11x11[11] = D_tr_CoD.comp[2][1];
-xi_11x11[15] = D_tr_CoD.comp[0][2];
-xi_11x11[16] = D_tr_CoD.comp[1][2];
-xi_11x11[17] = D_tr_CoD.comp[2][2];
-
-xi_11x11[18]  = D_rt_CoD.comp[0][0];
-xi_11x11[19]  = D_rt_CoD.comp[1][0];
-xi_11x11[20]  = D_rt_CoD.comp[2][0];
-xi_11x11[24]  = D_rt_CoD.comp[0][1];
-xi_11x11[25]  = D_rt_CoD.comp[1][1];
-xi_11x11[26]  = D_rt_CoD.comp[2][1];
-xi_11x11[30]  = D_rt_CoD.comp[0][2];
-xi_11x11[31]  = D_rt_CoD.comp[1][2];
-xi_11x11[32]  = D_rt_CoD.comp[2][2];
 
 
-			for (int l=0; l<3; l++)
-				{
-					for (int k=0; k<3; k++)
-						{				
-							// column major format
-							Friction_Tnsr_tt.comp[k][l]	=	xi_11x11[k	+	11*l					];
-							Friction_Tnsr_tr.comp[k][l]	=	xi_11x11[k	+	11*l	+	33			];
-							Friction_Tnsr_rt.comp[k][l]	=	xi_11x11[k	+	11*l	+	3			];
-							Friction_Tnsr_rr.comp[k][l]	=	xi_11x11[k	+	11*l	+	33	+	3	];							
-						}
-				}
-
-*/
-
-/*		outFile1<<std::endl ;
-		outFile1<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
-		outFile1<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
-		outFile1<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
 		outFile1<<std::endl ;
-		outFile1<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
-		outFile1<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
-		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
-*/
+		outFile1<<a_norm*xi_11x11[0]<<'\t'<<a_norm*xi_11x11[6]<<'\t'<<a_norm*xi_11x11[12]<<'\t'<<b_norm*xi_11x11[18]<<'\t'<<b_norm*xi_11x11[24]<<'\t'<<b_norm*xi_11x11[30]<<std::endl ;
+		outFile1<<a_norm*xi_11x11[1]<<'\t'<<a_norm*xi_11x11[7]<<'\t'<<a_norm*xi_11x11[13]<<'\t'<<b_norm*xi_11x11[19]<<'\t'<<b_norm*xi_11x11[25]<<'\t'<<b_norm*xi_11x11[31]<<std::endl ;
+		outFile1<<a_norm*xi_11x11[2]<<'\t'<<a_norm*xi_11x11[8]<<'\t'<<a_norm*xi_11x11[14]<<'\t'<<b_norm*xi_11x11[20]<<'\t'<<b_norm*xi_11x11[26]<<'\t'<<b_norm*xi_11x11[32]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<b_norm*xi_11x11[3]<<'\t'<<b_norm*xi_11x11[9]<<'\t'<<b_norm*xi_11x11[15]<<'\t'<<c_norm*xi_11x11[21]<<'\t'<<c_norm*xi_11x11[27]<<'\t'<<c_norm*xi_11x11[33]<<std::endl ;
+		outFile1<<b_norm*xi_11x11[4]<<'\t'<<b_norm*xi_11x11[10]<<'\t'<<b_norm*xi_11x11[16]<<'\t'<<c_norm*xi_11x11[22]<<'\t'<<c_norm*xi_11x11[28]<<'\t'<<c_norm*xi_11x11[34]<<std::endl ;
+		outFile1<<b_norm*xi_11x11[5]<<'\t'<<b_norm*xi_11x11[11]<<'\t'<<b_norm*xi_11x11[17]<<'\t'<<c_norm*xi_11x11[23]<<'\t'<<c_norm*xi_11x11[29]<<'\t'<<c_norm*xi_11x11[35]<<std::endl ;
+/*
 		outFile1<<std::endl ;
 		outFile1<<xi_11x11[0]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[33]<<'\t'<<xi_11x11[44]<<'\t'<<xi_11x11[55]<<std::endl ;
 		outFile1<<xi_11x11[1]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[34]<<'\t'<<xi_11x11[45]<<'\t'<<xi_11x11[56]<<std::endl ;
@@ -1057,6 +735,34 @@ xi_11x11[32]  = D_rt_CoD.comp[2][2];
 		outFile1<<xi_11x11[3]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[36]<<'\t'<<xi_11x11[47]<<'\t'<<xi_11x11[58]<<std::endl ;
 		outFile1<<xi_11x11[4]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[37]<<'\t'<<xi_11x11[48]<<'\t'<<xi_11x11[59]<<std::endl ;
 		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[38]<<'\t'<<xi_11x11[49]<<'\t'<<xi_11x11[60]<<std::endl ;
+*/
+
+// using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
+double mu_d[6][5];
+
+			for (int l=0; l<6; l++)
+				{
+				for (int k=0; k<5; k++)
+					{	
+						mu_d[l][k] = 0.0;
+					for (int m=0; m<3; m++)
+						{				
+							// column major format
+							mu_d[l][k]	+=	xi_11x11[l	+	6*m]*Friction_Tnsr_td.comp[m][k];
+							mu_d[l][k]	+=	xi_11x11[l	+	6*(m+3)]*Friction_Tnsr_rd.comp[m][k];
+						}
+					mu_d[l][k] *= g_norm;
+					}
+				}
+				
+		outFile1<<std::endl ;
+		outFile1<<mu_d[0]<<'\t'<<mu_d[6]<<'\t'<<mu_d[12]<<'\t'<<mu_d[18]<<'\t'<<mu_d[24]<<std::endl ;
+		outFile1<<mu_d[1]<<'\t'<<mu_d[7]<<'\t'<<mu_d[13]<<'\t'<<mu_d[19]<<'\t'<<mu_d[25]<<std::endl ;
+		outFile1<<mu_d[2]<<'\t'<<mu_d[8]<<'\t'<<mu_d[14]<<'\t'<<mu_d[20]<<'\t'<<mu_d[26]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<mu_d[3]<<'\t'<<mu_d[9]<<'\t'<<mu_d[15]<<'\t'<<mu_d[21]<<'\t'<<mu_d[27]<<std::endl ;
+		outFile1<<mu_d[4]<<'\t'<<mu_d[10]<<'\t'<<mu_d[16]<<'\t'<<mu_d[22]<<'\t'<<mu_d[28]<<std::endl ;
+		outFile1<<mu_d[5]<<'\t'<<mu_d[11]<<'\t'<<mu_d[17]<<'\t'<<mu_d[23]<<'\t'<<mu_d[29]<<std::endl ;			
 
 }
 
@@ -1205,13 +911,40 @@ void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& partic
 double a, b , c, lambda;
 vctr4D quat_old;
 *KE_rot=0;
+double e[5][3][3]= {
+						{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
+						{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
+						{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
+						{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
+						{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
+					};
+						
 for(int i=0;i<*Max_Cluster_N;i++) 
 	{
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
+		vctr3D u_inf(shear_rate*cluster[i].pos.comp[1],0.0,0.0); 		// shear flow gradient in y-direction
+		mtrx3D E_inf_b = (~cluster[i].rotmat)*E_inf*cluster[i].rotmat;
+		vctr5D E_inf_bt;
+		
+		for(int j=0;j<5;j++) 
+			{		
+				E_inf_bt.comp[j] = 0.0;
+				
+				for(int k=0;k<3;k++) 
+					{
+						for(int l=0;l<3;l++) 
+							{
+								E_inf_bt.comp[j]	=+	 e[j][k][l]*E_inf_b.comp[k][l];
+							}
+					}
+			}	
+
+		 
 		if (cluster[i].Sub_Length>1) 
 			{
-				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt);
+				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*dt) + cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)
+								+u_inf*dt - cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 	
 				if(xx_rotation)	
 				{
@@ -1221,8 +954,10 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt);
-				cluster[i].quat		=	cluster[i].theta2quat();
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt) + cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)
+										- cluster[i].rotmat*(cluster[i].mobility_tnsr_rd*E_inf_bt)*dt;	// body fixed omega
+				cluster[i].omega	=	w_inf;						// space-fixed omega
+				cluster[i].quat		=	cluster[i].theta2quat()	+	cluster[i].omega2qdot() ;
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
 			// assuming qi(t+dt) = ~qi + lambda*qi(t);
@@ -1700,7 +1435,7 @@ do {
 
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 
-		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
+		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.4"<<std::endl;
 		
 		} 
 
@@ -1745,6 +1480,28 @@ else {
         currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
         currentLine >> cluster[i].rot_mobility_tnsr.comp[n][1];
         currentLine >> cluster[i].rot_mobility_tnsr.comp[n][2];
+ 
+    }
+		std::getline(dataFile,line);
+    for (int n=0;n<3;n++) {
+		std::getline(dataFile,line);
+    	std::istringstream currentLine(line);    
+        currentLine >> cluster[i].mobility_tnsr_td.comp[n][0];
+        currentLine >> cluster[i].mobility_tnsr_td.comp[n][1];
+        currentLine >> cluster[i].mobility_tnsr_td.comp[n][2];
+        currentLine >> cluster[i].mobility_tnsr_td.comp[n][3];
+        currentLine >> cluster[i].mobility_tnsr_td.comp[n][4];
+    }
+		std::getline(dataFile,line);
+
+    for (int n=0;n<3;n++) {
+		std::getline(dataFile,line);
+    	std::istringstream currentLine(line);    
+        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][0];
+        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][1];
+        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][2];
+        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][3];
+        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][4];
  
     }
 }	 

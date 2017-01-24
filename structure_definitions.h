@@ -153,6 +153,8 @@ struct ParticleData
   mtrx3D mobility_tnsr_sqrt; 
   mtrx3D rot_mobility_tnsr;
   mtrx3D rot_mobility_tnsr_sqrt;
+  mtrx35D mobility_tnsr_td;
+  mtrx35D mobility_tnsr_rd;
   vctr3D trq;           // lab-fixed = cartesian
   vctr3D theta;
   vctr3D angmom;        // lab-fixed
@@ -294,7 +296,7 @@ struct ParticleData
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  vctr4D theta2quat() // for 3D box: translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
+  vctr4D theta2quat() // for 3D box: translate body-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
 					  // based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 					  // J. Chem. Phys. 142, 114103 (2015)
   {
