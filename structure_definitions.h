@@ -24,7 +24,9 @@ double const recipi = 1. / pi;
 vctr3D const null3D  ( 0., 0., 0. );        // why can I not use these in calculations?
 mtrx3D const null33D ( 0., 0., 0. );
 vctr4D const null4D  ( 0., 0., 0., 0. );
-
+mtrx35D const null35D ( {0., 0., 0., 0., 0.},{0., 0., 0., 0., 0.},{0., 0., 0., 0., 0.} );
+mtrx53D const null53D ( {0., 0., 0., 0., 0.},{0., 0., 0., 0., 0.},{0., 0., 0., 0., 0.} );
+mtrx55D const null55D ( {0., 0., 0., 0., 0.},{0., 0., 0., 0., 0.},{0., 0., 0., 0., 0.},{0., 0., 0., 0., 0.},{0., 0., 0., 0., 0.} );
 //std::string const in_bld      ("input.build");  // "proper" syntax
 string const in_conf   = "input.Config";
 string const in_ctrl   = "input.control";
@@ -153,6 +155,8 @@ struct ParticleData
   mtrx3D mobility_tnsr_sqrt; 
   mtrx3D rot_mobility_tnsr;
   mtrx3D rot_mobility_tnsr_sqrt;
+  mtrx35D mobility_tnsr_td;
+  mtrx35D mobility_tnsr_rd;
   vctr3D trq;           // lab-fixed = cartesian
   vctr3D theta;
   vctr3D angmom;        // lab-fixed

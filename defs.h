@@ -4,7 +4,7 @@
 # include "structure_definitions.h"
 const double m =1.0;
 const double inv_mass =1.0/m;
-const double dt=0.0001;
+const double dt=0.001;
 const int NrParticles=xxNrParticles;
 const double r_cut  = 1.0; // pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
@@ -45,7 +45,13 @@ const double sigma12 = sigma6*sigma6;
 const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
+const double shear_rate = 3.; 
+// simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
+const mtrx3D E_inf(	{0.0,shear_rate/2.0,0.0},
+					{shear_rate/2.0,0.0,0.0},
+					{0.0,0.0,0.0});
 
+const vctr3D w_inf(0.0,0.0,-0.5*shear_rate);
 const int dm[13][3] = { {  0,  0,  1 },
                        {  1,  0, -1 },
                        {  1,  0,  0 },
