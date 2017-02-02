@@ -2,13 +2,13 @@
 alias clang++='clang++-3.5 -std=c++11'
 @ a = 990923
 @ init = $a 
-@ k = 270
-@ nrrodeq = 486
+@ k = 300
+@ nrrodeq = 540
 while ( $a < 990924 )
 	mkdir $a
 	cd $a
 	@ ifcreate = 1; 
-	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<=100000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
+	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<=100000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/  " ../../BD_3D_rigid_rotation_optimized.cpp > BD_3D_rigid_rotation_optimized.cpp
 	sed "s/xxshift/1/ ; s/xxclustering/0/ " ../../pairforce_rod.h > pairforce_rod.h
 
 	@ cubic = 1
