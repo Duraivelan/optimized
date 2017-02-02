@@ -774,7 +774,36 @@ for (int a=0; a<NrParticles; a++)
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
 	
-	
+		double h_clst_ijk[3][3][3] = {{{0}}};
+
+	for (int a=0; a<3; a++)
+		{
+		for (int b=0; b<3; b++)
+			{
+			for (int g=0; g<3; g++)
+				{
+					h_clst_ijk[a][b][g] = 0.0;
+					
+				for (int p=0; p<5; p++)
+					{
+							h_clst_ijk[a][b][g]	+=		e[p][a][b]*Friction_Tnsr_rd.comp[g][p];		
+
+					}													
+				}
+			}
+		}
+
+cout<<"h_clst_ijk"<<endl;
+
+for (int s=0; s<3; s++)
+	{							
+		cout << setw(10) << h_clst_ijk[s][0][0] << "  " << setw(10) << h_clst_ijk[s][0][1] << "  " << setw(10) << h_clst_ijk[s][0][2] << endl;
+		cout << setw(10) << h_clst_ijk[s][1][0] << "  " << setw(10) << h_clst_ijk[s][1][1] << "  " << setw(10) << h_clst_ijk[s][1][2] << endl;
+		cout << setw(10) << h_clst_ijk[s][2][0] << "  " << setw(10) << h_clst_ijk[s][2][1] << "  " << setw(10) << h_clst_ijk[s][2][2] << endl;
+    }	
+		cout<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
+		cout<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
+		cout<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
 	inverse ( xi_11x11 , 6 )	 ; 			
 	for (int i=0; i<36; i++)
 		{
@@ -1402,26 +1431,61 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	}
 }
 
+
+//delete all files before writing data
+
+// following snippet taken from stakcflow link  http://stackoverflow.com/questions/11007494/how-to-delete-all-files-in-a-folder-but-not-delete-the-folder-c-linux
+if (xxcluster_restart) {
+dataFileName=dataFileName_new;
+}
+const char *dataFileNamePointer = dataFileName.c_str();  // covnert the datafilename to a char pointer ans pass it to the snippet below which delete all files in that folder before running the simulation
+if (!xxcluster_restart) {
+struct dirent *next_file;
+DIR *theFolder;
+char filepath[256];
+theFolder = opendir(dataFileNamePointer);
+while (( next_file = readdir(theFolder)) )
+	{
+    // build the full path for each file in the folder
+    sprintf(filepath, "%s/%s",dataFileNamePointer, next_file->d_name);
+    if(strcmp(filepath,"../xxx/log")!=0)
+		{
+			remove(filepath);
+		}
+	}
+//
+}
+
+
 /* initialize rod diffusivity */
 if(!xxcluster_restart)	{
 	
 for (int i=0;i<NrParticles;i++) {
 remove("new_cluster.dat");
-
+cout<<"Hi"<<endl;
 			std::ofstream outFile7("new_cluster.dat");
 					
 			for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 				{
-					for (double eb = (-1*extra_beads); eb < (extra_beads+1 ); eb++)
+					for (double eb = (-1*extra_beads); eb < 0; eb++)
 
 						{
 
-							vctr3D extd_rod_pos = particle[cluster[i].sub[j]].pos_bdyfxd+particle[cluster[i].sub[j]].dir*(eb)*r_min ;
+							vctr3D extd_rod_pos = particle[cluster[i].sub[j]].pos_bdyfxd+particle[cluster[i].sub[j]].dir*(eb+0.5)*(r_min) ;
 
-							outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<"0.4"<<std::endl;
+							outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<"0.3"<<std::endl;
 
 						}
-						
+
+					for (double eb = 1; eb < (extra_beads+1 ); eb++)
+
+						{
+
+							vctr3D extd_rod_pos = particle[cluster[i].sub[j]].pos_bdyfxd+particle[cluster[i].sub[j]].dir*(eb-0.5)*(r_min) ;
+
+							outFile7<<extd_rod_pos.comp[0]<<'\t'<<extd_rod_pos.comp[1]<<'\t'<<extd_rod_pos.comp[2] <<'\t'<<"0.3"<<std::endl;
+
+						}						
 				}		
 		
 	outFile7.close();
@@ -1576,30 +1640,6 @@ else {
 
 	}
 
-}
-
-//delete all files before writing data
-
-// following snippet taken from stakcflow link  http://stackoverflow.com/questions/11007494/how-to-delete-all-files-in-a-folder-but-not-delete-the-folder-c-linux
-if (xxcluster_restart) {
-dataFileName=dataFileName_new;
-}
-const char *dataFileNamePointer = dataFileName.c_str();  // covnert the datafilename to a char pointer ans pass it to the snippet below which delete all files in that folder before running the simulation
-if (!xxcluster_restart) {
-struct dirent *next_file;
-DIR *theFolder;
-char filepath[256];
-theFolder = opendir(dataFileNamePointer);
-while (( next_file = readdir(theFolder)) )
-	{
-    // build the full path for each file in the folder
-    sprintf(filepath, "%s/%s",dataFileNamePointer, next_file->d_name);
-    if(strcmp(filepath,"../xxx/log")!=0)
-		{
-			remove(filepath);
-		}
-	}
-//
 }
 
 std::ofstream outFile1(dataFileName+"/PE_energy.dat");
@@ -2036,16 +2076,16 @@ if (step%frame==0)
 			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
 						double l =extra_beads-1;
-					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
+				//	outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					for (double l=0; l< extra_beads; l++) {
-			outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]+particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*r_min <<'\t'
-			<<particle[cluster[i].sub[j]].pos.comp[1] +particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*r_min<<'\t'<<
-			particle[cluster[i].sub[j]].pos.comp[2] +particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*r_min<<'\t'<<i<<std::endl;			
+			outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]+particle[cluster[i].sub[j]].dir.comp[0]*(l+0.5)*r_min <<'\t'
+			<<particle[cluster[i].sub[j]].pos.comp[1] +particle[cluster[i].sub[j]].dir.comp[1]*(l+0.5)*r_min<<'\t'<<
+			particle[cluster[i].sub[j]].pos.comp[2] +particle[cluster[i].sub[j]].dir.comp[2]*(l+0.5)*r_min<<'\t'<<i<<std::endl;			
 			}
 			for (double l=0; l< extra_beads; l++) {
-			outFile5<<"He"<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]-particle[cluster[i].sub[j]].dir.comp[0]*(l+1.0)*r_min <<'\t'
-			<<particle[cluster[i].sub[j]].pos.comp[1] - particle[cluster[i].sub[j]].dir.comp[1]*(l+1.0)*r_min<<'\t'<<
-			particle[cluster[i].sub[j]].pos.comp[2] - particle[cluster[i].sub[j]].dir.comp[2]*(l+1.0)*r_min<<'\t'<<i<<std::endl;		
+			outFile5<<"He"<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]-particle[cluster[i].sub[j]].dir.comp[0]*(l+0.5)*r_min <<'\t'
+			<<particle[cluster[i].sub[j]].pos.comp[1] - particle[cluster[i].sub[j]].dir.comp[1]*(l+0.5)*r_min<<'\t'<<
+			particle[cluster[i].sub[j]].pos.comp[2] - particle[cluster[i].sub[j]].dir.comp[2]*(l+0.5)*r_min<<'\t'<<i<<std::endl;		
 			}		
 					
 					
