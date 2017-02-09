@@ -22,7 +22,7 @@ const double kbT_dt=sqrt(2.0*kb*T0*dt);
 const double RPTOL = 1.0E-6 ;
 const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
-const int  MaxPerCell = 20;
+const int  MaxPerCell = 70;
 
 const double Lx=box_Lx, Ly=box_Ly, Lz=box_Lz;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
 const double Volume =Lx*Ly*Lz;
@@ -49,7 +49,7 @@ const double sigma12 = sigma6*sigma6;
 const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
-const double shear_rate = 3.0 ; 
+const double shear_rate = -500.0 ; 
 // simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
 const mtrx3D E_inf(	{0.0,shear_rate/2.0,0.0},
 					{shear_rate/2.0,0.0,0.0},

@@ -150,9 +150,13 @@ struct ParticleData
   mtrx3D rotmat;        // apply for body-fixed-to-lab-fixed
   mtrx3D Iner_tnsr;
   mtrx3D mobility_tnsr;
+  mtrx3D mobility_tnsr_tr;
   mtrx3D mobility_tnsr_sqrt; 
+  mtrx3D mobility_tnsr_tr_sqrt;
   mtrx3D rot_mobility_tnsr;
+  mtrx3D rot_mobility_tnsr_rt;
   mtrx3D rot_mobility_tnsr_sqrt;
+  mtrx3D rot_mobility_tnsr_rt_sqrt;
   mtrx35D mobility_tnsr_td;
   mtrx35D mobility_tnsr_rd;
   vctr3D trq;           // lab-fixed = cartesian

@@ -499,8 +499,28 @@ for (int a=0; a<NrParticles; a++)
 	mtrx35D Friction_Tnsr_td	=	null35D;
 	mtrx35D Friction_Tnsr_rd	=	null35D;
 	mtrx55D Friction_Tnsr_dd	=	null55D;
-
+	
+ for (int i=0;i<121;i++)
+       { 
+               for(int j=0;j<121;j++)
+                       {
+               cout<< std::setprecision(5) <<zeta_11N[i+11*NrParticles*j]<<'\t' ;
+                       }
+               cout<<std::endl; 
+       }	
+               cout<<std::endl; 
+               
 	inverse ( zeta_11N ,11*NrParticles )	 ; 	
+	
+	 for (int i=0;i<121;i++)
+       { 
+               for(int j=0;j<121;j++)
+                       {
+               cout<< std::setprecision(5) <<zeta_11N[i+11*NrParticles*j]<<'\t' ;
+                       }
+               cout<<std::endl; 
+       }	
+               cout<<std::endl; 
 	
 	for (int i=0; i<NrParticles; i++)
 		{
@@ -822,6 +842,14 @@ double mu_d[6][5];
 		cout<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
 		cout<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
 		cout<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;
+		cout<<std::endl ;
+		cout<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
+		cout<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
+		cout<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
+		cout<<std::endl ;
+		cout<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
+		cout<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
+		cout<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
 
 }
 void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, int j,int *Max_Cluster_N, vctr3D box, vctr3D rbox ) {
@@ -1000,8 +1028,10 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		 
 		if (cluster[i].Sub_Length>1) 
 			{
-			//	cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*dt) /*+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)*/
-			//					/*+u_inf*dt */- cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
+				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*dt) 
+							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*10000.0*dt)
+								/*+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)*/
+								/*+u_inf*dt*/-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 	
 				if(xx_rotation)	
 				{
@@ -1011,10 +1041,12 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt) /*+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt) */
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt)
+									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*1.0E4*dt)
+									//	+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
-				cluster[i].quat		=cluster[i].theta2quat() ;// +	cluster[i].omega2qdot() ;
+				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
 			//	cout<<cluster[i].theta.comp[0]<<cluster[i].theta.comp[1]<<cluster[i].theta.comp[2]<<endl;
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
@@ -1398,7 +1430,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 
-		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.4"<<std::endl;
+		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.2"<<std::endl;
 		
 		} 
 
@@ -1431,15 +1463,18 @@ else {
         currentLine >> cluster[i].mobility_tnsr.comp[n][0];
         currentLine >> cluster[i].mobility_tnsr.comp[n][1];
         currentLine >> cluster[i].mobility_tnsr.comp[n][2];
+        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][0];
+        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][1];
+        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][2];
     }
 		std::getline(dataFile,line);
 
     for (int n=0;n<3;n++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
+        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][0];
+        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][1];
+        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][2];
         currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
         currentLine >> cluster[i].rot_mobility_tnsr.comp[n][1];
         currentLine >> cluster[i].rot_mobility_tnsr.comp[n][2];
@@ -1475,48 +1510,77 @@ else {
 
 
 		cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
+		cluster[i].mobility_tnsr_tr=cluster[i].mobility_tnsr_tr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
 		cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1*10*2414323832351.228);		// outputed by hydro++
+		cluster[i].rot_mobility_tnsr_rt=cluster[i].rot_mobility_tnsr_rt*(1*10*2414323832351.228);		// outputed by hydro++
 		cluster[i].mobility_tnsr_td=cluster[i].mobility_tnsr_td*(1*10*2414323832351.228);		// outputed by hydro++
 		cluster[i].mobility_tnsr_rd=cluster[i].mobility_tnsr_rd*(1*10*2414323832351.228);		// outputed by hydro++
 		cluster[i].mobility_tnsr_sqrt=null33D;
-		MatrixXd temp(3,3), temp_sqrt(3,3);
+		MatrixXd temp(6,6), temp_sqrt(6,6);
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
-		//		cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
+				cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
 
+			}
+		}
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				temp(k,l)=cluster[i].mobility_tnsr_tr.comp[k][l-3];
+				cout<<cluster[i].mobility_tnsr_tr.comp[k][l-3]<<endl;
+			}
+		}
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr_rt.comp[k-3][l];
+				cout<<cluster[i].rot_mobility_tnsr_rt.comp[k-3][l]<<endl;
+			}
+		}
+		for (int k=3;k<6;k++) {		
+			for (int l=3;l<6;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k-3][l-3];
+				cout<<cluster[i].rot_mobility_tnsr.comp[k-3][l-3]<<endl;
 			}
 		}
 	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
 	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
-	//	temp_sqrt=temp.sqrt();
+				
+		cout<<"mobility_tnsr_sqrt"<<endl;
+
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-		//		cluster[i].mobility_tnsr_sqrt.comp[k][k]=sqrt(cluster[i].mobility_tnsr.comp[k][k]);
-		//		cout<<cluster[i].mobility_tnsr_sqrt.comp[k][k]<<endl;
+				cout<<cluster[i].mobility_tnsr_sqrt.comp[k][l]<<endl;
 			}
 		}
-		
-		cluster[i].rot_mobility_tnsr_sqrt=null33D;
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k][l];
-			//	cout<<cluster[i].rot_mobility_tnsr.comp[k][l]<<endl;
 
-			}
-		}
-		Eigen::SelfAdjointEigenSolver<MatrixXd> ROT_MOBL_MAT(temp);
-		temp_sqrt = ROT_MOBL_MAT.operatorSqrt();
-	//	temp_sqrt=temp.sqrt();
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].rot_mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-			//	cluster[i].rot_mobility_tnsr_sqrt.comp[k][k]=sqrt(cluster[i].rot_mobility_tnsr.comp[k][k]);
-			//	cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k][k]<<endl;
-			}
-		}
+		cout<<"mobility_tnsr_tr_sqrt"<<endl;
 		
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]=temp_sqrt(k,l);
+				cout<<cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]<<endl;
+			}
+		}
+
+		cout<<"rot_mobility_tnsr_rt_sqrt"<<endl;
+
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]=temp_sqrt(k,l);
+				cout<<cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]<<endl;
+			}
+		}
+
+		cout<<"rot_mobility_tnsr_sqrt"<<endl;
+
+		for (int k=3;k<6;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]=temp_sqrt(k,l);
+				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]<<endl;
+			}
+		}
+				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
 
 		// update A matrix
