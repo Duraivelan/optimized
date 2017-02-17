@@ -9,7 +9,7 @@ const int NrParticles=xxNrParticles;
 const double r_cut  = 10.0 ; //pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0;
-const double r_min = 1.0 ; //  pow(2.0,(1.0/6.0))*sigma;
+const double r_min = 1.2 ; //  pow(2.0,(1.0/6.0))*sigma;
 const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
@@ -49,7 +49,7 @@ const double sigma12 = sigma6*sigma6;
 const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
-const double shear_rate = -500.0 ; 
+const double shear_rate = 300.0 ; 
 // simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
 const mtrx3D E_inf(	{0.0,shear_rate/2.0,0.0},
 					{shear_rate/2.0,0.0,0.0},
