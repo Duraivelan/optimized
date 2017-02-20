@@ -218,7 +218,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
 		if (cluster[i].Sub_Length>1) 
 			{
-				cluster[i].pos	+= cluster[i].rotmat*cluster[i].mobility_tnsr*cluster[i].rotmat*(cluster[i].frc*dt) /*+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)*/;
+				cluster[i].pos	+= cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*dt) /*+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)*/;
 	
 				if(xx_rotation)	
 				{
@@ -228,7 +228,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*cluster[i].rotmat*(cluster[i].trq*dt) /*+ cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)*/;
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt) /*+ cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)*/;
 				cluster[i].quat		=	cluster[i].theta2quat();
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
