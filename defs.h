@@ -4,16 +4,16 @@
 # include "structure_definitions.h"
 const double m =1.0;
 const double inv_mass =1.0/m;
-const double dt=0.001;
+const double dt=0.01;
 const int NrParticles=xxNrParticles;
 const double r_cut  = 10.0 ; //pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0;
-const double r_min = 1.2 ; //  pow(2.0,(1.0/6.0))*sigma;
+const double r_min = 3.35 ; //  pow(2.0,(1.0/6.0))*sigma;
 const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
-const double eta=0.1;
+const double eta=1.0/(6.0*pi);
 const double mu = 1.0/(6.0*pi*eta*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions
 const double mu_sqrt=sqrt(mu);
 const double kb=1.0;
@@ -22,7 +22,7 @@ const double kbT_dt=sqrt(2.0*kb*T0*dt);
 const double RPTOL = 1.0E-6 ;
 const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
-const int  MaxPerCell = 70;
+const int  MaxPerCell = 120;
 
 const double Lx=box_Lx, Ly=box_Ly, Lz=box_Lz;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
 const double Volume =Lx*Ly*Lz;
@@ -49,13 +49,13 @@ const double sigma12 = sigma6*sigma6;
 const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
-const double shear_rate = 300.0 ; 
+const double shear_rate = 0.02 ; 
 // simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
 const mtrx3D E_inf(	{0.0,shear_rate/2.0,0.0},
 					{shear_rate/2.0,0.0,0.0},
 					{0.0,0.0,0.0});
 
-const vctr3D w_inf(0.0,0.0,-0.5*shear_rate);
+const vctr3D w_inf(0.0,0.0,0.5*shear_rate);
 	
   const int dm[13][3] = { {  0,  0,  1 },
                        {  1,  0, -1 },
