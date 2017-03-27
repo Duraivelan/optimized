@@ -93,7 +93,7 @@ void mobility_calc(int NrParticles){
                  
 vctr3D dR, dr2;
 double R, r2;
-vector<SubData>  particle(NrParticles);
+vector<SubData>  bead(NrParticles);
 
 // variables for mobility tensor calculation
 double eta_0=eta;
@@ -113,10 +113,10 @@ else {
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);    
-        currentLine >> particle[i].pos.comp[0];
-        currentLine >> particle[i].pos.comp[1];
-        currentLine >> particle[i].pos.comp[2];
-		currentLine >> particle[i].radius;
+        currentLine >> bead[i].pos.comp[0];
+        currentLine >> bead[i].pos.comp[1];
+        currentLine >> bead[i].pos.comp[2];
+		currentLine >> bead[i].radius;
     }
 }	
 	
@@ -204,18 +204,18 @@ else {
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
 
-				double	a_norm = 1.0; // /(6.0*M_PI*eta_0*particle[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r
-				double	b_norm = 1.0; // /(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r2
-				double	c_norm = 1.0; // /(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius*particle[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r3
-				double	g_norm = 1.0; // /(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius*particle[0].radius);						//		assuming correction factor of 6*pi*mu*r3	
-				double	h_norm = 1.0; // /(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius*particle[0].radius);						//		assuming correction factor of 6*pi*mu*r3				
-				double	m_norm = 1.0; // /(6.0*M_PI*eta_0*particle[0].radius*particle[0].radius*particle[0].radius);						//		assuming correction factor of 6*pi*mu*r3	
+				double	a_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r
+				double	b_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r2
+				double	c_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius*bead[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r3
+				double	g_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius*bead[0].radius);						//		assuming correction factor of 6*pi*mu*r3	
+				double	h_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius*bead[0].radius);						//		assuming correction factor of 6*pi*mu*r3				
+				double	m_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius*bead[0].radius);						//		assuming correction factor of 6*pi*mu*r3	
 		
 for (int a=0; a<NrParticles; a++)
 	{
 		for (int b=a; b<NrParticles; b++)
 			{
-				e_ab=particle[a].pos-particle[b].pos;
+				e_ab=bead[a].pos-bead[b].pos;
 				mtrx3D Pab(e_ab, e_ab) ;
 				e_ab2=e_ab.norm2();
 				vctr3D col1(0.0, -e_ab.comp[2], e_ab.comp[1]);
@@ -226,8 +226,8 @@ for (int a=0; a<NrParticles; a++)
 				
 				e_ab_unit = e_ab*sqrt(e_ab2_inv); 
 				if(a==b) {	e_ab_unit = e_ab*0.0; }	
-				tau = 1.0/(6.0*M_PI*eta_0*particle[a].radius);
-			    double r 	= sqrt(e_ab2)/particle[a].radius;			// distance between particle vector 'r' magnitude |r| normalized by particle radius 'a' ;
+				tau = 1.0/(6.0*M_PI*eta_0*bead[a].radius);
+			    double r 	= sqrt(e_ab2)/bead[a].radius;			// distance between particle vector 'r' magnitude |r| normalized by particle radius 'a' ;
 			    double r_1 	= 1.0/(r);
 			    double r_2 	= 1.0/(r*r);			    
 			    double r_3 	= 1.0/(r*r*r);
@@ -524,17 +524,17 @@ for (int a=0; a<NrParticles; a++)
 	
 	for (int i=0; i<NrParticles; i++)
 		{
-			vctr3D col1 (  0.0 						,	particle[i].pos.comp[2] , -particle[i].pos.comp[1]	);
-			vctr3D col2 ( -particle[i].pos.comp[2] 	,   0.0						,  particle[i].pos.comp[0]	);
-			vctr3D col3 (  particle[i].pos.comp[1] 	,  -particle[i].pos.comp[0] , 0.0						);
+			vctr3D col1 (  0.0 						,	bead[i].pos.comp[2] , -bead[i].pos.comp[1]	);
+			vctr3D col2 ( -bead[i].pos.comp[2] 	,   0.0						,  bead[i].pos.comp[0]	);
+			vctr3D col3 (  bead[i].pos.comp[1] 	,  -bead[i].pos.comp[0] , 0.0						);
 			mtrx3D	Ai(	col1 , col2 , col3 ) ;   
 					
 			for (int j=0; j<NrParticles; j++)
 				{
 					
-					vctr3D col4 (  0.0 						,	particle[j].pos.comp[2] , -particle[j].pos.comp[1]	);
-					vctr3D col5 ( -particle[j].pos.comp[2] 	,   0.0						,  particle[j].pos.comp[0]	);
-					vctr3D col6 (  particle[j].pos.comp[1] 	,  -particle[j].pos.comp[0] , 0.0						);
+					vctr3D col4 (  0.0 						,	bead[j].pos.comp[2] , -bead[j].pos.comp[1]	);
+					vctr3D col5 ( -bead[j].pos.comp[2] 	,   0.0						,  bead[j].pos.comp[0]	);
+					vctr3D col6 (  bead[j].pos.comp[1] 	,  -bead[j].pos.comp[0] , 0.0						);
 					mtrx3D	Aj(	col4 , col5 , col6 ) ; 
 
 // if	(del_j)_{\alpha,p}	*	E^{inf\tilde}_{p}	= 	E^inf_{\alpha\beta} *	r_\beta 
@@ -555,11 +555,11 @@ for (int a=0; a<NrParticles; a++)
 								Deli.comp[k][a]	=	0.0	;
 								for (int b=0; b<3; b++)
 								{
-									Delj.comp[a][k]	+=	e_l[k][a][b]	*	particle[j].pos.comp[b]	;
-									Deli.comp[k][a]	+=	e_l[k][b][a]	*	particle[i].pos.comp[b]	;
+									Delj.comp[a][k]	+=	e_l[k][a][b]	*	bead[j].pos.comp[b]	;
+									Deli.comp[k][a]	+=	e_l[k][b][a]	*	bead[i].pos.comp[b]	;
 									for (int c=0; c<3; c++)
 									{
-										Unit_tnsr_Redc.comp[k][a]	+=	e_l[k][b][c]		* (b==c)	*	particle[i].pos.comp[a]	;	
+										Unit_tnsr_Redc.comp[k][a]	+=	e_l[k][b][c]		* (b==c)	*	bead[i].pos.comp[a]	;	
 									}
 								}
 							}		
@@ -621,7 +621,7 @@ for (int a=0; a<NrParticles; a++)
 					
 					Friction_Tnsr_tt	+=		Resistance_Tnsr_tt ;  
 					Friction_Tnsr_tr 	+= 	( 	Resistance_Tnsr_tr		- 	(	Resistance_Tnsr_tt*Aj	)	)	;
-					Friction_Tnsr_rt 	+= 	(	Ai*Resistance_Tnsr_tt	+		Resistance_Tnsr_rt    	)    	; 
+				//	Friction_Tnsr_rt 	+= 	(	Ai*Resistance_Tnsr_tt	+		Resistance_Tnsr_rt    	)    	; 
 					Friction_Tnsr_rr 	+= 	( 	Resistance_Tnsr_rr    	-	(	Resistance_Tnsr_rt*Aj 	) 	+ 			Ai*Resistance_Tnsr_tr	-	Ai*Resistance_Tnsr_tt*Aj	)	;
 				
 					for (int l=0; l<5; l++)
@@ -665,7 +665,7 @@ for (int a=0; a<NrParticles; a++)
 			 
 				}
 		}
-			//		Friction_Tnsr_rt = ~Friction_Tnsr_tr;
+					Friction_Tnsr_rt = ~Friction_Tnsr_tr;
 
 /*
 			for (int l=0; l<3; l++)
@@ -721,25 +721,25 @@ for (int a=0; a<NrParticles; a++)
 					xi_11x11[13] = Friction_Tnsr_tt.comp[2][1] ; 
 					xi_11x11[14] = Friction_Tnsr_tt.comp[2][2] ; 				
 
-					xi_11x11[18] = Friction_Tnsr_tr.comp[0][0] ;  
-					xi_11x11[19] = Friction_Tnsr_tr.comp[0][1] ;  
-					xi_11x11[20] = Friction_Tnsr_tr.comp[0][2] ; 
-					xi_11x11[24] = Friction_Tnsr_tr.comp[1][0] ; 
-					xi_11x11[25] = Friction_Tnsr_tr.comp[1][1] ;  
-					xi_11x11[26] = Friction_Tnsr_tr.comp[1][2] ;  
-					xi_11x11[30] = Friction_Tnsr_tr.comp[2][0] ;   
-					xi_11x11[31] = Friction_Tnsr_tr.comp[2][1] ; 
-					xi_11x11[32] = Friction_Tnsr_tr.comp[2][2] ; 				
+					xi_11x11[18] = Friction_Tnsr_rt.comp[0][0] ;  
+					xi_11x11[19] = Friction_Tnsr_rt.comp[0][1] ;  
+					xi_11x11[20] = Friction_Tnsr_rt.comp[0][2] ; 
+					xi_11x11[24] = Friction_Tnsr_rt.comp[1][0] ; 
+					xi_11x11[25] = Friction_Tnsr_rt.comp[1][1] ;  
+					xi_11x11[26] = Friction_Tnsr_rt.comp[1][2] ;  
+					xi_11x11[30] = Friction_Tnsr_rt.comp[2][0] ;   
+					xi_11x11[31] = Friction_Tnsr_rt.comp[2][1] ; 
+					xi_11x11[32] = Friction_Tnsr_rt.comp[2][2] ; 				
 										
-					xi_11x11[3] = Friction_Tnsr_rt.comp[0][0] ;  
-					xi_11x11[4] = Friction_Tnsr_rt.comp[0][1] ;  
-					xi_11x11[5] = Friction_Tnsr_rt.comp[0][2] ; 
-					xi_11x11[9] = Friction_Tnsr_rt.comp[1][0] ; 
-					xi_11x11[10] = Friction_Tnsr_rt.comp[1][1] ;  
-					xi_11x11[11] = Friction_Tnsr_rt.comp[1][2] ;  
-					xi_11x11[15] = Friction_Tnsr_rt.comp[2][0] ;   
-					xi_11x11[16] = Friction_Tnsr_rt.comp[2][1] ; 
-					xi_11x11[17] = Friction_Tnsr_rt.comp[2][2] ; 				
+					xi_11x11[3] = Friction_Tnsr_tr.comp[0][0] ;  
+					xi_11x11[4] = Friction_Tnsr_tr.comp[0][1] ;  
+					xi_11x11[5] = Friction_Tnsr_tr.comp[0][2] ; 
+					xi_11x11[9] = Friction_Tnsr_tr.comp[1][0] ; 
+					xi_11x11[10] = Friction_Tnsr_tr.comp[1][1] ;  
+					xi_11x11[11] = Friction_Tnsr_tr.comp[1][2] ;  
+					xi_11x11[15] = Friction_Tnsr_tr.comp[2][0] ;   
+					xi_11x11[16] = Friction_Tnsr_tr.comp[2][1] ; 
+					xi_11x11[17] = Friction_Tnsr_tr.comp[2][2] ; 					
 										
 					xi_11x11[21] = Friction_Tnsr_rr.comp[0][0] ;  
 					xi_11x11[22] = Friction_Tnsr_rr.comp[0][1] ;  
@@ -867,6 +867,7 @@ double mu_d[6][5];
 				for (int k=0; k<5; k++)
 					{	
 						mu_d[l][k] = 0.0;
+				//		mu_d[l+3][k] = 0.0;
 					for (int m=0; m<3; m++)
 						{				
 							// column major format
@@ -886,15 +887,6 @@ double mu_d[6][5];
 		cout << setw(10) << Friction_Tnsr_rd.comp[2][0] << "  " << setw(10) << Friction_Tnsr_rd.comp[2][1] << "  " << setw(10) << Friction_Tnsr_rd.comp[2][2] << "  " << setw(10) << Friction_Tnsr_rd.comp[2][3] << "  " << setw(10) << Friction_Tnsr_rd.comp[2][4] << endl;
  
 
-		outFile1<<std::endl ;
-		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
-		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
-		outFile1<<mu_d[2][0]<<'\t'<<mu_d[2][1]<<'\t'<<mu_d[2][2]<<'\t'<<mu_d[2][3]<<'\t'<<mu_d[2][4]<<std::endl ;
-		outFile1<<std::endl ;
-		outFile1<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
-		outFile1<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
-		outFile1<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;			
-
 		cout<<std::endl ;
 		cout<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
 		cout<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
@@ -902,15 +894,65 @@ double mu_d[6][5];
 		cout<<std::endl ;
 		cout<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
 		cout<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
-		cout<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;
-		cout<<std::endl ;
-		cout<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
-		cout<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
-		cout<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
-		cout<<std::endl ;
-		cout<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
-		cout<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
-		cout<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
+		cout<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;			
+		outFile1<<std::endl ;
+		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
+		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
+		outFile1<<mu_d[2][0]<<'\t'<<mu_d[2][1]<<'\t'<<mu_d[2][2]<<'\t'<<mu_d[2][3]<<'\t'<<mu_d[2][4]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
+		outFile1<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
+		outFile1<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;		
+		for (int a=0; a<3; a++)
+		{
+		for (int b=0; b<3; b++)
+			{
+			for (int g=0; g<3; g++)
+				{
+					h_clst_ijk[g][a][b] = 0.0;
+					
+				for (int p=0; p<5; p++)
+					{
+							h_clst_ijk[g][a][b]	+=		e_l[p][a][b]*mu_d[g][p];		
+
+					}													
+				}
+			}
+		}
+
+
+	for (int a=0; a<3; a++)
+		{
+		for (int b=0; b<3; b++)
+			{
+			for (int g=0; g<3; g++)
+				{
+					g_clst_ijk[g][a][b] = 0.0;
+					
+				for (int p=0; p<5; p++)
+					{
+							g_clst_ijk[g][a][b]	+=		e_l[p][a][b]*mu_d[g+3][p];		
+
+					}													
+				}
+			}
+		}
+cout<<"g_clst_ijk"<<endl;
+
+for (int s=0; s<3; s++)
+	{							
+		cout << setw(10) << g_clst_ijk[s][0][0] << "  " << setw(10) << g_clst_ijk[s][0][1] << "  " << setw(10) << g_clst_ijk[s][0][2] << endl;
+		cout << setw(10) << g_clst_ijk[s][1][0] << "  " << setw(10) << g_clst_ijk[s][1][1] << "  " << setw(10) << g_clst_ijk[s][1][2] << endl;
+		cout << setw(10) << g_clst_ijk[s][2][0] << "  " << setw(10) << g_clst_ijk[s][2][1] << "  " << setw(10) << g_clst_ijk[s][2][2] << endl;
+    }	
+cout<<"h_clst_ijk"<<endl;
+
+for (int s=0; s<3; s++)
+	{							
+		cout << setw(10) << h_clst_ijk[s][0][0] << "  " << setw(10) << h_clst_ijk[s][0][1] << "  " << setw(10) << h_clst_ijk[s][0][2] << endl;
+		cout << setw(10) << h_clst_ijk[s][1][0] << "  " << setw(10) << h_clst_ijk[s][1][1] << "  " << setw(10) << h_clst_ijk[s][1][2] << endl;
+		cout << setw(10) << h_clst_ijk[s][2][0] << "  " << setw(10) << h_clst_ijk[s][2][1] << "  " << setw(10) << h_clst_ijk[s][2][2] << endl;
+    }	
 
 }
 void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, int j,int *Max_Cluster_N, vctr3D box, vctr3D rbox ) {
@@ -1345,7 +1387,7 @@ else {
         currentLine >> particle[i].pos.comp[2];
         currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
-        cout<< particle[i].pos.comp[0]<<endl;
+       cout<< particle[i].pos.comp[0]<<endl;
 	//	std::getline(dataFile,line);        
 	//	particle[i].pos.comp[2]+=10.0;
 	//	particle[i].pos.comp[2]=particle[i].pos.comp[2]*(-1.0);
@@ -1492,18 +1534,27 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 
 		std::ofstream outFile7("new_cluster.dat");
 		
-	//	 cluster[i].pos.comp[1]-=2.2147;
+	//	 cluster[i].pos.comp[1]-=5.1861;
 		/*	cluster[i].pos.comp[0]=0.0;
 			cluster[i].pos.comp[1]=0.0;
-			cluster[i].pos.comp[2]=0.0;	*/
+			cluster[i].pos.comp[2]=0.0;	
+		*/	
+		// cluster[i].pos={0.0,7.86223	,-3.76172e-06};	
+	
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 
 		//	particle[cluster[i].sub[k]].pos_bdyfxd = particle[cluster[i].sub[k]].pos;
-	//	particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]+=2.2147;
+	//	particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]+=5.1861;
+	//	particle[cluster[i].sub[k]].pos_bdyfxd=particle[cluster[i].sub[k]].pos;
+
 		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"1.0"<<std::endl;
 		
 		} 
-
+		/*
+particle[cluster[0].sub[0]].pos_bdyfxd.comp[0]=0.0;
+particle[cluster[0].sub[0]].pos_bdyfxd.comp[1]=-2.5147;
+particle[cluster[0].sub[0]].pos_bdyfxd.comp[2]=0.0;
+*/
 // mobility calculation 
 
 
@@ -1652,6 +1703,7 @@ else {
 		}
 				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
+	//	cluster[i].quat={-0.758966,	6.04382e-08,-2.70262e-08,	-0.65113	};
 
 		// update A matrix
 
@@ -1790,10 +1842,25 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	system(" echo >> logfile & git log --pretty=format:'%h' -n 1 >> logfile   & echo >> logfile  &  pwd >> logfile & ");
 	outFile8.close();
 
+	std::ofstream outFile_inter_cluster("inter_cluster_data.dat");
 
 simu_time =dt;
 do {
 	p_energy=0;	
+
+	if(step == 60000){
+		
+		outFile_inter_cluster<<cluster[0].quat.comp[0]<<'\t'<<cluster[0].quat.comp[1]<<'\t'<<cluster[0].quat.comp[2]<<'\t'<<cluster[0].quat.comp[3]<<'\t'<<endl;
+		outFile_inter_cluster<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<endl;
+		
+		
+	for (int  k=0; k<cluster[0].Sub_Length; k++) {
+
+		outFile_inter_cluster<<particle[cluster[0].sub[k]].pos.comp[0]<<'\t'<<particle[cluster[0].sub[k]].pos.comp[1]<<'\t'<<particle[cluster[0].sub[k]].pos.comp[2]<<std::endl;
+		
+		} 
+	}
+	
 
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
 	combine_now=0;
