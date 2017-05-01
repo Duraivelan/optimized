@@ -1131,7 +1131,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		if (*Max_Cluster_N<=1) {
 		*Max_Cluster_N=1;
 		cout<<"all particles combined into Single Cluster "<<endl;
-	//	abort();
+		abort();
 		} 
 
 	}
@@ -1532,7 +1532,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			*/
 	forceUpdate( particle, &p_energy, &combine_now , combine, 0);
 cout<< combine_now<<"combine123"<<endl;
-	if (combine_now>=0) 
+	if (combine_now>0) 
 		{	
 		//	cout<<combine_now<<endl;
 			vector<vector<int>> temp_combine(combine_now+1,vector<int> (4)) ;
@@ -1630,7 +1630,7 @@ cout<< combine_now<<"combine123"<<endl;
 // calculate new diffusion tensors	
 	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 		{
-	//		if(cluster[i].clicked == 1 ) {
+			if(cluster[i].clicked == 1 ) {
 		remove("new_cluster.dat");
 		remove("data.dat");
 
@@ -1834,7 +1834,7 @@ else {
 		// update A matrix
 
         cluster[i].quat2rotmat();
-//	}
+	}
 		cluster[i].clicked = 0; 
 	}
 	
