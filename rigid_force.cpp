@@ -57,7 +57,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
     periodN[NrCells[j] + 1][j] = 0;          // right neigbour of rightmost cell
     periodR[NrCells[j] + 1][j] = +box.comp[j];
   } // j
-  
+
 
 // generate grid list
  	int grid[NrCells[x]][NrCells[y]][NrCells[z]][MaxPerCell+1];
@@ -80,6 +80,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
     mi[x] = int ( (particle[i].pos.comp[x]+havbox.comp[x]) * scale[x] );
     mi[y] = int ( (particle[i].pos.comp[y]+havbox.comp[y]) * scale[y] );
     mi[z] = int ( (particle[i].pos.comp[z]+havbox.comp[z]) * scale[z] );       
+
     
     if ( int (grid[mi[x]][mi[y]][mi[z]][0]) >= MaxPerCell-1 )
     {
@@ -88,8 +89,8 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
       abort();
     }
 
-
     grid[mi[x]][mi[y]][mi[z]][0] ++ ;
+    
 //  cout << i << "  " << mix << "  " << miy << "  " << miz << "  " << grid[mix][miy][miz][0] << endl;
     grid[mi[x]][mi[y]][mi[z]][ int (grid[mi[x]][mi[y]][mi[z]][0])] = i;
 

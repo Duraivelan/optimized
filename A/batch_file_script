@@ -2,7 +2,7 @@
 alias clang++='clang++-3.5 -std=c++11'
 @ a = 258
 @ init = $a 
-@ nrparticles = 476
+@ nrparticles = 5
 while ( $a < 259 )
 	mkdir $a
 	cd $a
@@ -12,7 +12,7 @@ while ( $a < 259 )
 
 	@ cubic = 1
 	
-	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.01+0.0001))/(3))" | bc -l`
+	set box_Lx=`echo "scale=3 ; e(l($nrparticles*(4/3)*3.142*(0.5^3)/(($a-$init)*0.01+0.00005))/(3))" | bc -l`
 	echo $box_Lx
 	if ($cubic) then
 	
