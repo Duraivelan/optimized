@@ -1321,7 +1321,7 @@ double KE_rot=0;
 int NrSubs=NrParticles;
 
 vector<SubData>  particle(NrParticles);
-vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
+vector<ParticleData>  cluster( 1, ParticleData(NrSubs) );
 int combine_now=0;
 int combine[NrParticles][4];
 
@@ -1474,25 +1474,25 @@ else {
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);
-        currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[0];
+        currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[2];
        cout<< particle[i].pos.comp[0]<<endl;
 	//	std::getline(dataFile,line);        
 	//	particle[i].pos.comp[2]+=10.0;
-	//	particle[i].pos.comp[2]=particle[i].pos.comp[2]*(-1.0);
+		particle[i].pos.comp[2]=particle[i].pos.comp[2]*(-1.0);
 	//	particle[i].pos.comp[1]=particle[i].pos.comp[1]*(-1.0);
     }
 }
 if (xx_diffusion) {			// calculate the diffusion tensor for the particles read-in ; if starting with paticles of varies shape then initializing diffusion tensors
 	
 	/* sort particles into cells */
-for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+for ( int i = 0 ; i < 1; i ++ )
 	{
 		if (!xxcluster_restart) 
 			{
-				cluster[i].Sub_Length=1;		// initially each cluster has size one
-				cluster[i].mass=1.0;
+				cluster[i].Sub_Length=Max_Cluster_N;		// initially each cluster has size one
+				cluster[i].mass=Max_Cluster_N;
 				cluster[i].vel={0.0,0.0,0.0};
 
 				// intialize Q, A matrix
@@ -1503,18 +1503,17 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 		{ 
 		if (!xxcluster_restart) {
-			cluster[i].sub[j]=i;
-			particle[cluster[i].sub[j]].cluster=i;
-			particle[cluster[i].sub[j]].mass=cluster[i].mass;
+			cluster[i].sub[j]=j;
+			particle[cluster[i].sub[j]].cluster=0;
+			particle[cluster[i].sub[j]].mass=1.0;
 			particle[cluster[i].sub[j]].radius=0.5;
 			cluster[i].radii=0.56;
 			// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
 			particle[cluster[i].sub[j]].vel=cluster[i].vel;
-			particle[cluster[i].sub[j]].pos_bdyfxd={0.0,0.0,0.0};//cluster[i].sub[j].pos;
-			cluster[i].pos=particle[cluster[i].sub[j]].pos;
+			particle[cluster[i].sub[j]].pos_bdyfxd=particle[cluster[i].sub[j]].pos;//cluster[i].sub[j].pos;
+			cluster[i].pos={0.0,0.0,0.0};
 			cluster[i].omega={0.0,0.0,0.0};//{((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
 			cluster[i].angmom={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
-			cluster[i].pos=particle[cluster[i].sub[j]].pos;
 		} 				
 	}
 }
@@ -1530,109 +1529,14 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 			particle[k].pos = cluster[0].rotmat*particle[k].pos;
 			}
 			*/
-	forceUpdate( particle, &p_energy, &combine_now , combine, 0);
-cout<< combine_now<<"combine123"<<endl;
-	if (combine_now>0) 
-		{	
-		//	cout<<combine_now<<endl;
-			vector<vector<int>> temp_combine(combine_now+1,vector<int> (4)) ;
-			for (int pn = 1; pn<=combine_now ; pn++) 
-				{ 		
-					for (int j = 0; j< 4 ; j ++) 
-						{
-							temp_combine[pn][j]=combine[pn][j];
-						}
-					//	cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide main beroe sort"<<endl;
-				}			
-		
-	if(combine_now>1) {	sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
-	
-			/*	for (int pn = 1; pn<=combine_now ; pn++) 
-				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
-				}	*/
+//	 forceUpdate( particle, &p_energy, &combine_now , combine, 0);
+// cout<< combine_now<<"combine123"<<endl;
 
-	if(combine_now>1) {	
-	int count=1;
-	do
-		{
-			int j=1;
-		do
-			{
-			if ((temp_combine[count][0]==temp_combine[count+j][0]) && (temp_combine[count][1]==temp_combine[count+j][1]) )
-				{
-					temp_combine.erase( temp_combine.begin() + count+ j );
-					combine_now-=1;
-					j-=1;
-				}
-				j+=1;
-			}	while (j<=(combine_now-count));
-			count=count+1;			
-		} while (count<combine_now);
-	}	
-			/*	for (int pn = 1; pn<=combine_now ; pn++) 
-				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide mainf after unique"<<endl;
-				} */
-	// collision detection
-	 	//		cout<<combine_now<<endl;
-
-	for ( int pn = 1 ; pn <=combine_now; pn ++ )
-		{
-			if(particle[temp_combine[pn][2]].cluster!=particle[temp_combine[pn][3]].cluster) {
- 			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
-				
-				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
-					{
-					 
-							if ( temp_combine[pp][0]==temp_combine[pn][1] ) {
-								if (temp_combine[pp][1] > temp_combine[pn][0]) {
-								
-									temp_combine[pp][0]=temp_combine[pn][0] ;
-									
-								}
-								else {
-										temp_combine[pp][0]=temp_combine[pp][1] ;
-										temp_combine[pp][1]=temp_combine[pn][0] ;
-									} 
-									
-								}
-									
-							if ( temp_combine[pp][1]==temp_combine[pn][1] ) {
-								if (temp_combine[pp][0] < temp_combine[pn][0]) {
-								
-									temp_combine[pp][1]=temp_combine[pn][0] ;
-									
-								}
-								else {
-										temp_combine[pp][1]=temp_combine[pp][0] ;
-										temp_combine[pp][0]=temp_combine[pn][0] ;
-									} 
-									
-								}
-					
-						if (temp_combine[pp][0]>=temp_combine[pn][1]) {temp_combine[pp][0]-=1; } 
-									
-						if (temp_combine[pp][1]>=temp_combine[pn][1]) {temp_combine[pp][1]-=1; } 
-		
-					}
-					
-				}	
-					//	sort (temp_combine.begin()+pn+1,temp_combine.end(), RowSort());
-
-				/*	for (int px = 1; px<=combine_now ; pn++) 
-				{ 		
-						cout<<temp_combine[px][0]<<'\t'<<temp_combine[px][1]<<'\t'<<" after combine"<<endl;
-				} */
-			//	cout << "Doner one combine " << '\t'<< pn <<  endl;
-		}
-	cout <<cluster[0].pos.comp[0] << '\t'<<cluster[0].pos.comp[1] << '\t'<<cluster[0].pos.comp[2] << '\t'<<endl;
 // calculate new diffusion tensors	
-	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+	for ( int i = 0 ; i < 1; i ++ )
 		{
-			if(cluster[i].clicked == 1 ) {
 		remove("new_cluster.dat");
-		remove("data.dat");
+	//	remove("data.dat");
 
 		std::ofstream outFile7("new_cluster.dat");
 		
@@ -1661,7 +1565,7 @@ cout<< combine_now<<"combine123"<<endl;
 	//	particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]+=5.1861;
 	//	particle[cluster[i].sub[k]].pos_bdyfxd=particle[cluster[i].sub[k]].pos;
 
-		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.35"<<std::endl;
+		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.25"<<std::endl;
 		
 		} 
 		/*
@@ -1835,160 +1739,10 @@ else {
 
         cluster[i].quat2rotmat();
 	}
-		cluster[i].clicked = 0; 
-	}
 	
-	}	
 }
 }
-	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
-		{
-
-std::ifstream dataFile("data.dat");
-std::string tmp;
-if(!dataFile.good()) {
-	std::cerr<<"Given file is corrupt /n"<<std::endl;
-}
-else {
-
-    std::string line;
-		std::getline(dataFile,line);
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][2];
-    }
-		std::getline(dataFile,line);
-
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][1];
-        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][2];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][1];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][2];
- 
-    }
-		std::getline(dataFile,line);
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][3];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][4];
-    }
-		std::getline(dataFile,line);
-
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][3];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][4];
- 
-    }
-		std::getline(dataFile,line);
-
-    for (int n=0;n<5;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][3];
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][4];
- 
-    }    
-}	 
-     
-      //  currentLine >> cluster[i].mobility_tnsr.comp[n][0];
-
-      //  currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-
-
-	//	cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
-	//	cluster[i].mobility_tnsr_tr=cluster[i].mobility_tnsr_tr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
-	//	cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1*10*2414323832351.228);		// outputed by hydro++
-	//	cluster[i].rot_mobility_tnsr_rt=cluster[i].rot_mobility_tnsr_rt*(1*10*2414323832351.228);		// outputed by hydro++
-	//	cluster[i].mobility_tnsr_td=cluster[i].mobility_tnsr_td*(1*10*2414323832351.228);		// outputed by hydro++
-	//	cluster[i].mobility_tnsr_rd=cluster[i].mobility_tnsr_rd*(1*10*2414323832351.228);		// outputed by hydro++
-		cluster[i].mobility_tnsr_sqrt=null33D;
-		MatrixXd temp(6,6), temp_sqrt(6,6);
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
-				cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
-
-			}
-		}
-		for (int k=0;k<3;k++) {
-			for (int l=3;l<6;l++) {
-				temp(k,l)=cluster[i].mobility_tnsr_tr.comp[k][l-3];
-				cout<<cluster[i].mobility_tnsr_tr.comp[k][l-3]<<endl;
-			}
-		}
-		for (int k=3;k<6;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].rot_mobility_tnsr_rt.comp[k-3][l];
-				cout<<cluster[i].rot_mobility_tnsr_rt.comp[k-3][l]<<endl;
-			}
-		}
-		for (int k=3;k<6;k++) {		
-			for (int l=3;l<6;l++) {
-				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k-3][l-3];
-				cout<<cluster[i].rot_mobility_tnsr.comp[k-3][l-3]<<endl;
-			}
-		}
-	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
-	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
-				
-		cout<<"mobility_tnsr_sqrt"<<endl;
-
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-				cout<<cluster[i].mobility_tnsr_sqrt.comp[k][l]<<endl;
-			}
-		}
-
-		cout<<"mobility_tnsr_tr_sqrt"<<endl;
-		
-		for (int k=0;k<3;k++) {
-			for (int l=3;l<6;l++) {
-				cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]=temp_sqrt(k,l);
-				cout<<cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]<<endl;
-			}
-		}
-
-		cout<<"rot_mobility_tnsr_rt_sqrt"<<endl;
-
-		for (int k=3;k<6;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]=temp_sqrt(k,l);
-				cout<<cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]<<endl;
-			}
-		}
-
-		cout<<"rot_mobility_tnsr_sqrt"<<endl;
-
-		for (int k=3;k<6;k++) {
-			for (int l=3;l<6;l++) {
-				cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]=temp_sqrt(k,l);
-				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]<<endl;
-			}
-		}
-}
+Max_Cluster_N =1;
 //delete all files before writing data
 
 // following snippet taken from stakcflow link  http://stackoverflow.com/questions/11007494/how-to-delete-all-files-in-a-folder-but-not-delete-the-folder-c-linux
@@ -2063,26 +1817,15 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
 
 step = restart_frame_offset*frame+1;
 
-forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+// forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 
 	// convert subforces into total generalized forces on particles 
 
-  for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+  for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
-
-    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
-    {
-		dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
-		dr_vec.PBC(box,rbox);
-		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;		
-		cluster[i].trq +=                                               dr_vec^particle[cluster[i].sub[j]].frc;
-		mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
-		cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass; 	//	refer following paper , page 3 equa. 3 for interia tensor formula
-																												//	Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
-    }
   }
 
 
@@ -2117,318 +1860,23 @@ std::ofstream outFile8(dataFileName+"/logfile");
 
 	std::ofstream outFile_inter_cluster("inter_cluster_data.dat");
 	std::ofstream Stresslet_data("Stresslet_data.dat");
+	cout<<step<<endl;
 
 simu_time =dt;
 do {
 	p_energy=0;	
 
-	if(step == 60000){
-		
-		outFile_inter_cluster<<cluster[0].quat.comp[0]<<'\t'<<cluster[0].quat.comp[1]<<'\t'<<cluster[0].quat.comp[2]<<'\t'<<cluster[0].quat.comp[3]<<'\t'<<endl;
-		outFile_inter_cluster<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<endl;
-		
-		
-	for (int  k=0; k<cluster[0].Sub_Length; k++) {
-
-		outFile_inter_cluster<<particle[cluster[0].sub[k]].pos.comp[0]<<'\t'<<particle[cluster[0].sub[k]].pos.comp[1]<<'\t'<<particle[cluster[0].sub[k]].pos.comp[2]<<std::endl;
-		
-		} 
-	}
-	
-
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
-	combine_now=0;
- 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
-	if (xxclustering && combine_now>0) 
-		{	
-		//	cout<<combine_now<<endl;
-			vector<vector<int>> temp_combine(combine_now+1,vector<int> (4)) ;
-			for (int pn = 1; pn<=combine_now ; pn++) 
-				{ 		
-					for (int j = 0; j< 4 ; j ++) 
-						{
-							temp_combine[pn][j]=combine[pn][j];
-						}
-					//	cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide main beroe sort"<<endl;
-				}			
-		
-	if(combine_now>1) {	sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
-	
-			/*	for (int pn = 1; pn<=combine_now ; pn++) 
-				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
-				}	*/
-
-	if(combine_now>1) {	
-	int count=1;
-	do
-		{
-			int j=1;
-		do
-			{
-			if ((temp_combine[count][0]==temp_combine[count+j][0]) && (temp_combine[count][1]==temp_combine[count+j][1]) )
-				{
-					temp_combine.erase( temp_combine.begin() + count+ j );
-					combine_now-=1;
-					j-=1;
-				}
-				j+=1;
-			}	while (j<=(combine_now-count));
-			count=count+1;			
-		} while (count<combine_now);
-	}	
-			/*	for (int pn = 1; pn<=combine_now ; pn++) 
-				{ 		
-						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide mainf after unique"<<endl;
-				} */
-	// collision detection
-	 	//		cout<<combine_now<<endl;
-
-	for ( int pn = 1 ; pn <=combine_now; pn ++ )
-		{
-			if(particle[temp_combine[pn][2]].cluster!=particle[temp_combine[pn][3]].cluster) {
- 			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
-				
-				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
-					{
-					 
-							if ( temp_combine[pp][0]==temp_combine[pn][1] ) {
-								if (temp_combine[pp][1] > temp_combine[pn][0]) {
-								
-									temp_combine[pp][0]=temp_combine[pn][0] ;
-									
-								}
-								else {
-										temp_combine[pp][0]=temp_combine[pp][1] ;
-										temp_combine[pp][1]=temp_combine[pn][0] ;
-									} 
-									
-								}
-									
-							if ( temp_combine[pp][1]==temp_combine[pn][1] ) {
-								if (temp_combine[pp][0] < temp_combine[pn][0]) {
-								
-									temp_combine[pp][1]=temp_combine[pn][0] ;
-									
-								}
-								else {
-										temp_combine[pp][1]=temp_combine[pp][0] ;
-										temp_combine[pp][0]=temp_combine[pn][0] ;
-									} 
-									
-								}
-					
-						if (temp_combine[pp][0]>=temp_combine[pn][1]) {temp_combine[pp][0]-=1; } 
-									
-						if (temp_combine[pp][1]>=temp_combine[pn][1]) {temp_combine[pp][1]-=1; } 
-		
-					}
-					
-				}	
-					//	sort (temp_combine.begin()+pn+1,temp_combine.end(), RowSort());
-
-				/*	for (int px = 1; px<=combine_now ; pn++) 
-				{ 		
-						cout<<temp_combine[px][0]<<'\t'<<temp_combine[px][1]<<'\t'<<" after combine"<<endl;
-				} */
-			//	cout << "Doner one combine " << '\t'<< pn <<  endl;
-		}
-	
-// calculate new diffusion tensors	
-	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
-		{
-			if(cluster[i].clicked == 1 ) {
-		remove("new_cluster.dat");
-		remove("data.dat");
-
-		std::ofstream outFile7("new_cluster.dat");
-
-		for (int  k=0; k<cluster[i].Sub_Length; k++) {
-
-		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.4"<<std::endl;
-		
-		} 
-
-// mobility calculation 
-
-
-		mobility_calc(cluster[i].Sub_Length);
-
-        vctr3D CoD;
-
-/*	cluster[i].pos+=CoD;
-    for (int  k=0; k<cluster[i].Sub_Length; k++) {
-    particle[cluster[i].sub[k]].pos_bdyfxd-=CoD;
-    }
-*/    
-
-
-
-std::ifstream dataFile("data.dat");
-std::string tmp;
-if(!dataFile.good()) {
-	std::cerr<<"Given file is corrupt /n"<<std::endl;
-}
-else {
-    std::string line;
-		std::getline(dataFile,line);
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr.comp[n][2];
-    }
-		std::getline(dataFile,line);
-
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][1];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][2];
- 
-    }
-		std::getline(dataFile,line);
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][3];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][4];
-    }
-		std::getline(dataFile,line);
-
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][3];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][4];
- 
-    }
-}	 
-     
-      //  currentLine >> cluster[i].mobility_tnsr.comp[n][0];
-
-      //  currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-
-
-		cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
-		cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1*10*2414323832351.228);		// outputed by hydro++
-		cluster[i].mobility_tnsr_td=cluster[i].mobility_tnsr_td*(1*10*2414323832351.228);		// outputed by hydro++
-		cluster[i].mobility_tnsr_rd=cluster[i].mobility_tnsr_rd*(1*10*2414323832351.228);		// outputed by hydro++
-		cluster[i].mobility_tnsr_sqrt=null33D;
-		MatrixXd temp(3,3), temp_sqrt(3,3);
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
-				cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
-
-			}
-		}
-	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
-	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
-	//	temp_sqrt=temp.sqrt();
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-		//		cluster[i].mobility_tnsr_sqrt.comp[k][k]=sqrt(cluster[i].mobility_tnsr.comp[k][k]);
-				cout<<cluster[i].mobility_tnsr_sqrt.comp[k][k]<<endl;
-			}
-		}
-		
-		cluster[i].rot_mobility_tnsr_sqrt=null33D;
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k][l];
-				cout<<cluster[i].rot_mobility_tnsr.comp[k][l]<<endl;
-
-			}
-		}
-		Eigen::SelfAdjointEigenSolver<MatrixXd> ROT_MOBL_MAT(temp);
-		temp_sqrt = ROT_MOBL_MAT.operatorSqrt();
-	//	temp_sqrt=temp.sqrt();
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].rot_mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-			//	cluster[i].rot_mobility_tnsr_sqrt.comp[k][k]=sqrt(cluster[i].rot_mobility_tnsr.comp[k][k]);
-				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k][k]<<endl;
-			}
-		}
-		
-		cluster[i].quat={1.0,0.0,0.0,0.0};
-
-		// update A matrix
-
-        cluster[i].quat2rotmat();
-	}
-		cluster[i].clicked = 0; 
-	}
-	
-	}
-
+// 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+	cout<<step<<endl;
 	// convert subforces into total generalized forces on particles 
-
-  for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+  for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
+  }
 
-    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
-    {
-		dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
-		dr_vec.PBC(box,rbox);
-		cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;		
-		cluster[i].trq +=                                               dr_vec^particle[cluster[i].sub[j]].frc;
-		mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
-		cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass; 	//	refer following paper , page 3 equa. 3 for interia tensor formula
-																												//	Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
-    } 
-  } 
-/*
-if (step%(frame*10)==0)
-        {
-                cout<<step<<endl;
-                std::ofstream outFile_inter_endfile(dataFileName+"/End_Position_Full_"+std::to_string(step/(frame*10))+".xyz");
-                std::ofstream outFile_inter_rand_state(dataFileName+"/random_device_state_"+std::to_string(step/(frame*10))+".txt");
-
- outFile_inter_endfile<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
-
-for ( int i = 0 ; i < Max_Cluster_N; i ++ )
-        {
-                 outFile_inter_endfile<<cluster[i].Sub_Length<<'\t'<<cluster[i].radii_gyr<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
-                 outFile_inter_endfile<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
-                if (cluster[i].Sub_Length>1)
-                        {
-                                cluster[i].mobility_tnsr.writeToFile(outFile_inter_endfile);
-                                cluster[i].mobility_tnsr_sqrt.writeToFile( outFile_inter_endfile);
-                if(xx_rotation)
-                        {
-								cluster[i].rot_mobility_tnsr.writeToFile(outFile_inter_endfile);
-								cluster[i].rot_mobility_tnsr_sqrt.writeToFile(outFile_inter_endfile);
-                        }
-                        }
-            for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
-                        {
-                                 outFile_inter_endfile<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<std::endl;
-                                 outFile_inter_endfile<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
-                        }
-        }
-
-        outFile_inter_rand_state << gen;
-        outFile_inter_rand_state.close();
-         outFile_inter_endfile.close();
-        }
-*/
 if (step%frame==0) 
 	{ 
 
@@ -2442,7 +1890,7 @@ if (step%frame==0)
 
 		K_Energy=0;
 
-		for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+		for ( int i = 0 ; i < 1; i ++ )
 			{
 				if(cluster[i].Sub_Length>0)
 				{
