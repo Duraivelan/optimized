@@ -218,6 +218,7 @@ for (int a=0; a<NrParticles; a++)
 				e_ab=bead[a].pos-bead[b].pos;
 				mtrx3D Pab(e_ab, e_ab) ;
 				e_ab2=e_ab.norm2();
+				
 				vctr3D col1(0.0, -e_ab.comp[2], e_ab.comp[1]);
 				vctr3D col2(e_ab.comp[2],0.0,-e_ab.comp[0]);
 				vctr3D col3(-e_ab.comp[1],e_ab.comp[0],0.0);
@@ -225,7 +226,20 @@ for (int a=0; a<NrParticles; a++)
 				e_ab2_inv=1.0/e_ab2;
 				
 				e_ab_unit = e_ab*sqrt(e_ab2_inv); 
-				if(a==b) {	e_ab_unit = e_ab*0.0; }	
+				if(a==b) 
+					{	
+						e_ab_unit = e_ab*0.0; 
+					}	
+				else
+					{
+						if(	e_ab2 <= (4.0*bead[a].radius*bead[a].radius)	)	
+							{	
+							
+								cout << a << " and "<<b<<" numbered particles are touching or overlapping " << endl;
+
+								abort();
+							}	
+					}
 				tau = 1.0/(6.0*M_PI*eta_0*bead[a].radius);
 			    double r 	= sqrt(e_ab2)/bead[a].radius;			// distance between particle vector 'r' magnitude |r| normalized by particle radius 'a' ;
 			    double r_1 	= 1.0/(r);
@@ -1163,7 +1177,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 	{
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
-		vctr3D u_inf(0.0,shear_rate*cluster[i].pos.comp[0],0.0); 		// shear flow gradient in y-direction
+		vctr3D u_inf(shear_rate*cluster[i].pos.comp[1],0.0,0.0); 		// shear flow gradient in y-direction
 		mtrx3D E_inf_b = (~cluster[i].rotmat)*E_inf*cluster[i].rotmat;
 		vctr5D E_inf_bt;
 		mtrx3D S_b ;
@@ -1236,10 +1250,10 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt)
 									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*1.0E4*dt)
-									//	+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt*4.25)
-										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
+										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)
+										/*-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt*/; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
-				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
+				cluster[i].quat		= cluster[i].theta2quat() /*+ cluster[i].omega2qdot()*/ ;
 			//	cout<<cluster[i].theta.comp[0]<<cluster[i].theta.comp[1]<<cluster[i].theta.comp[2]<<endl;
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
@@ -1307,7 +1321,7 @@ int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=100;
+int step=0, nSteps=10000, frame=100000;
 int restart_frame_offset=0;
 double vel_scale;
 int if_Periodic =1;
@@ -1319,6 +1333,11 @@ double dr=0.05; // step size for RDF calculation
 // std::vector<int> RDF((int)  floor(sqrt((Lx/2)*(Lx/2)+(Ly/2)*(Ly/2)+(Lz/2)*(Lz/2)))/dr,0), RDF1((int)  floor(sqrt(Lx*Lx+Ly*Ly))/dr,0);
 double KE_rot=0;
 int NrSubs=NrParticles;
+
+vctr3D dipole_b(0.0,0.0,1.0);
+vctr3D dipole_s(0.0,0.0,1.0);
+double cos_theta = dipole_s*Elec_fld;
+int hist[25]={};
 
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( 1, ParticleData(NrSubs) );
@@ -1480,7 +1499,8 @@ else {
        cout<< particle[i].pos.comp[0]<<endl;
 	//	std::getline(dataFile,line);        
 	//	particle[i].pos.comp[2]+=10.0;
-		particle[i].pos.comp[2]=particle[i].pos.comp[2]*(-1.0);
+	//	particle[i].pos.comp[2]=particle[i].pos.comp[2]*(-1.0);
+	//	particle[i].pos.comp[0]=particle[i].pos.comp[0]*(-1.0);
 	//	particle[i].pos.comp[1]=particle[i].pos.comp[1]*(-1.0);
     }
 }
@@ -1554,18 +1574,24 @@ for ( int i = 0 ; i < 1; i ++ )
 
         cluster[i].quat2rotmat();
         
-       cluster[i].rotmat.echo();
+      /*  cluster[i].rotmat = {
+							{1.0,		0.0,	0.0},
+							{0.0,	cos(0.33),	sin(0.33)},
+							{0.0,	-sin(0.33),	cos(0.33)},
+							};
+        */
+		cluster[i].rotmat.echo();
         
         
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 			
-		//	particle[cluster[i].sub[k]].pos = cluster[i].rotmat*particle[cluster[i].sub[k]].pos;
+	//		particle[cluster[i].sub[k]].pos = cluster[i].rotmat*particle[cluster[i].sub[k]].pos;
 
-		//	particle[cluster[i].sub[k]].pos_bdyfxd = particle[cluster[i].sub[k]].pos;
+	//		particle[cluster[i].sub[k]].pos_bdyfxd = particle[cluster[i].sub[k]].pos;
 	//	particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]+=5.1861;
 	//	particle[cluster[i].sub[k]].pos_bdyfxd=particle[cluster[i].sub[k]].pos;
 
-		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.25"<<std::endl;
+		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.4"<<std::endl;
 		
 		} 
 		/*
@@ -1824,7 +1850,7 @@ step = restart_frame_offset*frame+1;
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
-	cluster[i].trq=null3D;
+	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
 
@@ -1867,13 +1893,19 @@ do {
 	p_energy=0;	
 
 	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
+	dipole_s  = cluster[0].rotmat*dipole_b;
+	cos_theta = dipole_s*Elec_fld;
+
+	hist[int (floor((cos_theta+5.0)/0.4))]+=1;
+//				outFile_com<<cos_theta<<std::endl;
+
 // 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
-	cout<<step<<endl;
+//	cout<<step<<endl;
 	// convert subforces into total generalized forces on particles 
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
-	cluster[i].trq=null3D;
+	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
 
@@ -1896,11 +1928,11 @@ if (step%frame==0)
 				{
 				Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'<<std::endl;	
 	//			outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
-				outFile_com<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
+	//			outFile_com<<cos_theta<<'\t'<<cos_theta<<'\t'<<cos_theta<<std::endl;
 			/*	outFile_orient<<particle[cluster[i].sub[cluster[i].Sub_Length-1]].pos.comp[0]-particle[cluster[i].sub[0]].pos.comp[0]<<'\t'<<
 				particle[cluster[i].sub[cluster[i].Sub_Length-1]].pos.comp[1]-particle[cluster[i].sub[0]].pos.comp[1]<<'\t'<<
 				particle[cluster[i].sub[cluster[i].Sub_Length-1]].pos.comp[2]-particle[cluster[i].sub[0]].pos.comp[2]<<'\t'<<i<<std::endl; */
-				outFile_orient<<cluster[i].rotmat.comp[0][1]<<'\t'<<cluster[i].rotmat.comp[1][1]<<'\t'<<cluster[i].rotmat.comp[2][1]<<'\t'<<std::endl;
+				outFile_orient<<cluster[i].rotmat.comp[0][2]<<'\t'<<cluster[i].rotmat.comp[1][2]<<'\t'<<cluster[i].rotmat.comp[2][2]<<'\t'<<std::endl;
 				}
 			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
@@ -1972,6 +2004,12 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	step+=1;
 
 } while(xxnstep);
+
+for ( int i = 0 ; i < 25; i ++ )
+	{
+		cout << hist[i] << endl;
+	}
+	
 
 std::ofstream outFile7(dataFileName+"/End_Position_Full_new.xyz");
 		std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
