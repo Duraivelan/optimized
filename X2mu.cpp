@@ -133,7 +133,7 @@ else {
 		
 // the five base matrices for strain tensor // option 5 :  equation 419 wouter's tex version clusterdyn_110816_1556
 
-	double e[5][3][3]= {
+	double e_g_S[5][3][3]= {
 							{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
 							{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
 							{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
@@ -142,13 +142,32 @@ else {
 						};
 
 
-	double e_l[5][3][3]= {
+	double e_S_a[5][3][3]= {
 							{{ 2.0/3.0,0.0,0.0},{0.0,-1.0/3.0,0.0},{0.0,0.0,-1.0/3.0}},
 							{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
 							{{0.0,0.0,0.5},{0.0,0.0,0.0},{0.5,0.0,0.0}},
 							{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
 							{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
 						};
+   
+
+	double e_E_a[5][3][3]= {
+							{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
+							{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
+						};
+
+
+	double e_g_E[5][3][3]= {
+							{{ 2.0/3.0,0.0,0.0},{0.0,-1.0/3.0,0.0},{0.0,0.0,-1.0/3.0}},
+							{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.5},{0.0,0.0,0.0},{0.5,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
+							{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
+						};
+   
    
    double mu_11N[121*NrParticles*NrParticles] ;  		// grand mobility matrix
    double zeta_11N[121*NrParticles*NrParticles] ;  	// grand resistance matrix
@@ -358,11 +377,13 @@ for (int a=0; a<NrParticles; a++)
 			for (int a=0; a<3; a++)
 				{
 				for (int b=0; b<3; b++)
-					{		
-						Mobility_Tnsr_dt.comp[p][g]		+=		e[p][a][b]*g_ijk[a][b][g];	
-						Mobility_Tnsr_dr.comp[p][g]		+=		e[p][a][b]*h_ijk[a][b][g];		
-						Mobility_Tnsr_td.comp[g][p]		+=		e[p][a][b]*g_ijk[a][b][g];	// going from g_dt matrix to ~g_td matrix hence circulation of indices 
-						Mobility_Tnsr_rd.comp[g][p]		+=		e[p][a][b]*h_ijk[a][b][g];
+					{
+
+						Mobility_Tnsr_dt.comp[p][g]		+=		e_E_a[p][a][b]*g_ijk[a][b][g];	
+						Mobility_Tnsr_dr.comp[p][g]		+=		e_E_a[p][a][b]*h_ijk[a][b][g];		
+						Mobility_Tnsr_td.comp[g][p]		+=		g_ijk[a][b][g]*e_g_S[p][a][b];	// going from g_dt matrix to ~g_td matrix hence circulation of indices 
+						Mobility_Tnsr_rd.comp[g][p]		+=		h_ijk[a][b][g]*e_g_S[p][a][b];
+								
 					}
 				}				
 			}
@@ -376,7 +397,7 @@ for (int a=0; a<NrParticles; a++)
 						{
 						for (int d=0; d<3; d++)
 							{							
-								Mobility_Tnsr_dd.comp[p][s]		+=		e[p][a][b]*m_ijkl[a][b][g][d]*e[s][g][d];			
+								Mobility_Tnsr_dd.comp[p][s]		+=		e_E_a[p][a][b]*m_ijkl[a][b][g][d]*e_g_S[s][g][d];			
 							}
 						}													
 					}
@@ -492,13 +513,13 @@ for (int a=0; a<NrParticles; a++)
 								Deli.comp[k][a]	=	0.0	;
 								for (int b=0; b<3; b++)
 								{
-									Delj.comp[a][k]	+=	e_l[k][a][b]	*	bead[j].pos.comp[b]	;
-									Deli.comp[k][a]	+=	e_l[k][a][b]	*	bead[i].pos.comp[b]	;
-									for (int c=0; c<3; c++)
+									Delj.comp[a][k]	+=	e_g_E[k][b][a]	*	bead[j].pos.comp[b]	;
+									Deli.comp[k][a]	+=	e_g_E[k][a][b]	*	bead[i].pos.comp[b]	;
+							/*		for (int c=0; c<3; c++)
 									{
 										Unit_tnsr_Redc.comp[k][a]	+=	e_l[k][b][c]		* (b==c)	*	bead[i].pos.comp[a]	;	
 									}
-								}
+							*/	}
 							}		
 						}
 	
@@ -710,7 +731,7 @@ for (int a=0; a<NrParticles; a++)
 					
 				for (int p=0; p<5; p++)
 					{
-							h_clst_ijk[g][a][b]	+=		e[p][a][b]*Friction_Tnsr_rd.comp[g][p];		
+							h_clst_ijk[g][a][b]	+=		e_E_a[p][a][b]*Friction_Tnsr_rd.comp[g][p];		
 
 					}													
 				}
@@ -729,7 +750,7 @@ for (int a=0; a<NrParticles; a++)
 					
 				for (int p=0; p<5; p++)
 					{
-							g_clst_ijk[g][a][b]	+=		e[p][a][b]*Friction_Tnsr_td.comp[g][p];		
+							g_clst_ijk[g][a][b]	+=		e_E_a[p][a][b]*Friction_Tnsr_td.comp[g][p];		
 
 					}													
 				}
@@ -838,11 +859,11 @@ double mu_dd[5][5];
 			{
 			for (int g=0; g<3; g++)
 				{
-					h_clst_ijk[g][a][b] = 0.0;
+					g_clst_ijk[g][a][b] = 0.0;
 					
 				for (int p=0; p<5; p++)
 					{
-							h_clst_ijk[g][a][b]	+=		e_l[p][a][b]*mu_d[g][p];		
+							g_clst_ijk[g][a][b]	+=		e_S_a[p][a][b]*mu_d[g][p];		
 
 					}													
 				}
@@ -856,11 +877,11 @@ double mu_dd[5][5];
 			{
 			for (int g=0; g<3; g++)
 				{
-					g_clst_ijk[g][a][b] = 0.0;
+					h_clst_ijk[g][a][b] = 0.0;
 					
 				for (int p=0; p<5; p++)
 					{
-							g_clst_ijk[g][a][b]	+=		e_l[p][a][b]*mu_d[g+3][p];		
+							h_clst_ijk[g][a][b]	+=		e_g_S[p][a][b]*mu_d[g+3][p];		
 
 					}													
 				}
