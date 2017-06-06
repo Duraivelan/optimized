@@ -17,30 +17,53 @@ using namespace Eigen;
 
 using namespace std;
 
+// random numbers using rand function
+void createInitialPosition_N_particles(std::string fileName, int N, double Lx, double Ly, double Lz) {
+	double x,y,z;
+ 	srand (time(NULL)); // initialize random seed
+ 	std::ofstream outFile(fileName);
+ 	for(int i=0;i<N;i++) {
+ 		x=((double) rand() / (RAND_MAX/Lx))-Lx/2.0;  // create particle position from -Lx/2 to Lx/2
+		y=((double) rand() / (RAND_MAX/Ly))-Ly/2.0;
+		z=((double) rand() / (RAND_MAX/Lz))-Lz/2.0;
+		outFile<<x<<'\t'<<y<<'\t'<<z<<std::endl;
+ 	}
+ 	outFile.close();
+}
 
 std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
 
-void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double *KE_rot, double vel_scale) {
+void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double vel_scale) {
 double a, b , c, lambda;
 vctr4D quat_old;
-*KE_rot=0;
-double e[5][3][3]= {
+
+double e_g_S[5][3][3]= {
 						{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
 						{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
 						{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
 						{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
 						{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
 					};
-	
-double e_l[5][3][3]= {
-							{{ 2.0/3.0,0.0,0.0},{0.0,-1.0/3.0,0.0},{0.0,0.0,-1.0/3.0}},
-							{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
-							{{0.0,0.0,0.5},{0.0,0.0,0.0},{0.5,0.0,0.0}},
-							{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
-							{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
-						};
+
+double e_E_a[5][3][3]= {
+						{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
+						{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
+						{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
+						{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
+						{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
+					};
+
+
+double e_S_a[5][3][3]= {
+						{{ 2.0/3.0,0.0,0.0},{0.0,-1.0/3.0,0.0},{0.0,0.0,-1.0/3.0}},
+						{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
+						{{0.0,0.0,0.5},{0.0,0.0,0.0},{0.5,0.0,0.0}},
+						{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
+						{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
+						};	
+
 						    						
 for(int i=0;i<*Max_Cluster_N;i++) 
 	{
@@ -59,7 +82,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					{
 						for(int l=0;l<3;l++) 
 							{
-								E_inf_bt.comp[j]	+=	 e[j][k][l]*E_inf_b.comp[k][l];
+								E_inf_bt.comp[j]	+=	 e_E_a[j][k][l]*E_inf_b.comp[k][l];
 							}
 					}
 			}	
@@ -68,7 +91,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		if (cluster[i].Sub_Length>0) 
 			{
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*dt) 
-							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*10000.0*dt)
+							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*dt)
 								/*+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)*/
 								+u_inf*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 				
@@ -89,7 +112,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 								
 							for(int j=0;j<5;j++) 
 							{						
-								S_b.comp[k][l]	+=	 e[j][k][l]*cluster[i].Stresslet.comp[j];
+								S_b.comp[k][l]	+=	 e_g_S[j][k][l]*cluster[i].Stresslet.comp[j];
 							}
 						}
 					}
@@ -104,7 +127,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 								{
 									for(int l=0;l<3;l++) 
 										{
-											cluster[i].Stresslet.comp[m]	+=	 e_l[m][k][l]*S_s.comp[k][l];
+											cluster[i].Stresslet.comp[m]	+=	 e_S_a[m][k][l]*S_s.comp[k][l];
 										}
 								}
 						}										
@@ -118,11 +141,11 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// J. Chem. Phys. 142, 114103 (2015)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt)
-									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*1.0E4*dt)
-										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)
-										/*-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt*/; 	// body fixed omega
+									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*dt)
+									/*	+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)*/
+										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
-				cluster[i].quat		= cluster[i].theta2quat() /*+ cluster[i].omega2qdot()*/ ;
+				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
 			//	cout<<cluster[i].theta.comp[0]<<cluster[i].theta.comp[1]<<cluster[i].theta.comp[2]<<endl;
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
@@ -140,7 +163,6 @@ for(int i=0;i<*Max_Cluster_N;i++)
 	
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
-					//	particle[cluster[i].sub[j]].pos = cluster[i].pos + particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
@@ -151,7 +173,6 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
 				cluster[i].pos+=cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt;
 				cluster[i].pos.PBC(box,rbox);
-				*KE_rot += 	(cluster[i].omega)*(cluster[i].angmom)*0.5;	
 				for (int j=0; j< cluster[i].Sub_Length; j++) 
 					{
 						particle[cluster[i].sub[j]].pos=cluster[i].pos;
@@ -180,38 +201,28 @@ if(xxcluster_restart) {
 
    cout << "\t : current Git Hash - extended version";
    system(" git log --pretty=format:'%H' -n 1 ");
-
 int if_create_particles = xxcreate, ifrestart=xxrestart;
 double tauT=0.1;
-int cluster_combine;
 double Temp=T0;
 // double shear_rate = 0.0; //shear rate
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
-int Max_Cluster_N=NrParticles;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=100000;
-int restart_frame_offset=0;
+int step=0, nSteps=10000, frame=100;
 double vel_scale;
 int if_Periodic =1;
-std::cout<<'\n'<<cellx<<'\t'<<celly<<'\t'<<cellz<<std::endl;
-double  T_Energy, K_Energy, P_Energy, p_energy=0;
-vctr3D dR, dr2 , dr_vec;
-double R, r2;
-double dr=0.05; // step size for RDF calculation
-// std::vector<int> RDF((int)  floor(sqrt((Lx/2)*(Lx/2)+(Ly/2)*(Ly/2)+(Lz/2)*(Lz/2)))/dr,0), RDF1((int)  floor(sqrt(Lx*Lx+Ly*Ly))/dr,0);
-double KE_rot=0;
+int Max_Cluster_N=NrParticles;
 int NrSubs=NrParticles;
-
+int restart_frame_offset=0;
+/*
 vctr3D dipole_b(0.0,0.0,1.0);
 vctr3D dipole_s(0.0,0.0,1.0);
 double cos_theta = dipole_s*Elec_fld;
 int hist[25]={};
+*/
 
 vector<SubData>  particle(NrParticles);
-vector<ParticleData>  cluster( 1, ParticleData(NrSubs) );
-int combine_now=0;
-int combine[NrParticles][4];
+vector<ParticleData>  cluster( 1, ParticleData(NrSubs) );;
 
 if(ifrestart)	{
 	if(!xxcluster_restart)	{
@@ -362,9 +373,9 @@ else {
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);
+        currentLine >> particle[i].pos.comp[2];
         currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
-        currentLine >> particle[i].pos.comp[2];
        cout<< particle[i].pos.comp[0]<<endl;
 	//	std::getline(dataFile,line);        
 	//	particle[i].pos.comp[2]+=10.0;
@@ -418,71 +429,13 @@ for ( int i = 0 ; i < 1; i ++ )
 			particle[k].pos = cluster[0].rotmat*particle[k].pos;
 			}
 			*/
+			
 //	 forceUpdate( particle, &p_energy, &combine_now , combine, 0);
-// cout<< combine_now<<"combine123"<<endl;
 
 // calculate new diffusion tensors	
 	for ( int i = 0 ; i < 1; i ++ )
 		{
-		remove("new_cluster.dat");
-	//	remove("data.dat");
-
-		std::ofstream outFile7("new_cluster.dat");
-		
-	//	 cluster[i].pos.comp[1]-=5.1861;
-		/*	cluster[i].pos.comp[0]=0.0;
-			cluster[i].pos.comp[1]=0.0;
-			cluster[i].pos.comp[2]=0.0;	
-		*/
-		// cluster[i].pos={0.0,7.86223	,-3.76172e-06};	
-		
-	//	cluster[i].quat={0.9239, 0.0, 0.0, 0.3827	};
-	//	cluster[i].quat={0.9659,  0.0, 0.0,  0.2588	};
- 
-		// update A matrix
-
-        cluster[i].quat2rotmat();
         
-      /*  cluster[i].rotmat = {
-							{1.0,		0.0,	0.0},
-							{0.0,	cos(0.33),	sin(0.33)},
-							{0.0,	-sin(0.33),	cos(0.33)},
-							};
-        */
-		cluster[i].rotmat.echo();
-        
-        
-		for (int  k=0; k<cluster[i].Sub_Length; k++) {
-			
-	//		particle[cluster[i].sub[k]].pos = cluster[i].rotmat*particle[cluster[i].sub[k]].pos;
-
-	//		particle[cluster[i].sub[k]].pos_bdyfxd = particle[cluster[i].sub[k]].pos;
-	//	particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]+=5.1861;
-	//	particle[cluster[i].sub[k]].pos_bdyfxd=particle[cluster[i].sub[k]].pos;
-
-		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<"0.4"<<std::endl;
-		
-		} 
-		/*
-particle[cluster[0].sub[0]].pos_bdyfxd.comp[0]=0.0;
-particle[cluster[0].sub[0]].pos_bdyfxd.comp[1]=-2.5147;
-particle[cluster[0].sub[0]].pos_bdyfxd.comp[2]=0.0;
-*/
-// mobility calculation 
-
-
-		mobility_calc(cluster[i].Sub_Length);
-
-        vctr3D CoD;
-
-/*	cluster[i].pos+=CoD;
-    for (int  k=0; k<cluster[i].Sub_Length; k++) {
-    particle[cluster[i].sub[k]].pos_bdyfxd-=CoD;
-    }
-*/    
-
-
-
 std::ifstream dataFile("data.dat");
 std::string tmp;
 if(!dataFile.good()) {
@@ -549,18 +502,7 @@ else {
  
     }    
 }	 
-     
-      //  currentLine >> cluster[i].mobility_tnsr.comp[n][0];
 
-      //  currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-
-
-	//	cluster[i].mobility_tnsr=cluster[i].mobility_tnsr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
-	//	cluster[i].mobility_tnsr_tr=cluster[i].mobility_tnsr_tr*(1*10*2414323832351.228);				// multiply by kBT (assuming kB in erg/K and T as 300 K ) correct for 1/kBT term included in the value 
-	//	cluster[i].rot_mobility_tnsr=cluster[i].rot_mobility_tnsr*(1*10*2414323832351.228);		// outputed by hydro++
-	//	cluster[i].rot_mobility_tnsr_rt=cluster[i].rot_mobility_tnsr_rt*(1*10*2414323832351.228);		// outputed by hydro++
-	//	cluster[i].mobility_tnsr_td=cluster[i].mobility_tnsr_td*(1*10*2414323832351.228);		// outputed by hydro++
-	//	cluster[i].mobility_tnsr_rd=cluster[i].mobility_tnsr_rd*(1*10*2414323832351.228);		// outputed by hydro++
 		cluster[i].mobility_tnsr_sqrt=null33D;
 		MatrixXd temp(6,6), temp_sqrt(6,6);
 		for (int k=0;k<3;k++) {
@@ -628,7 +570,6 @@ else {
 		}
 				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
-	//	cluster[i].quat={0.7133, -0.1100, -0.3141, -0.6168};
 
 		// update A matrix
 
@@ -696,25 +637,14 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 }
 }
 
-std::ofstream outFile1(dataFileName+"/PE_energy.dat");
 std::ofstream outFile10(dataFileName+"/End_positions.dat");
-std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 std::ofstream outFile_com(dataFileName+"/com.dat");
 std::ofstream outFile_orient(dataFileName+"/orient.dat");
 
-// perfrom MD steps
-/*	if (ifrestart) {
-	simu_time =10.001;
-	new_neighbor = TOPMAP(cellx,celly,cellz,if_Periodic,neighbor,box,(R_cut+R_shell),simu_time*shear_rate*Ly);
-	std::tie(Pxx[0],Pyy[0],Pzz[0],Pxy[0],Pxz[0],Pyz[0])= forceUpdate(&p_energy ,XYZ, new_neighbor, cell, cellLength, box, (R_cut+R_shell), N, force, shear_rate, simu_time, ifshear , epsilon, sigma, rs);
-}
-*/
-
-step = restart_frame_offset*frame+1;
-
 // forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 
-	// convert subforces into total generalized forces on particles 
+/*
+// convert subforces into total generalized forces on particles 
 
   for ( int i = 0 ; i < 1; i ++ )
   {
@@ -722,7 +652,7 @@ step = restart_frame_offset*frame+1;
 	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
-
+*/
 
 
 std::ofstream outFile8(dataFileName+"/logfile");
@@ -759,49 +689,44 @@ std::ofstream outFile8(dataFileName+"/logfile");
 
 simu_time =dt;
 do {
-	p_energy=0;	
 
-	brownian(step, cluster, particle, &Max_Cluster_N , &KE_rot, vel_scale )	;
-	dipole_s  = cluster[0].rotmat*dipole_b;
+	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale )	;
+
+/*
+ * 	dipole_s  = cluster[0].rotmat*dipole_b;
 	cos_theta = dipole_s*Elec_fld;
 
 	hist[int (floor((cos_theta+5.0)/0.4))]+=1;
-//				outFile_com<<cos_theta<<std::endl;
+*/
 
 // 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
-//	cout<<step<<endl;
-	// convert subforces into total generalized forces on particles 
+
+/*
+// convert subforces into total generalized forces on particles 
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
 	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
+*/
 
 if (step%frame==0) 
 	{ 
 
-      std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+		std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
    		outFile5<<NrParticles<<std::endl;
    		outFile5<<"X Y Z co-ordinates"<<std::endl;
-		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
-		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
+
+		// save position every 'frame' steps 
 		
-	//	std::ofstream outFile9(dataFileName+"/Cluster_dist"+ std::to_string(step/frame) +".dat");
-
-		K_Energy=0;
-
 		for ( int i = 0 ; i < 1; i ++ )
 			{
 				if(cluster[i].Sub_Length>0)
 				{
 				Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'<<std::endl;	
-	//			outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
 	//			outFile_com<<cos_theta<<'\t'<<cos_theta<<'\t'<<cos_theta<<std::endl;
-			/*	outFile_orient<<particle[cluster[i].sub[cluster[i].Sub_Length-1]].pos.comp[0]-particle[cluster[i].sub[0]].pos.comp[0]<<'\t'<<
-				particle[cluster[i].sub[cluster[i].Sub_Length-1]].pos.comp[1]-particle[cluster[i].sub[0]].pos.comp[1]<<'\t'<<
-				particle[cluster[i].sub[cluster[i].Sub_Length-1]].pos.comp[2]-particle[cluster[i].sub[0]].pos.comp[2]<<'\t'<<i<<std::endl; */
-				outFile_orient<<cluster[i].rotmat.comp[0][2]<<'\t'<<cluster[i].rotmat.comp[1][2]<<'\t'<<cluster[i].rotmat.comp[2][2]<<'\t'<<std::endl;
+				outFile_orient<<cluster[i].rotmat.comp[0][1]<<'\t'<<cluster[i].rotmat.comp[1][1]<<'\t'<<cluster[i].rotmat.comp[2][1]<<'\t'<<std::endl;
 				}
 			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
@@ -809,64 +734,9 @@ if (step%frame==0)
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
 			}
-
-
-/*		for ( int i = 0 ; i < NrParticles; i ++ )
-			{
-						outFile5<<'H'<<'\t'<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<std::endl;
-						K_Energy+=0.5*m*(particle[i].vel.comp[0]*particle[i].vel.comp[0]
-									   + particle[i].vel.comp[1]*particle[i].vel.comp[1]
-									   + particle[i].vel.comp[2]*particle[i].vel.comp[2]);
-			}
- */
  
      	outFile5<<'\n'<<std::endl;
-	//	outFile1<<p_energy<<std::endl;
 		outFile5.close();
-	//	outFile9.close();
-/*		
-		// store info to restart file End_Position_Full.xyz
-		std::ofstream outFile7(dataFileName+"/End_Position_Full_new.xyz");
-		std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
-
-outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
-
-for ( int i = 0 ; i < Max_Cluster_N; i ++ )
-	{
-		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].radii_gyr<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
-		outFile7<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
-		if (cluster[i].Sub_Length>1) 
-			{
-				cluster[i].mobility_tnsr.writeToFile(outFile7);
-				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
-		if(xx_rotation)	
-			{
-				cluster[i].rot_mobility_tnsr.writeToFile(outFile7);
-				cluster[i].rot_mobility_tnsr_sqrt.writeToFile(outFile7);
-			}
-			}
-	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
-			{
-				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<std::endl;
-				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
-			}
-	}
-
-	outFile_rand_state << gen;
-	outFile_rand_state.close();
-
-	outFile7.close();
-
- remove("random_device_state.txt");
-  char oldname_rand_state[] ="random_device_state_new.txt";
-  char newname_rand_state[] ="random_device_state.txt";
-  rename( oldname_rand_state , newname_rand_state );
-
- remove("End_Position_Full.xyz");
-  char oldname[] ="End_Position_Full_new.xyz";
-  char newname[] ="End_Position_Full.xyz";
-  rename( oldname , newname );
-*/
 	}
 	
 	simu_time+=dt;
@@ -874,47 +744,17 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 
 } while(xxnstep);
 
+/*
 for ( int i = 0 ; i < 25; i ++ )
 	{
 		cout << hist[i] << endl;
 	}
-	
+*/	
 
-std::ofstream outFile7(dataFileName+"/End_Position_Full_new.xyz");
-		std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
+	std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
 	outFile_rand_state << gen;
 	outFile_rand_state.close();
 
-outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame )<<endl;
-
-for ( int i = 0 ; i < Max_Cluster_N; i ++ )
-	{
-		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].radii_gyr<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
-		outFile7<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
-		if (cluster[i].Sub_Length>1) 
-			{
-				cluster[i].mobility_tnsr.writeToFile(outFile7);
-				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
-		if(xx_rotation)	
-			{
-				cluster[i].rot_mobility_tnsr.writeToFile(outFile7);
-				cluster[i].rot_mobility_tnsr_sqrt.writeToFile(outFile7);
-			}
-			}
-	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
-			{
-				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<std::endl;
-				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
-			}
-	}
-	for (int i=0;i<NrParticles;i++)
-		{
-			outFile10<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<std::endl;
-		}
-outFile1.close();
-outFile7.close();
-outFile10.close();
-outFile11.close();
 outFile_com.close();
 outFile_orient.close();
   remove("End_Position_Full.xyz");
