@@ -1,4 +1,52 @@
+/*
+ * Computes the 11x11 mobility matrix 
+ * Input file : first line viscoity, 
+ * 				second line particle position followed by particle radius.
+ * 				
+ * Current version : assumes all particle radii to be same, also doesn't compute the lubrication forces
+ * 
+ * Based on the suggestions by following authors :
+ * Excerpt from : 	Seto, Ryohei, et al. "Restructuring of colloidal aggregates in shear flow: Coupling interparticle contact models with Stokesian dynamics."
+ * 					arXiv preprint arXiv:1204.5680 (2012). 		
+ * 	" It must be noted that the lubrication correction of SD 
+is not applied in this work. For suspensions where the interparticle
+interaction is absent, the lubrication forces play
+essential role for near contact particles [33, 34]. On the
+other hand, for rigid clusters, i.e. if the relative velocities
+between particles are zero due to strong cohesive forces,
+the lubrication correction has no contribution. Thus, the
+lubrication correction to the mobility matrix can safely be
+omitted [35–37]. "	
+ * 			
+ *  */
 
+# include "structure_definitions.h"
+#include <sstream>
+
+// llapack input variable structuring 
+
+extern "C" {
+    // LU decomoposition of a general matrix
+    void dgetrf_(int* M, int *N, double* A, int* lda, int* IPIV, int* INFO);
+
+    // generate inverse of a matrix given its LU decomposition
+    void dgetri_(int* N, double* A, int* lda, int* IPIV, double* WORK, int* lwork, int* INFO);
+}
+
+void inverse(double* A, int N)
+{
+    int *IPIV = new int[N+1];
+    int LWORK = N*N;
+    double *WORK = new double[LWORK];
+    int INFO;
+
+    dgetrf_(&N,&N,A,&N,IPIV,&INFO);
+    dgetri_(&N,A,&N,IPIV,WORK,&LWORK,&INFO);
+
+    delete IPIV;
+    delete WORK;
+}
+ 
 void mobility_calc(int NrParticles){
                  
 vctr3D dR, dr2;
@@ -6,26 +54,30 @@ double R, r2;
 vector<SubData>  bead(NrParticles);
 
 // variables for mobility tensor calculation
-double eta_0=eta;
+double eta_0;
 vctr3D e_ab , e_ab_unit ;
 double e_ab2, e_ab2_inv, temp, temp1, temp2, temp3, tau ;
 //
 
 std::string fileName="new_cluster.dat";
 
-//read x,y positions from XY.dat
+//read viscoisty and x,y,z positions from new_cluster.dat
 std::ifstream dataFile(fileName);
 if(!dataFile.good()) {
 	std::cerr<<"Given file is corrupt /n"<<std::endl;
 }
 else {
     std::string line;
+	std::getline(dataFile,line);
+   	std::istringstream currentLine(line);  
+   	currentLine >> eta_0;
+   	
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);    
+        currentLine >> bead[i].pos.comp[2];
         currentLine >> bead[i].pos.comp[0];
         currentLine >> bead[i].pos.comp[1];
-        currentLine >> bead[i].pos.comp[2];
 		currentLine >> bead[i].radius;
     }
 }	
@@ -223,27 +275,9 @@ for (int a=0; a<NrParticles; a++)
 							Mobility_Tnsr_rt.comp[i][j]		=	b_norm*(													y_b[1][1]*ep_ijk_e_k													);
 						
 							Mobility_Tnsr_rr.comp[i][j]		=	c_norm*(x_c[1][1]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_c[1][1]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
-
-						//		cout << "m_ijkl"	<< endl;				
-						//		cout << m_ijkl[0][0][0][0] << endl;				
+		
 						}	// j
 					}	// i
-		/*
-					for (int i=0; i<3; i++)
-					{
-					for (int j=0; j<3; j++)
-						{									
-							cout << "matrix"	<< endl;				
-							cout << Mobility_Tnsr_rt.comp[i][j] << endl;
-						}
-					}														
-			
-				Mobility_Tnsr_tt	=	 	Unit_diag * tau ;
-											
-				Mobility_Tnsr_rr	=		Unit_diag * temp2 ;
-				Mobility_Tnsr_rt	= 		null33D ;
-				Mobility_Tnsr_tr	= 		null33D ;
-		*/
 
 			 } else {
 				 					
@@ -294,8 +328,7 @@ for (int a=0; a<NrParticles; a++)
 							Mobility_Tnsr_rr.comp[i][j]		=	c_norm*(x_c[1][0]*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	y_c[1][0]*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
 									
 							Mobility_Tnsr_tr	= 	    Mobility_Tnsr_rt*(1.0);		
-		//						cout << "expresssion"	<< endl;				
-		//						cout << Mobility_Tnsr_rt.comp[i][j] << endl;		
+	
 						}	// j
 					}	// i	
 				}				
@@ -423,28 +456,8 @@ for (int a=0; a<NrParticles; a++)
 	mtrx35D Friction_Tnsr_td	=	null35D;
 	mtrx35D Friction_Tnsr_rd	=	null35D;
 	mtrx55D Friction_Tnsr_dd	=	null55D;
-	
- for (int i=0;i<121;i++)
-       { 
-               for(int j=0;j<121;j++)
-                       {
-               cout<< std::setprecision(5) <<zeta_11N[i+11*NrParticles*j]<<'\t' ;
-                       }
-               cout<<std::endl; 
-       }	
-               cout<<std::endl; 
                
 	inverse ( zeta_11N ,11*NrParticles )	 ; 	
-	
-	 for (int i=0;i<121;i++)
-       { 
-               for(int j=0;j<121;j++)
-                       {
-               cout<< std::setprecision(5) <<zeta_11N[i+11*NrParticles*j]<<'\t' ;
-                       }
-               cout<<std::endl; 
-       }	
-               cout<<std::endl; 
 	
 	for (int i=0; i<NrParticles; i++)
 		{
@@ -564,9 +577,7 @@ for (int a=0; a<NrParticles; a++)
 										Friction_Tnsr_rd.comp[k][l]	+=	Ai.comp[k][m]	*	( Resistance_Tnsr_td.comp[m][l]	)	;									
 									}
 								Friction_Tnsr_td.comp[k][l]	+=	Resistance_Tnsr_td.comp[k][l]	;
-								Friction_Tnsr_rd.comp[k][l]	+=	Resistance_Tnsr_rd.comp[k][l]	;								
-								Friction_Tnsr_dt.comp[k][l]	+=	Resistance_Tnsr_dt.comp[l][k]	;								
-								Friction_Tnsr_dr.comp[l][k]	+=	Resistance_Tnsr_dr.comp[l][k]	;								
+								Friction_Tnsr_rd.comp[k][l]	+=	Resistance_Tnsr_rd.comp[k][l]	;																
 							}
 							
 	// assuming Frc_td = Frc_dt;
@@ -683,6 +694,9 @@ for (int a=0; a<NrParticles; a++)
 					xi_11x11[33] = Friction_Tnsr_rr.comp[2][0] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
+/*
+ * test the 3-indice form of the g,h (td, rd) mobility matrices
+
 	
 		double h_clst_ijk[3][3][3] = {{{0}}};
 
@@ -738,44 +752,10 @@ for (int s=0; s<3; s++)
 		cout << setw(10) << h_clst_ijk[s][2][0] << "  " << setw(10) << h_clst_ijk[s][2][1] << "  " << setw(10) << h_clst_ijk[s][2][2] << endl;
     }
     	
-		cout<<std::endl ;
-		cout<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
-		cout<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
-		cout<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
-		cout<<std::endl ;
-		cout<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
-		cout<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
-		cout<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
-		
-	 for (int i=0;i<6;i++)
-       { 
-               for(int j=0;j<6;j++)
-                       {
-               cout<< std::setprecision(5) <<xi_11x11[i+6*j]<<'\t' ;
-                       }
-               cout<<std::endl; 
-       }	
-
-	 for (int i=0;i<5;i++)
-       { 
-               for(int j=0;j<5;j++)
-                       {
-               cout<< std::setprecision(5) <<Friction_Tnsr_dd.comp[i][j]<<'\t' ;
-                       }
-               cout<<std::endl; 
-       }	
-		
+*/
+	
 	inverse ( xi_11x11 , 6 )	 ; 			
 
-	 for (int i=0;i<6;i++)
-       { 
-               for(int j=0;j<6;j++)
-                       {
-               cout<< std::setprecision(5) <<xi_11x11[i+6*j]<<'\t' ;
-                       }
-               cout<<std::endl; 
-       }	
-		
 /*	for (int i=0; i<36; i++)
 		{
 			xi_11x11[i]*=4.1419e-14;	// multiply by kbT in erg K-1
@@ -833,23 +813,7 @@ double mu_dd[5][5];
 						}
 					}
 				}				
-		cout << setw(10) << Friction_Tnsr_td.comp[0][0] << "  " << setw(10) << Friction_Tnsr_td.comp[0][1] << "  " << setw(10) << Friction_Tnsr_td.comp[0][2] << "  " << setw(10) << Friction_Tnsr_td.comp[0][3] << "  " << setw(10) << Friction_Tnsr_td.comp[0][4] << endl;
-		cout << setw(10) << Friction_Tnsr_td.comp[1][0] << "  " << setw(10) << Friction_Tnsr_td.comp[1][1] << "  " << setw(10) << Friction_Tnsr_td.comp[1][2] << "  " << setw(10) << Friction_Tnsr_td.comp[1][3] << "  " << setw(10) << Friction_Tnsr_td.comp[1][4] << endl;
-		cout << setw(10) << Friction_Tnsr_td.comp[2][0] << "  " << setw(10) << Friction_Tnsr_td.comp[2][1] << "  " << setw(10) << Friction_Tnsr_td.comp[2][2] << "  " << setw(10) << Friction_Tnsr_td.comp[2][3] << "  " << setw(10) << Friction_Tnsr_td.comp[2][4] << endl;
- 
- 		cout << setw(10) << Friction_Tnsr_rd.comp[0][0] << "  " << setw(10) << Friction_Tnsr_rd.comp[0][1] << "  " << setw(10) << Friction_Tnsr_rd.comp[0][2] << "  " << setw(10) << Friction_Tnsr_rd.comp[0][3] << "  " << setw(10) << Friction_Tnsr_rd.comp[0][4] << endl;
-		cout << setw(10) << Friction_Tnsr_rd.comp[1][0] << "  " << setw(10) << Friction_Tnsr_rd.comp[1][1] << "  " << setw(10) << Friction_Tnsr_rd.comp[1][2] << "  " << setw(10) << Friction_Tnsr_rd.comp[1][3] << "  " << setw(10) << Friction_Tnsr_rd.comp[1][4] << endl;
-		cout << setw(10) << Friction_Tnsr_rd.comp[2][0] << "  " << setw(10) << Friction_Tnsr_rd.comp[2][1] << "  " << setw(10) << Friction_Tnsr_rd.comp[2][2] << "  " << setw(10) << Friction_Tnsr_rd.comp[2][3] << "  " << setw(10) << Friction_Tnsr_rd.comp[2][4] << endl;
- 
-
-		cout<<std::endl ;
-		cout<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
-		cout<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
-		cout<<mu_d[2][0]<<'\t'<<mu_d[2][1]<<'\t'<<mu_d[2][2]<<'\t'<<mu_d[2][3]<<'\t'<<mu_d[2][4]<<std::endl ;
-		cout<<std::endl ;
-		cout<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
-		cout<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
-		cout<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;			
+		
 		outFile1<<std::endl ;
 		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
 		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
@@ -858,18 +822,16 @@ double mu_dd[5][5];
 		outFile1<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
 		outFile1<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
 		outFile1<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;		
-		cout<<std::endl ;
-		cout<<mu_dd[0][0]<<'\t'<<mu_dd[0][1]<<'\t'<<mu_dd[0][2]<<'\t'<<mu_dd[0][3]<<'\t'<<mu_dd[0][4]<<std::endl ;
-		cout<<mu_dd[1][0]<<'\t'<<mu_dd[1][1]<<'\t'<<mu_dd[1][2]<<'\t'<<mu_dd[1][3]<<'\t'<<mu_dd[1][4]<<std::endl ;
-		cout<<mu_dd[2][0]<<'\t'<<mu_dd[2][1]<<'\t'<<mu_dd[2][2]<<'\t'<<mu_dd[2][3]<<'\t'<<mu_dd[2][4]<<std::endl ;
-		cout<<mu_dd[3][0]<<'\t'<<mu_dd[3][1]<<'\t'<<mu_dd[3][2]<<'\t'<<mu_dd[3][3]<<'\t'<<mu_dd[3][4]<<std::endl ;
-		cout<<mu_dd[4][0]<<'\t'<<mu_dd[4][1]<<'\t'<<mu_dd[4][2]<<'\t'<<mu_dd[4][3]<<'\t'<<mu_dd[4][4]<<std::endl ;
 		outFile1<<std::endl ;
 		outFile1<<mu_dd[0][0]<<'\t'<<mu_dd[0][1]<<'\t'<<mu_dd[0][2]<<'\t'<<mu_dd[0][3]<<'\t'<<mu_dd[0][4]<<std::endl ;
 		outFile1<<mu_dd[1][0]<<'\t'<<mu_dd[1][1]<<'\t'<<mu_dd[1][2]<<'\t'<<mu_dd[1][3]<<'\t'<<mu_dd[1][4]<<std::endl ;
 		outFile1<<mu_dd[2][0]<<'\t'<<mu_dd[2][1]<<'\t'<<mu_dd[2][2]<<'\t'<<mu_dd[2][3]<<'\t'<<mu_dd[2][4]<<std::endl ;
 		outFile1<<mu_dd[3][0]<<'\t'<<mu_dd[3][1]<<'\t'<<mu_dd[3][2]<<'\t'<<mu_dd[3][3]<<'\t'<<mu_dd[3][4]<<std::endl ;
 		outFile1<<mu_dd[4][0]<<'\t'<<mu_dd[4][1]<<'\t'<<mu_dd[4][2]<<'\t'<<mu_dd[4][3]<<'\t'<<mu_dd[4][4]<<std::endl ;
+
+/*
+ * test the 3-indice form of the g,h matrices
+		
 		for (int a=0; a<3; a++)
 		{
 		for (int b=0; b<3; b++)
@@ -920,5 +882,10 @@ for (int s=0; s<3; s++)
 		cout << setw(10) << h_clst_ijk[s][1][0] << "  " << setw(10) << h_clst_ijk[s][1][1] << "  " << setw(10) << h_clst_ijk[s][1][2] << endl;
 		cout << setw(10) << h_clst_ijk[s][2][0] << "  " << setw(10) << h_clst_ijk[s][2][1] << "  " << setw(10) << h_clst_ijk[s][2][2] << endl;
     }	
+*/
+}
 
+int main() {
+	
+	mobility_calc (512);
 }
