@@ -374,8 +374,8 @@ else {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);
         currentLine >> particle[i].pos.comp[2];
-        currentLine >> particle[i].pos.comp[0];
         currentLine >> particle[i].pos.comp[1];
+        currentLine >> particle[i].pos.comp[0];
        cout<< particle[i].pos.comp[0]<<endl;
 	//	std::getline(dataFile,line);        
 	//	particle[i].pos.comp[2]+=10.0;
@@ -452,7 +452,7 @@ else {
         currentLine >> cluster[i].mobility_tnsr.comp[n][2];
         currentLine >> cluster[i].mobility_tnsr_tr.comp[n][0];
         currentLine >> cluster[i].mobility_tnsr_tr.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][2];
+        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][2];        
     }
 		std::getline(dataFile,line);
 
@@ -579,6 +579,8 @@ else {
 }
 }
 Max_Cluster_N =1;
+
+/*
 //delete all files before writing data
 
 // following snippet taken from stakcflow link  http://stackoverflow.com/questions/11007494/how-to-delete-all-files-in-a-folder-but-not-delete-the-folder-c-linux
@@ -602,6 +604,8 @@ while (( next_file = readdir(theFolder)) )
 	}
 //
 }
+*/
+
 if(!xx_diffusion) {
 /* sort particles into cells */
 for ( int i = 0 ; i < Max_Cluster_N; i ++ )

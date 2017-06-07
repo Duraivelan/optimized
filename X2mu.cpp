@@ -1,8 +1,12 @@
 /*
  * Computes the 11x11 mobility matrix 
- * Input file : first line viscoity, 
- * 				second line particle position followed by particle radius.
- * 				
+ * Input file : 
+ * 				** init.dat **
+ * 					viscoity 
+ * 					radius
+ * 				** XYZ.dat **
+ *					X,Y,Z particle positons
+ *  				
  * Current version : assumes all particle radii to be same, also doesn't compute the lubrication forces
  * 
  * Based on the suggestions by following authors :
@@ -56,29 +60,52 @@ vector<SubData>  bead(NrParticles);
 // variables for mobility tensor calculation
 double eta_0;
 vctr3D e_ab , e_ab_unit ;
-double e_ab2, e_ab2_inv, temp, temp1, temp2, temp3, tau ;
+double e_ab2, e_ab2_inv ;
+double radius;
 //
 
-std::string fileName="new_cluster.dat";
+std::string fileName="init.dat";
 
 //read viscoisty and x,y,z positions from new_cluster.dat
-std::ifstream dataFile(fileName);
+std::ifstream dataFile;
+dataFile.open(fileName);
+if(!dataFile.good()) {
+	std::cerr<<"Given file is corrupt /n"<<std::endl;
+}
+else {
+    std::string line0;
+	std::getline(dataFile,line0);
+   	std::istringstream currentLine0(line0);  
+   	currentLine0 >> eta_0;
+   	cout << eta_0 << endl;
+	std::getline(dataFile,line0);
+   	std::istringstream currentLine1(line0);  
+   	currentLine1 >> radius;
+   	cout << radius << endl;
+}
+
+dataFile.close();  
+dataFile.clear();
+
+fileName="XYZ.dat";
+
+//read viscoisty and x,y,z positions from new_cluster.dat
+
+dataFile.open(fileName);
+
 if(!dataFile.good()) {
 	std::cerr<<"Given file is corrupt /n"<<std::endl;
 }
 else {
     std::string line;
-	std::getline(dataFile,line);
-   	std::istringstream currentLine(line);  
-   	currentLine >> eta_0;
    	
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);    
         currentLine >> bead[i].pos.comp[2];
-        currentLine >> bead[i].pos.comp[0];
         currentLine >> bead[i].pos.comp[1];
-		currentLine >> bead[i].radius;
+        currentLine >> bead[i].pos.comp[0];
+        bead[i].radius = radius ; 
     }
 }	
 	
@@ -221,7 +248,7 @@ for (int a=0; a<NrParticles; a++)
 								abort();
 							}	
 					}
-				tau = 1.0/(6.0*M_PI*eta_0*bead[a].radius);
+
 			    double r 	= sqrt(e_ab2)/bead[a].radius;			// distance between particle vector 'r' magnitude |r| normalized by particle radius 'a' ;
 			    double r_1 	= 1.0/(r);
 			    double r_2 	= 1.0/(r*r);			    
@@ -908,5 +935,5 @@ for (int s=0; s<3; s++)
 
 int main() {
 	
-	mobility_calc (512);
+	mobility_calc (476);
 }
