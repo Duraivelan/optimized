@@ -92,8 +92,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			{
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*dt) 
 							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*dt)
-								/*+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)*/
-								+u_inf*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
+								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)
+								/*+u_inf*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt*/ ;
 				
 				for(int m=0;m<5;m++) 
 					{
@@ -142,8 +142,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt)
 									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*dt)
-									/*	+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)*/
-										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
+										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)
+									/*	-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt*/; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
 				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
 			//	cout<<cluster[i].theta.comp[0]<<cluster[i].theta.comp[1]<<cluster[i].theta.comp[2]<<endl;
@@ -208,13 +208,14 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=100;
+int step=0, nSteps=10000, frame=1000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
 int NrSubs=NrParticles;
 int restart_frame_offset=0;
 /*
+// variables for Electric field 
 vctr3D dipole_b(0.0,0.0,1.0);
 vctr3D dipole_s(0.0,0.0,1.0);
 double cos_theta = dipole_s*Elec_fld;
@@ -376,7 +377,7 @@ else {
         currentLine >> particle[i].pos.comp[2];
         currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[0];
-       cout<< particle[i].pos.comp[0]<<endl;
+    //   cout<< particle[i].pos.comp[0]<<endl;
 	//	std::getline(dataFile,line);        
 	//	particle[i].pos.comp[2]+=10.0;
 	//	particle[i].pos.comp[2]=particle[i].pos.comp[2]*(-1.0);
@@ -647,9 +648,11 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
 
 // forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 
-/*
+
 // convert subforces into total generalized forces on particles 
 
+/*
+ * For electric field generated torque
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
@@ -658,7 +661,13 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
   }
 */
 
-
+  for ( int i = 0 ; i < 1; i ++ )
+  {
+	cluster[i].frc=null3D;
+	cluster[i].trq=null3D;
+	cluster[i].Iner_tnsr=null33D;
+  }
+  
 std::ofstream outFile8(dataFileName+"/logfile");
 
 	outFile8 << "start time"<< '\t'
@@ -691,22 +700,35 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	std::ofstream Stresslet_data("Stresslet_data.dat");
 	cout<<step<<endl;
 
+/*	
+std::ofstream outFile12("vec1.dat");
+std::ofstream outFile13("vec2.dat");
+std::ofstream outFile14("vec3.dat");
+vctr3D eig1(1.0 , 0.0 , 0.0 ); 
+vctr3D eig2(0.0 , 1.0 , 0.0 );
+vctr3D eig3(0.0 , 0.0 , 1.0 );
+vctr3D vec1, vec2, vec3;
+*/
+
 simu_time =dt;
 do {
 
 	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale )	;
 
 /*
- * 	dipole_s  = cluster[0].rotmat*dipole_b;
-	cos_theta = dipole_s*Elec_fld;
+  	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
+	cos_theta = dipole_s*Elec_fld;					// calucate the angle between dipole and electric field, dot product gives the cosine of angle
 
 	hist[int (floor((cos_theta+5.0)/0.4))]+=1;
 */
 
 // 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
 
-/*
+
 // convert subforces into total generalized forces on particles 
+
+/*
+ * For electric field generated torque
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
@@ -715,6 +737,26 @@ do {
   }
 */
 
+  for ( int i = 0 ; i < 1; i ++ )
+  {
+	cluster[i].frc=null3D;
+	cluster[i].trq=null3D;
+	cluster[i].Iner_tnsr=null33D;
+  }
+
+/*
+ * // for rotational relaxation check
+ * 
+			vec1 = cluster[0].rotmat*eig1;
+			vec2 = cluster[0].rotmat*eig2;
+			vec3 = cluster[0].rotmat*eig3;
+			
+		outFile12<<vec1.comp[0] <<'\t'<< vec1.comp[1] << '\t'<< vec1.comp[2] <<  endl;      
+		outFile13<<vec2.comp[0] <<'\t'<< vec2.comp[1] << '\t'<< vec2.comp[2] <<  endl;      
+		outFile14<<vec3.comp[0] <<'\t'<< vec3.comp[1] << '\t'<< vec3.comp[2] <<  endl;      
+		*/
+		
+/*
 if (step%frame==0) 
 	{ 
 
@@ -742,13 +784,14 @@ if (step%frame==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-	
+*/	
 	simu_time+=dt;
 	step+=1;
 
 } while(xxnstep);
 
 /*
+ * output the histogram of the cosine angles
 for ( int i = 0 ; i < 25; i ++ )
 	{
 		cout << hist[i] << endl;
