@@ -35,10 +35,6 @@ std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
 
-void brownian( int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double vel_scale) {
-double a, b , c, lambda;
-vctr4D quat_old;
-
 double e_g_S[5][3][3]= {
 						{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
 						{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
@@ -64,6 +60,9 @@ double e_S_a[5][3][3]= {
 						{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
 						};	
 
+void brownian( long long int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double vel_scale) {
+double a, b , c, lambda;
+vctr4D quat_old;
 						    						
 for(int i=0;i<*Max_Cluster_N;i++) 
 	{
@@ -88,14 +87,14 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			}	
 
 		 
-		if (cluster[i].Sub_Length>0) 
-			{
+//		if (cluster[i].Sub_Length>0) 
+//			{
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*dt) 
 							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*dt)
-								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)
-								/*+u_inf*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt*/ ;
+							//	+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)
+								/*+u_inf*dt*/-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 				
-				for(int m=0;m<5;m++) 
+/*				for(int m=0;m<5;m++) 
 					{
 						cluster[i].Stresslet.comp[m]=0.0;			
 					for(int n=0;n<5;n++) 
@@ -131,9 +130,9 @@ for(int i=0;i<*Max_Cluster_N;i++)
 										}
 								}
 						}										
-	
-				if(xx_rotation)	
-				{
+	*/
+	//			if(xx_rotation)	
+	//			{
 			// update Q
 				quat_old=cluster[i].quat;
 				// translate space-fixed w*dt (i.e. theta) (3 dimensions) into qdot (4 dimensions).
@@ -142,8 +141,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt)
 									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*dt)
-										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)
-									/*	-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt*/; 	// body fixed omega
+									//	+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)
+										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
 				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
 			//	cout<<cluster[i].theta.comp[0]<<cluster[i].theta.comp[1]<<cluster[i].theta.comp[2]<<endl;
@@ -158,17 +157,18 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].quat=cluster[i].quat+quat_old*lambda;
 		
 			// update A matrix
-				}
+	//			}
 				cluster[i].quat2rotmat();
-	
+	/*
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
-				cluster[i].pos.PBC(box,rbox);
-			} 
-			else 
+					*/
+			//	cluster[i].pos.PBC(box,rbox);
+//			} 
+/*			else 
 			{
 				cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
 				cluster[i].pos+=cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt;
@@ -178,6 +178,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 						particle[cluster[i].sub[j]].pos=cluster[i].pos;
 					}
 			}
+*/		 
 	}		
 }
 
@@ -208,12 +209,15 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-int step=0, nSteps=10000, frame=1000;
+long long int step=0, nSteps=10000, frame=10000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
 int NrSubs=NrParticles;
 int restart_frame_offset=0;
+
+double max_cos=0.0,min_cos=0.0,min_tan=0.0,max_tan=0.0, cos_val=0.0,tan_val=0.0;
+
 /*
 // variables for Electric field 
 vctr3D dipole_b(0.0,0.0,1.0);
@@ -221,6 +225,16 @@ vctr3D dipole_s(0.0,0.0,1.0);
 double cos_theta = dipole_s*Elec_fld;
 int hist[25]={};
 */
+
+// variables for polar , azimuthal angle histogram
+double nbins = 100.0; 
+double bin_cos = M_PI/nbins;			
+double bin_tan = 2.0*M_PI/nbins;
+
+cout << bin_cos << '\t' << bin_tan << endl;
+
+long long int hist_pol_azi[100][100]={};
+
 
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( 1, ParticleData(NrSubs) );;
@@ -374,9 +388,9 @@ else {
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);
-        currentLine >> particle[i].pos.comp[2];
-        currentLine >> particle[i].pos.comp[1];
         currentLine >> particle[i].pos.comp[0];
+        currentLine >> particle[i].pos.comp[1];
+        currentLine >> particle[i].pos.comp[2];
     //   cout<< particle[i].pos.comp[0]<<endl;
 	//	std::getline(dataFile,line);        
 	//	particle[i].pos.comp[2]+=10.0;
@@ -571,10 +585,13 @@ else {
 		}
 				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
+	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
+	//	cluster[i].quat={0.7071   , 0.7071    ,   0.0   ,      0.0 };
 
 		// update A matrix
 
         cluster[i].quat2rotmat();
+        cluster[i].rotmat.echo();
 	}
 	
 }
@@ -757,12 +774,31 @@ do {
 		*/
 		
 /*
-if (step%frame==0) 
-	{ 
+ * 				histogram of polar and azimuth angles			
+ */
+ 		
+//				hist_pol_azi[int (floor((cluster[i].rotmat.comp[2][2]+1)/0.08))][int (floor((atan2(cluster[i].rotmat.comp[1][2],cluster[i].rotmat.comp[0][2]))/0.2513))]+=1;
+//if (step > 10000000) 
+//	{ 
+for ( int i = 0 ; i < 1; i ++ )
+			{
+				cos_val = (acos(cluster[i].rotmat.comp[0][2])/bin_cos) ; 
+		//		tan_val = (acos(cluster[i].rotmat.comp[0][2])/bin_cos) ; 
+				
+				tan_val = ((atan2(cluster[i].rotmat.comp[1][2],cluster[i].rotmat.comp[2][2]))/bin_tan) ; 
+				
+				if (max_cos < cos_val) {max_cos = cos_val;};
+				if (min_cos > cos_val) {min_cos = cos_val;};
+								
+				if (max_tan < tan_val) {max_tan = tan_val;};
+				if (min_tan > tan_val) {min_tan = tan_val;};
+				
+				hist_pol_azi[int (floor(cos_val))][int (floor((tan_val+50.0)))]+=1;
+			}	
+//		}	
 
-		std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
-   		outFile5<<NrParticles<<std::endl;
-   		outFile5<<"X Y Z co-ordinates"<<std::endl;
+ if (step%frame==0) 
+	{ 
 
 		// save position every 'frame' steps 
 		
@@ -773,10 +809,33 @@ if (step%frame==0)
 				Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'<<std::endl;	
 	//			outFile_com<<cos_theta<<'\t'<<cos_theta<<'\t'<<cos_theta<<std::endl;
 				outFile_orient<<cluster[i].rotmat.comp[0][1]<<'\t'<<cluster[i].rotmat.comp[1][1]<<'\t'<<cluster[i].rotmat.comp[2][1]<<'\t'<<std::endl;
+						
+				outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
+
 				}
+			}
+
+	}
+		
+/*	
+if (step%(frame)==0) 
+	{ 
+
+		std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/(frame)) +".xyz");   
+   		outFile5<<NrParticles<<std::endl;
+   		outFile5<<"X Y Z co-ordinates"<<std::endl;
+
+		// save position every 'frame' steps 
+		
+		for ( int i = 0 ; i < 1; i ++ )
+			{
+
 			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
-					
+
+						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
+					//	particle[cluster[i].sub[j]].pos.PBC(box,rbox);
+						
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
 			}
@@ -784,12 +843,14 @@ if (step%frame==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-*/	
+
+*/
+
 	simu_time+=dt;
 	step+=1;
 
 } while(xxnstep);
-
+cout << step << endl;
 /*
  * output the histogram of the cosine angles
 for ( int i = 0 ; i < 25; i ++ )
@@ -797,6 +858,20 @@ for ( int i = 0 ; i < 25; i ++ )
 		cout << hist[i] << endl;
 	}
 */	
+
+
+ // output the histogram of the polar and azimuthal angles
+for ( int i = 0 ; i < 100; i ++ )
+	{
+		for ( int j = 0 ; j < 100; j ++ )
+		{
+			cout<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
+		}
+		cout << endl;
+	}
+
+	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
+
 
 	std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
 	outFile_rand_state << gen;

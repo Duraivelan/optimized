@@ -102,10 +102,13 @@ else {
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
     	std::istringstream currentLine(line);    
-        currentLine >> bead[i].pos.comp[2];
-        currentLine >> bead[i].pos.comp[1];
         currentLine >> bead[i].pos.comp[0];
+        currentLine >> bead[i].pos.comp[1];
+        currentLine >> bead[i].pos.comp[2];
         bead[i].radius = radius ; 
+   	//	bead[i].pos.comp[2]=bead[i].pos.comp[2]*(-1.0);
+   	//	bead[i].pos.comp[1]=bead[i].pos.comp[1]*(-1.0);
+
     }
 }	
 	
@@ -829,6 +832,29 @@ for (int s=0; s<3; s++)
 		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[38]<<'\t'<<xi_11x11[49]<<'\t'<<xi_11x11[60]<<std::endl ;
 */
 
+// center of diffusion calculation based on "Hydrodynamic properties of rigid particles: comparison of different modeling and computational procedures." Biophysical journal 76.6 (1999): 3044-3057.			
+// Page 3046 equation 13.
+vctr3D ctr_diff ; 
+double temp_mat[3*3];
+temp_mat[0] =  xi_11x11[28] + xi_11x11[35]	;
+temp_mat[1] = -xi_11x11[27] 				; 
+temp_mat[2] = -xi_11x11[33]				; 
+temp_mat[3] = -xi_11x11[27]				;
+temp_mat[4] =  xi_11x11[21] + xi_11x11[35]	;
+temp_mat[5] = -xi_11x11[34]				;
+temp_mat[6] = -xi_11x11[33]				;
+temp_mat[7] = -xi_11x11[34]				;
+temp_mat[8] =  xi_11x11[28] + xi_11x11[21]	;
+
+inverse ( temp_mat , 3 )	 ; 	
+
+ctr_diff.comp[0] = temp_mat[0]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[3]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[6]*(xi_11x11[9] - xi_11x11[4]) ;
+ctr_diff.comp[1] = temp_mat[1]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[4]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[7]*(xi_11x11[9] - xi_11x11[4]) ;
+ctr_diff.comp[2] = temp_mat[2]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[5]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[8]*(xi_11x11[9] - xi_11x11[4]) ;
+
+ctr_diff.echo();
+cout<<ctr_diff.comp[0]<<'\t'<<ctr_diff.comp[1]<<'\t'<<ctr_diff.comp[2]<<std::endl ;
+
 // using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
 double mu_d[6][5];
 double mu_dd[5][5];
@@ -935,5 +961,5 @@ for (int s=0; s<3; s++)
 
 int main() {
 	
-	mobility_calc (476);
+	mobility_calc (200);
 }
