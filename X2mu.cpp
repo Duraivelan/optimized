@@ -840,33 +840,35 @@ double e3 = e*e*e ;
 
 double e5 = e2*e3 ;
 
-double L = log((1+e)/(1-e)); 
+double L = log((1.0+e)/(1.0-e)); 
 
-double XA = (8/3)*(e3)/(-2*e + ( 1+e2 )*L) ;
+double XA = (8.0/3.0)*(e3)/(-2.0*e + ( 1.0+e2 )*L) ;
 
-double YA = (16/3)*(e3)/(2*e + ( 3*(e2) - 1 )*L) ;
+cout << "XA = " << XA << endl;
+
+double YA = (16.0/3.0)*(e3)/(2.0*e + ( 3.0*(e2) - 1.0 )*L) ;
 
 double YB = 0.0 ; 
 
-double XC = (4/3)*(e3)*(1-e2)/(2*e - ( 1-e2 )*L) ;
+double XC = (4.0/3.0)*(e3)*(1.0-e2)/(2.0*e - ( 1.0-e2 )*L) ;
 
-double YC = (4/3)*(e3)*(2-e2)/(-2*e + ( 1+e2 )*L) ;
+double YC = (4.0/3.0)*(e3)*(2.0-e2)/(-2.0*e + ( 1.0+e2 )*L) ;
 
 double XG = 0.0 ;
 
 double YG = 0.0 ;
 
-double YH = (4/3)*(e5)/(-2*e + ( 1+e2 )*L) ;
+double YH = (4.0/3.0)*(e5)/(-2.0*e + ( 1.0+e2 )*L) ;
 
-double XM =  (8/15)*(e5)/(( 3-e2 )*L -6*e) ;
+double XM =  (8.0/15.0)*(e5)/(( 3.0-e2 )*L -6.0*e) ;
 
-double YM_div1= 2*e*(2*(e2)-3) + 3*(1-e2)*L ; 
+double YM_div1= 2.0*e*(2.0*(e2)-3.0) + 3.0*(1.0-e2)*L ; 
 
-double YM_div2 = -2*e + (1+e2)*L ;
+double YM_div2 = -2.0*e + (1.0+e2)*L ;
 
-double YM = (4/5)*(e5)*(2*e*(1-2*(e2)) -(1-e2)*L)/(YM_div1*YM_div2) ;
+double YM = (4.0/5.0)*(e5)*(2.0*e*(1.0-2.0*(e2)) -(1.0-e2)*L)/(YM_div1*YM_div2) ;
 
-double ZM = (16/5)*(e5)*(1-e2)/( 3*((1-e2)*(1-e2))*L - 2*e*(3-5*(e2)) ) ; 
+double ZM = (16.0/5.0)*(e5)*(1.0-e2)/( 3.0*((1.0-e2)*(1.0-e2))*L - 2.0*e*(3.0-5.0*(e2)) ) ; 
 
 mtrx3D Friction_Tnsr_tt_anl;
 mtrx3D Friction_Tnsr_tr_anl;
@@ -882,7 +884,7 @@ mtrx35D Friction_Tnsr_td_anl	=	null35D;
 mtrx35D Friction_Tnsr_rd_anl	=	null35D;
 mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 
- e_ab_unit = null3D; 	
+ e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take it to be along z-axis
  
 				for (int i=0; i<3; i++)
 					{
@@ -971,6 +973,39 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 			}
 		}			
 
+	cout << "Friction matrix bead-calc and analytical echos" << endl;
+	Friction_Tnsr_tt.echo();
+	Friction_Tnsr_tt_anl.echo();
+	Friction_Tnsr_tr.echo();
+	Friction_Tnsr_tr_anl.echo();
+	Friction_Tnsr_rt.echo();
+	Friction_Tnsr_rt_anl.echo();
+	Friction_Tnsr_rr.echo();
+	Friction_Tnsr_rr_anl.echo();
+
+	for (int k=0; k<5; k++)
+		{				
+			// column major format
+			cout << Friction_Tnsr_dt.comp[k][0]<< '\t'<< Friction_Tnsr_dt.comp[k][1]<< '\t'<< Friction_Tnsr_dt.comp[k][2]<< endl;
+		}
+
+	for (int k=0; k<5; k++)
+		{				
+			// column major format
+				cout << Friction_Tnsr_dt_anl.comp[k][0]<< '\t'<< Friction_Tnsr_dt_anl.comp[k][1]<< '\t'<< Friction_Tnsr_dt_anl.comp[k][2]<< endl;
+		}
+
+	for (int k=0; k<5; k++)
+		{				
+			// column major format
+			cout << Friction_Tnsr_dr.comp[k][0]<< '\t'<< Friction_Tnsr_dr.comp[k][1]<< '\t'<< Friction_Tnsr_dr.comp[k][2]<< endl;
+		}
+
+	for (int k=0; k<5; k++)
+		{				
+			// column major format
+				cout << Friction_Tnsr_dr_anl.comp[k][0]<< '\t'<< Friction_Tnsr_dr_anl.comp[k][1]<< '\t'<< Friction_Tnsr_dr_anl.comp[k][2]<< endl;
+		}		
 	inverse ( xi_11x11 , 6 )	 ; 			
 
 /*	for (int i=0; i<36; i++)
@@ -1129,6 +1164,6 @@ for (int s=0; s<3; s++)
 
 int main() {
 	
-	mobility_calc (756);
+	mobility_calc (512);
 	return 0 ;
 }
