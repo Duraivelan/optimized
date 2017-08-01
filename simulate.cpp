@@ -94,7 +94,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 							//	+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)
 								/*+u_inf*dt*/-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 				
-/*				for(int m=0;m<5;m++) 
+				for(int m=0;m<5;m++) 
 					{
 						cluster[i].Stresslet.comp[m]=0.0;			
 					for(int n=0;n<5;n++) 
@@ -130,7 +130,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 										}
 								}
 						}										
-	*/
+	
 	//			if(xx_rotation)	
 	//			{
 			// update Q
@@ -209,12 +209,14 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-long long int step=0, nSteps=10000, frame=10000;
+long long int step=0, nSteps=10000, frame=100000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
 int NrSubs=NrParticles;
 int restart_frame_offset=0;
+
+vctr5D Stresslet_mean = null5D;
 
 double max_cos=0.0,min_cos=0.0,min_tan=0.0,max_tan=0.0, cos_val=0.0,tan_val=0.0;
 
@@ -586,8 +588,8 @@ else {
 				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
-	//	cluster[i].quat={0.7071   , 0.7071    ,   0.0   ,      0.0 };
-
+		cluster[i].quat={0.7071   , 0.7071    ,   0.0   ,      0.0 };
+	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -797,6 +799,8 @@ for ( int i = 0 ; i < 1; i ++ )
 			}	
 //		}	
 
+	Stresslet_mean += cluster[0].Stresslet;
+
  if (step%frame==0) 
 	{ 
 
@@ -816,8 +820,8 @@ for ( int i = 0 ; i < 1; i ++ )
 			}
 
 	}
-		
-/*	
+	
+
 if (step%(frame)==0) 
 	{ 
 
@@ -844,8 +848,6 @@ if (step%(frame)==0)
 		outFile5.close();
 	}
 
-*/
-
 	simu_time+=dt;
 	step+=1;
 
@@ -871,6 +873,8 @@ for ( int i = 0 ; i < 100; i ++ )
 	}
 
 	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
+
+	cout<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'<<std::endl;	
 
 
 	std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");

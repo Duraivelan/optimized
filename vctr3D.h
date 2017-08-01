@@ -436,8 +436,20 @@ struct vctr5D
     comp[3] = inp3;
     comp[4] = inp4;
   }
-};
 
+//        addition 1
+  vctr5D& operator += ( const vctr5D& inp )
+  {
+    comp[0] += inp.comp[0];
+    comp[1] += inp.comp[1];
+    comp[2] += inp.comp[2];
+    comp[3] += inp.comp[3];
+    comp[4] += inp.comp[4];
+    return (*this);
+  }
+
+};
+  
 struct mtrx35D
 {
   double comp[3][5];
