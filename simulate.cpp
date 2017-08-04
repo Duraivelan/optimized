@@ -31,6 +31,7 @@ void createInitialPosition_N_particles(std::string fileName, int N, double Lx, d
  	outFile.close();
 }
 
+
 std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
@@ -209,7 +210,7 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-long long int step=0, nSteps=10000, frame=100000;
+long long int step=0, nSteps=10000, frame=10000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
@@ -590,6 +591,7 @@ else {
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
 		cluster[i].quat={0.7071   , 0.7071    ,   0.0   ,      0.0 };
 	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
+		cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -729,6 +731,134 @@ vctr3D eig3(0.0 , 0.0 , 1.0 );
 vctr3D vec1, vec2, vec3;
 */
 
+// create a grid and bin the points of geodesic dome
+
+	
+
+ const int dm27[26][3] = { 	{  1,  0,  0 },
+							{ -1,  0,  0 },
+							{  0,  1,  0 },
+							{  0, -1,  0 },
+							{  0,  0,  1 },
+							{  0,  0, -1 },
+							{  1,  1,  0 },
+							{  1, -1,  0 },
+							{ -1,  1,  0 },
+							{ -1, -1,  0 },
+							{  1, 0,  1 },
+							{  1, 0, -1 },
+							{ -1, 0,  1 },
+							{ -1, 0, -1 },
+							{  0, 1,  1 },
+							{  0, 1, -1 },
+							{  0,-1,  1 },
+							{  0,-1, -1 },
+							{  1,  1,  1 },
+							{  1, -1,  1 },
+							{ -1,  1,  1 },
+							{ -1, -1,  1 },
+							{  1,  1, -1 },
+							{  1, -1, -1 },
+							{ -1,  1, -1 },
+							{ -1, -1, -1 },
+ };
+
+	double binsSize[3];
+	double boxEdge = 1.0*2.0+2.0*0.3; 	// max cubic box size enveloping unit sphere (i.e. enveloping the geodesic) 
+	double rboxEdge = 1.0/boxEdge ;
+	vctr3D envbox	= 	{boxEdge,boxEdge,boxEdge};
+	vctr3D envRbox  =	{rboxEdge,rboxEdge,rboxEdge};
+	vctr3D havenvbox  =	{boxEdge/2.0,boxEdge/2.0,boxEdge/2.0};
+	
+	double max_sepr = 0.1345; 	// max distance between neighbhoring points on the geodesic
+	int    Nrbins[3],MaxNrbins ; 
+	double gridsScale[3];
+	int NrPoints = 1002 ; 		// no. of points on geodesic
+	int orientHist[NrPoints] = {};
+	int gridUpdate ; 
+	int MaxPrperCell = 10 ; 	// max no. of points per gridcell
+	int    i,j;
+	int    ii,jj;
+	int    mi[3],m,mj[3];
+	vctr3D dr,dR;
+	double theta, maxtheta ; 
+	
+	// read in geodesic points 
+	
+	double GeodesicPt[NrPoints][3] = {} ; 
+	
+	std::string fileName="GeodesicPt_1002.dat";
+	std::ifstream dataFile;
+
+	dataFile.open(fileName);
+
+	if(!dataFile.good()) {
+		std::cerr<<"Given file is corrupt /n"<<std::endl;
+	}
+	else {
+		std::string line;
+		for (int i=0;i<NrPoints;i++) {
+			std::getline(dataFile,line);
+			std::istringstream currentLine(line);    
+			currentLine >> GeodesicPt[i][0];
+			currentLine >> GeodesicPt[i][1];
+			currentLine >> GeodesicPt[i][2];
+		}
+	}	
+	
+	dataFile.close();  
+	dataFile.clear();	
+	
+	for ( i = 0 ; i < 3 ; i++ )
+	{
+    Nrbins[i] = floor ( envbox.comp[i] / (max_sepr) ); // cellnr runs from 0 to NrCells-1
+    gridsScale[i] = Nrbins[i] * envRbox.comp[i];
+    if ( Nrbins[i] < 3 ) { cout << "*** Nrbins[" << i << "] = " << Nrbins[i] << endl ; abort(); }
+  }
+
+// periodic boundary conditions
+
+  MaxNrbins = max( max( Nrbins[0], Nrbins[1] ), Nrbins[2]);
+  
+// generate grid list
+ 	int binGrid[Nrbins[0]][Nrbins[1]][Nrbins[2]][MaxPrperCell+1];
+
+  for ( mi[0] = 0 ; mi[0] < Nrbins[0] ; mi[0]++ )
+  {
+    for ( mi[1] = 0 ; mi[1] < Nrbins[1] ; mi[1]++ )
+    {
+      for ( mi[2] = 0 ; mi[2] < Nrbins[2] ; mi[2]++ )
+      {
+
+        binGrid[mi[0]][mi[1]][mi[2]][0] = 0;
+      } // miz
+    } // miy
+  } // mix
+
+for ( int i = 0 ; i < NrPoints ; i ++ )
+  {
+	  
+    mi[x] = int ( (GeodesicPt[i][0]+havenvbox.comp[0]) * gridsScale[0] );
+    mi[y] = int ( (GeodesicPt[i][1]+havenvbox.comp[1]) * gridsScale[1] );
+    mi[z] = int ( (GeodesicPt[i][2]+havenvbox.comp[2]) * gridsScale[2] );       
+
+    
+    if ( int (binGrid[mi[0]][mi[1]][mi[2]][0]) >= MaxPerCell-1 )
+    {
+      cout << "*** cell overfull" << endl;
+      cout << mi[0] << "  " << mi[1] << "  " << mi[2] << endl;
+      abort();
+    }
+
+    binGrid[mi[0]][mi[1]][mi[2]][0] ++ ;
+    
+    binGrid[mi[0]][mi[1]][mi[2]][ int (binGrid[mi[0]][mi[1]][mi[2]][0])] = i;
+
+} // i
+	//		 cout<<"exit grid "<<endl;
+ 
+// end grid creation 
+
 simu_time =dt;
 do {
 
@@ -801,7 +931,7 @@ for ( int i = 0 ; i < 1; i ++ )
 
 	Stresslet_mean += cluster[0].Stresslet;
 
- if (step%frame==0) 
+if (step%(frame)==0) 
 	{ 
 
 		// save position every 'frame' steps 
@@ -812,8 +942,61 @@ for ( int i = 0 ; i < 1; i ++ )
 				{
 				Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'<<std::endl;	
 	//			outFile_com<<cos_theta<<'\t'<<cos_theta<<'\t'<<cos_theta<<std::endl;
-				outFile_orient<<cluster[i].rotmat.comp[0][1]<<'\t'<<cluster[i].rotmat.comp[1][1]<<'\t'<<cluster[i].rotmat.comp[2][1]<<'\t'<<std::endl;
-						
+				vctr3D director = cluster[0].rotmat*particle[cluster[0].sub[0]].pos_bdyfxd ; 
+	//			outFile_orient<<cluster[i].rotmat.comp[0][1]<<'\t'<<cluster[i].rotmat.comp[1][1]<<'\t'<<cluster[i].rotmat.comp[2][1]<<'\t'<<std::endl;
+
+					double t3 = 2.0 * (cluster[i].quat.comp[0] * cluster[i].quat.comp[3]+ cluster[i].quat.comp[1] * cluster[i].quat.comp[2]);
+					double t4 = 1.0 - 2.0 * (cluster[i].quat.comp[2] * cluster[i].quat.comp[2] + cluster[i].quat.comp[3] * cluster[i].quat.comp[3]);  
+					double yaw = std::atan2(t3, t4);	; // rotation about Z-axis
+
+		// update bin 
+		
+		mi[0] = int ( (director.comp[0]+havenvbox.comp[0]) * gridsScale[0] );
+		mi[1] = int ( (director.comp[1]+havenvbox.comp[1]) * gridsScale[1] );
+		mi[2] = int ( (director.comp[2]+havenvbox.comp[2]) * gridsScale[2] ); 
+
+          // particle j in same cell as i
+          maxtheta = 0;
+          for ( jj =  1 ; jj <= binGrid[mi[0]][mi[1]][mi[2]][0] ; jj++ )
+          {
+			j = binGrid[mi[0]][mi[1]][mi[2]][jj];
+			theta =  director.comp[0]*GeodesicPt[j][0] + director.comp[1]*GeodesicPt[j][1] + director.comp[2]*GeodesicPt[j][2]; 
+			if (theta > maxtheta)
+			{
+				gridUpdate = j ;
+				maxtheta = theta ; 
+			}
+			
+          } // jj
+
+          // particle j in neighbour cell to i
+          for ( m = 0 ; m < 26 ; m++ )
+          {
+            mj[0]      =  mi[0] + dm[m][0] ;
+            mj[1]      =  mi[1] + dm[m][1] ;
+            mj[2]      =  mi[2] + dm[m][2] ;
+            if ( mj[0] >= Nrbins[0] ||  mj[0] < 0 || mj[1] >= Nrbins[1] ||  mj[1] < 0 || mj[2] >= Nrbins[2] ||  mj[2] < 0 ) continue ; 	// going out of envbox bounds
+			
+            for ( jj = 1 ; jj <= binGrid[mj[0]][mj[1]][mj[2]][0] ; jj++ )
+            {
+				j = binGrid[mj[0]][mj[1]][mj[2]][jj];
+
+				theta =  director.comp[0]*GeodesicPt[j][0] + director.comp[1]*GeodesicPt[j][1] + director.comp[2]*GeodesicPt[j][2]; 
+
+				if (theta > maxtheta)
+				{
+					gridUpdate = j ; 
+					maxtheta = theta ; 
+				}				
+            } // jj
+          } // m
+
+		orientHist[gridUpdate]++ ;
+		
+
+
+				outFile_orient<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2]<<'\t'<< yaw << std::endl;
+				
 				outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
 
 				}
@@ -861,7 +1044,7 @@ for ( int i = 0 ; i < 25; i ++ )
 	}
 */	
 
-
+/*
  // output the histogram of the polar and azimuthal angles
 for ( int i = 0 ; i < 100; i ++ )
 	{
@@ -871,7 +1054,15 @@ for ( int i = 0 ; i < 100; i ++ )
 		}
 		cout << endl;
 	}
+*/
 
+ // output the histogram of the geodesic
+ 			cout<< "histogram of the geodesic" << endl;
+
+for ( int i = 0 ; i < NrPoints; i ++ )
+	{
+			cout<< orientHist[i] << endl;
+	}
 	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
 
 	cout<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'<<std::endl;	
