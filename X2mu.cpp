@@ -4,6 +4,7 @@
  * 				** init.dat **
  * 					viscoity 
  * 					radius
+ * 					no. of beads 
  * 				** XYZ.dat **
  *					X,Y,Z particle positons
  *
@@ -58,17 +59,18 @@ void inverse(double* A, int N)
     delete WORK;
 }
  
-void mobility_calc(int NrParticles){
-                 
+int main() {
+	                 
 vctr3D dR, dr2;
 double R, r2;
-vector<SubData>  bead(NrParticles);
+
 
 // variables for mobility tensor calculation
-double eta_0, 6pieta;
+double eta_0,eta_6pi;
 vctr3D e_ab , e_ab_unit ;
 double e_ab2, e_ab2_inv ;
 double radius;
+int NrParticles ; 
 //
 
 std::string fileName="init.dat";
@@ -86,14 +88,29 @@ else {
    	currentLine0 >> eta_0;
    	eta_6pi = eta_0*6.0*M_PI ; 
    	cout << eta_0 << endl;
+	
+	currentLine0.str("");
+	currentLine0.clear(); // Clear state flags.
 	std::getline(dataFile,line0);
-   	std::istringstream currentLine1(line0);  
-   	currentLine1 >> radius;
+	currentLine0.str(line0); 
+
+   	currentLine0 >> radius;
    	cout << radius << endl;
+
+	currentLine0.str("");
+	currentLine0.clear(); // Clear state flags.
+	std::getline(dataFile,line0);
+	currentLine0.str(line0); 
+
+	currentLine0 >> NrParticles;
+   	cout << NrParticles << endl;
+
 }
 
 dataFile.close();  
 dataFile.clear();
+
+vector<SubData>  bead(NrParticles);
 
 fileName="XYZ.dat";
 
@@ -1254,10 +1271,5 @@ for (int s=0; s<3; s++)
 		cout << setw(10) << h_clst_ijk[s][2][0] << "  " << setw(10) << h_clst_ijk[s][2][1] << "  " << setw(10) << h_clst_ijk[s][2][2] << endl;
     }	
 */
-}
-
-int main() {
-	
-	mobility_calc (512);
 	return 0 ;
 }

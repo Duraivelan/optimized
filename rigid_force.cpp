@@ -20,7 +20,12 @@ using namespace std;
         }   
     } ;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], int* step) {
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], int* step,const int NrParticles, const double Lx,  const double Ly,  const double Lz ) {
+
+	const vctr3D box(Lx, Ly, Lz);
+	const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
+	const vctr3D havbox (Lx/2.0, Ly/2.0 , Lz/2.0);
+	const double max_size = (Lx/2.0 + Ly/2.0 + Lz/2.0)/3.0;
 
   int    NrCells[3],MaxNrCells;
   double scale[3];

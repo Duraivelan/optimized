@@ -4,6 +4,7 @@
  * 				** init.dat **
  * 					viscoity 
  * 					radius
+ * 					no. of beads 
  * 				** XYZ.dat **
  *					X,Y,Z particle positons
  *
@@ -13,14 +14,6 @@
  * 					 the equation motion follows wouter's eq. 327, where every term is non-dimentionalized accordingly	
  * 			
  *  */
- 
- // based on the equation motion following wouter's eq. 327
- 
- const double force_norm 	= 1.0/(eta_6pi*bead_radii*bead_radii)				; // since eta_s in wouter's note is eta)*6*pi here 
- const double torque_norm 	= 1.0/(eta_6pi*bead_radii*bead_radii*bead_radii)	;
- const double pos_norm 		= 1.0/(bead_radii)		;
- const double vel_norm 		= 1.0/(bead_radii)		;
- const double stochas_norm	= SQRT(2.0*kb*T0*dt/(eta_6pi*bead_radii*bead_radii*bead_radii))		;
  
 #include <iostream>
 #include <random>
@@ -85,7 +78,13 @@ double e_S_a[5][3][3]= {
 						{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
 						};	
 
-void brownian( long long int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double vel_scale) {
+
+void brownian( long long int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double vel_scale , 
+	const double force_norm	,
+	const double torque_norm,
+	const double pos_norm	,
+	const double vel_norm 	,
+	const double stochas_norm) {
 double a, b , c, lambda;
 vctr4D quat_old;
 						    						
@@ -227,6 +226,82 @@ if(xxcluster_restart) {
 
    cout << "\t : current Git Hash - extended version";
    system(" git log --pretty=format:'%H' -n 1 ");
+
+
+double eta_0_temp ; 
+double eta_6pi_temp ; 
+double bead_radii_temp ; 	// radius of bead used in the mobility calculation i.e. X2mu.cpp file; ideally kept = 1.0 to avoid non-dimensionaliztion errors
+int NrParticles_temp;
+
+std::ifstream dataFile;
+std::string fileName="init.dat";
+
+//read viscoisty and x,y,z positions from new_cluster.dat
+dataFile.open(fileName);
+if(!dataFile.good()) {
+	std::cerr<<"Given file is corrupt /n"<<std::endl;
+}
+else {	
+   	std::string line0;
+	std::getline(dataFile,line0);
+   	std::istringstream currentLine0(line0);  
+   	currentLine0 >> eta_0_temp;
+   	eta_6pi_temp = eta_0_temp*6.0*M_PI ; 
+   	cout << eta_0_temp << endl;
+	
+	currentLine0.str("");
+	currentLine0.clear(); // Clear state flags.
+	std::getline(dataFile,line0);
+	currentLine0.str(line0); 
+
+   	currentLine0 >> bead_radii_temp;
+   	cout << bead_radii_temp << endl;
+
+	currentLine0.str("");
+	currentLine0.clear(); // Clear state flags.
+	std::getline(dataFile,line0);
+	currentLine0.str(line0); 
+
+	currentLine0 >> NrParticles_temp;
+   	cout << NrParticles_temp << endl;
+}
+
+dataFile.close();  
+dataFile.clear();
+
+const double eta_0 = eta_0_temp; 
+const double eta_6pi = eta_6pi_temp ; 
+const double bead_radii = bead_radii_temp ; 
+
+const int NrParticles = NrParticles_temp;
+
+
+const double mu = 1.0/(6.0*pi*eta_0*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions
+const double mu_sqrt=sqrt(mu);
+
+const int  cubic = 1 ; 	// cubic box 
+	
+const double Lx = pow(NrParticles*(4.0/3.0)*M_PI*(bead_radii*bead_radii*bead_radii),1.0/3.0 ); 
+const double Ly = Lx ; // assuming cubic 
+const double Lz = Lx ; 
+const double Volume =Lx*Ly*Lz;
+const double Volume_inv = 1.0/ Volume;
+const double Particle_radius = 0.5 ; // sigma/2.0;
+const double Particle_vol = 4.0*pi*(Particle_radius*Particle_radius*Particle_radius)/3.0;
+const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv;
+const int cellx=(int) ceil(Lx/r_cut);
+const int celly=(int) ceil(Ly/r_cut);
+const int cellz=(int) ceil(Lz/r_cut);
+ // based on the equation motion following wouter's eq. 327
+ 
+ const double force_norm 	= 1.0/(eta_6pi*bead_radii*bead_radii)				; // since eta_s in wouter's note is eta)*6*pi here 
+ const double torque_norm 	= 1.0/(eta_6pi*bead_radii*bead_radii*bead_radii)	;
+ const double pos_norm 		= 1.0/(bead_radii)		;
+ const double vel_norm 		= 1.0/(bead_radii)		;
+ const double stochas_norm	= sqrt(2.0*kb*T0*dt/(eta_6pi*bead_radii*bead_radii*bead_radii))		;
+
+const vctr3D box(Lx, Ly, Lz);
+
 int if_create_particles = xxcreate, ifrestart=xxrestart;
 double tauT=0.1;
 double Temp=T0;
@@ -234,7 +309,7 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-long long int step=0, nSteps=10000, frame=10000;
+long long int step=0, nSteps=10000, frame=100000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
@@ -472,7 +547,7 @@ for ( int i = 0 ; i < 1; i ++ )
 			}
 			*/
 			
-//	 forceUpdate( particle, &p_energy, &combine_now , combine, 0);
+//	 forceUpdate( particle, &p_energy, &combine_now , combine, 0, NrParticles, Lx, Ly, Lz );
 
 // calculate new diffusion tensors	
 	for ( int i = 0 ; i < 1; i ++ )
@@ -615,7 +690,7 @@ else {
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
 		cluster[i].quat={0.7071   , 0.7071    ,   0.0   ,      0.0 };
 	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
-		cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
+	//	cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -691,7 +766,7 @@ std::ofstream outFile10(dataFileName+"/End_positions.dat");
 std::ofstream outFile_com(dataFileName+"/com.dat");
 std::ofstream outFile_orient(dataFileName+"/orient.dat");
 
-// forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+// forceUpdate( particle, &p_energy, &combine_now , combine, &step, NrParticles , Lx, Ly, Lz);
 
 
 // convert subforces into total generalized forces on particles 
@@ -735,7 +810,7 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	outFile8<<"epsilon"<<'\t'<<epsilon<<std::endl;
 	outFile8<<"sigma"<<'\t'<<sigma<<std::endl;
 	outFile8<<"Timestep, dt"<<'\t'<<dt<<std::endl;
-	outFile8<<"Viscosity, eta"<<'\t'<<eta<<std::endl;
+	outFile8<<"Viscosity, eta"<<'\t'<<eta_0<<std::endl;
 	outFile8<<"Mobility , mu"<<'\t'<<mu<<std::endl;
 	outFile8<<'\n'<<" Data Folder and Git Vesrion : "<<'\n';
 	system(" echo >> logfile & git log --pretty=format:'%h' -n 1 >> logfile   & echo >> logfile  &  pwd >> logfile & ");
@@ -811,13 +886,13 @@ vctr3D vec1, vec2, vec3;
 	
 	double GeodesicPt[NrPoints][3] = {} ; 
 	
-	std::string fileName="GeodesicPt_1002.dat";
-	std::ifstream dataFile;
+	fileName="GeodesicPt_1002.dat";
+	dataFile;
 
 	dataFile.open(fileName);
 
 	if(!dataFile.good()) {
-		std::cerr<<"Given file is corrupt /n"<<std::endl;
+		std::cerr<<"Given file is corrupt : GeodesicPt_1002.dat  /n"<<std::endl;
 	}
 	else {
 		std::string line;
@@ -882,11 +957,11 @@ for ( int i = 0 ; i < NrPoints ; i ++ )
 	//		 cout<<"exit grid "<<endl;
  
 // end grid creation 
-
+cout << "cehck_here" << endl;
 simu_time =dt;
 do {
 
-	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale )	;
+	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm )	;
 
 /*
   	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
@@ -895,7 +970,7 @@ do {
 	hist[int (floor((cos_theta+5.0)/0.4))]+=1;
 */
 
-// 	forceUpdate( particle, &p_energy, &combine_now , combine, &step);
+// 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
 
 
 // convert subforces into total generalized forces on particles 
@@ -928,35 +1003,12 @@ do {
 		outFile13<<vec2.comp[0] <<'\t'<< vec2.comp[1] << '\t'<< vec2.comp[2] <<  endl;      
 		outFile14<<vec3.comp[0] <<'\t'<< vec3.comp[1] << '\t'<< vec3.comp[2] <<  endl;      
 		*/
-		
-/*
- * 				histogram of polar and azimuth angles			
- */
- 		
-//				hist_pol_azi[int (floor((cluster[i].rotmat.comp[2][2]+1)/0.08))][int (floor((atan2(cluster[i].rotmat.comp[1][2],cluster[i].rotmat.comp[0][2]))/0.2513))]+=1;
-//if (step > 10000000) 
-//	{ 
-for ( int i = 0 ; i < 1; i ++ )
-			{
-				cos_val = (acos(cluster[i].rotmat.comp[0][2])/bin_cos) ; 
-		//		tan_val = (acos(cluster[i].rotmat.comp[0][2])/bin_cos) ; 
-				
-				tan_val = ((atan2(cluster[i].rotmat.comp[1][2],cluster[i].rotmat.comp[2][2]))/bin_tan) ; 
-				
-				if (max_cos < cos_val) {max_cos = cos_val;};
-				if (min_cos > cos_val) {min_cos = cos_val;};
-								
-				if (max_tan < tan_val) {max_tan = tan_val;};
-				if (min_tan > tan_val) {min_tan = tan_val;};
-				
-				hist_pol_azi[int (floor(cos_val))][int (floor((tan_val+50.0)))]+=1;
-			}	
-//		}	
 
 	Stresslet_mean += cluster[0].Stresslet;
 
 if (step%(frame)==0) 
 	{ 
+
 
 		// save position every 'frame' steps 
 		
@@ -966,24 +1018,26 @@ if (step%(frame)==0)
 				{
 				Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'<<std::endl;	
 	//			outFile_com<<cos_theta<<'\t'<<cos_theta<<'\t'<<cos_theta<<std::endl;
-				vctr3D director = cluster[0].rotmat*particle[cluster[0].sub[0]].pos_bdyfxd ; 
+	//			vctr3D director = cluster[0].rotmat*particle[cluster[0].sub[0]].pos_bdyfxd ; 
+				vctr3D director = {cluster[0].rotmat.comp[0][2],cluster[0].rotmat.comp[1][2],cluster[0].rotmat.comp[2][2]}; 
 	//			outFile_orient<<cluster[i].rotmat.comp[0][1]<<'\t'<<cluster[i].rotmat.comp[1][1]<<'\t'<<cluster[i].rotmat.comp[2][1]<<'\t'<<std::endl;
 
 					double t3 = 2.0 * (cluster[i].quat.comp[0] * cluster[i].quat.comp[3]+ cluster[i].quat.comp[1] * cluster[i].quat.comp[2]);
 					double t4 = 1.0 - 2.0 * (cluster[i].quat.comp[2] * cluster[i].quat.comp[2] + cluster[i].quat.comp[3] * cluster[i].quat.comp[3]);  
 					double yaw = std::atan2(t3, t4);	; // rotation about Z-axis
 
+
 		// update bin 
 		
 		mi[0] = int ( (director.comp[0]+havenvbox.comp[0]) * gridsScale[0] );
 		mi[1] = int ( (director.comp[1]+havenvbox.comp[1]) * gridsScale[1] );
 		mi[2] = int ( (director.comp[2]+havenvbox.comp[2]) * gridsScale[2] ); 
-
           // particle j in same cell as i
           maxtheta = 0;
-          for ( jj =  1 ; jj <= binGrid[mi[0]][mi[1]][mi[2]][0] ; jj++ )
+
+          for ( int jj =  1 ; jj <= binGrid[mi[0]][mi[1]][mi[2]][0] ; jj++ )
           {
-			j = binGrid[mi[0]][mi[1]][mi[2]][jj];
+			int j = binGrid[mi[0]][mi[1]][mi[2]][jj];
 			theta =  director.comp[0]*GeodesicPt[j][0] + director.comp[1]*GeodesicPt[j][1] + director.comp[2]*GeodesicPt[j][2]; 
 			if (theta > maxtheta)
 			{
@@ -1019,7 +1073,7 @@ if (step%(frame)==0)
 		
 
 
-				outFile_orient<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2]<<'\t'<< yaw << std::endl;
+			//	outFile_orient<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2]<<'\t'<< yaw << std::endl;
 				
 				outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
 
@@ -1028,7 +1082,6 @@ if (step%(frame)==0)
 
 	}
 	
-
 if (step%(frame)==0) 
 	{ 
 
@@ -1085,7 +1138,7 @@ for ( int i = 0 ; i < 100; i ++ )
 
 for ( int i = 0 ; i < NrPoints; i ++ )
 	{
-			cout<< orientHist[i] << endl;
+			outFile_orient<< orientHist[i] << endl;
 	}
 	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
 

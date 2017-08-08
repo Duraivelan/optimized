@@ -1,11 +1,10 @@
 #ifndef DEFS_H    // To make sure you don't declare the function more than once by including the header multiple times.
 #define DEFS_H
-
+#include <math.h>     
 # include "structure_definitions.h"
 const double m =1.0;
 const double inv_mass =1.0/m;
 const double dt=0.0001;
-const int NrParticles=xxNrParticles;
 const double r_cut  = 1.0 ; //pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0;
@@ -14,36 +13,6 @@ const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
 
-const double eta_0 ; 
-const double eta_6pi ; 
-const double bead_radii ; 	// radius of bead used in the mobility calculation i.e. X2mu.cpp file; ideally kept = 1.0 to avoid non-dimensionaliztion errors
-
-std::string fileName="init.dat";
-
-//read viscoisty and x,y,z positions from new_cluster.dat
-std::ifstream dataFile;
-dataFile.open(fileName);
-if(!dataFile.good()) {
-	std::cerr<<"Given file is corrupt /n"<<std::endl;
-}
-else {
-    std::string line0;
-	std::getline(dataFile,line0);
-   	std::istringstream currentLine0(line0);  
-   	currentLine0 >> eta_0;
-   	eta_6pi = eta_0*6.0*M_PI ; 
-   	cout << eta_0 << endl;
-	std::getline(dataFile,line0);
-   	std::istringstream currentLine1(line0);  
-   	currentLine1 >> radius;
-   	cout << radius << endl;
-}
-
-dataFile.close();  
-dataFile.clear();
-
-const double mu = 1.0/(6.0*pi*eta*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions
-const double mu_sqrt=sqrt(mu);
 const double kb=1.0;
 const double T0=1.0;
 const double sqrt_2kbTdt=sqrt(2.0*kb*T0*dt);
@@ -52,20 +21,6 @@ const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
 const int  MaxPerCell = 120;
 
-const double Lx=box_Lx, Ly=box_Ly, Lz=box_Lz;// , R_cut=2.5/*= 1.1225 */,R_shell = 0; // = 0.3775;
-const double Volume =Lx*Ly*Lz;
-const double Volume_inv = 1.0/ Volume;
-const double Particle_radius = 0.5 ; // sigma/2.0;
-const double Particle_vol = 4.0*pi*(Particle_radius*Particle_radius*Particle_radius)/3.0;
-const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv;
-const int cellx=(int) ceil(Lx/r_cut);
-const int celly=(int) ceil(Ly/r_cut);
-const int cellz=(int) ceil(Lz/r_cut);
-
-const vctr3D box(Lx, Ly, Lz);
-const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
-const vctr3D havbox (Lx/2.0, Ly/2.0 , Lz/2.0);
-const double max_size = (Lx/2.0 + Ly/2.0 + Lz/2.0)/3.0;
 const vctr3D shift(2.5+r_min,2.5+r_min,2.5+r_min);
 
 const double Fs=4.0*epsilon*(12.0*pow(sigma/rs,12.0)-6.0*pow(sigma/rs,6.0))/rs2;
