@@ -13,12 +13,40 @@ const double r_min = 2.5 ; //  pow(2.0,(1.0/6.0))*sigma;
 const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
-const double eta=0.01; // 1.0/(6.0*pi);
+
+const double eta_0 ; 
+const double eta_6pi ; 
+const double bead_radii ; 	// radius of bead used in the mobility calculation i.e. X2mu.cpp file; ideally kept = 1.0 to avoid non-dimensionaliztion errors
+
+std::string fileName="init.dat";
+
+//read viscoisty and x,y,z positions from new_cluster.dat
+std::ifstream dataFile;
+dataFile.open(fileName);
+if(!dataFile.good()) {
+	std::cerr<<"Given file is corrupt /n"<<std::endl;
+}
+else {
+    std::string line0;
+	std::getline(dataFile,line0);
+   	std::istringstream currentLine0(line0);  
+   	currentLine0 >> eta_0;
+   	eta_6pi = eta_0*6.0*M_PI ; 
+   	cout << eta_0 << endl;
+	std::getline(dataFile,line0);
+   	std::istringstream currentLine1(line0);  
+   	currentLine1 >> radius;
+   	cout << radius << endl;
+}
+
+dataFile.close();  
+dataFile.clear();
+
 const double mu = 1.0/(6.0*pi*eta*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions
 const double mu_sqrt=sqrt(mu);
 const double kb=1.0;
 const double T0=1.0;
-const double kbT_dt=sqrt(2.0*kb*T0*dt);
+const double sqrt_2kbTdt=sqrt(2.0*kb*T0*dt);
 const double RPTOL = 1.0E-6 ;
 const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;

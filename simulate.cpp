@@ -1,3 +1,27 @@
+/*
+ * simuate particle dynamics using the 11x11 mobility matrix outputted by X2mu.cpp
+ * Input file : 
+ * 				** init.dat **
+ * 					viscoity 
+ * 					radius
+ * 				** XYZ.dat **
+ *					X,Y,Z particle positons
+ *
+ *  Output file :  							
+ * 			
+ * Current version : assumes all particle radii to be same, also doesn't compute the lubrication forces
+ * 					 the equation motion follows wouter's eq. 327, where every term is non-dimentionalized accordingly	
+ * 			
+ *  */
+ 
+ // based on the equation motion following wouter's eq. 327
+ 
+ const double force_norm 	= 1.0/(eta_6pi*bead_radii*bead_radii)				; // since eta_s in wouter's note is eta)*6*pi here 
+ const double torque_norm 	= 1.0/(eta_6pi*bead_radii*bead_radii*bead_radii)	;
+ const double pos_norm 		= 1.0/(bead_radii)		;
+ const double vel_norm 		= 1.0/(bead_radii)		;
+ const double stochas_norm	= SQRT(2.0*kb*T0*dt/(eta_6pi*bead_radii*bead_radii*bead_radii))		;
+ 
 #include <iostream>
 #include <random>
 #include <fstream>
@@ -90,11 +114,11 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		 
 //		if (cluster[i].Sub_Length>0) 
 //			{
-				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*dt) 
-							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*dt)
-							//	+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*kbT_dt)
-								/*+u_inf*dt*/-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
-				
+				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt) 
+							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*torque_norm*dt)
+							//	+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm*sqrt_2kbTdt)
+								/*+u_inf*vel_norm*dt*/-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
+				cluster[i].pos = cluster[i].pos*pos_norm ; 
 				for(int m=0;m<5;m++) 
 					{
 						cluster[i].Stresslet.comp[m]=0.0;			
@@ -140,9 +164,9 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// based on the Wotuer's paper on An elementary singularity-free Rotational Brownian Dynamics algorithm for anisotropic particles 
 				// J. Chem. Phys. 142, 114103 (2015)
 				
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*dt)
-									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*dt)
-									//	+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*kbT_dt)
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
+									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*force_norm*dt)
+									//	+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*stochas_norm*sqrt_2kbTdt)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
 				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
@@ -172,7 +196,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 /*			else 
 			{
 				cluster[i].radii	=	0.56;//rmin*0.5 ;		// radii of single particle is sqrt(rmin_x^2+rmin_y^2+rmin_z^2)
-				cluster[i].pos+=cluster[i].frc*mu*dt+rand*mu_sqrt*kbT_dt;
+				cluster[i].pos+=cluster[i].frc*mu*dt+rand*mu_sqrt*sqrt_2kbTdt;
 				cluster[i].pos.PBC(box,rbox);
 				for (int j=0; j< cluster[i].Sub_Length; j++) 
 					{
