@@ -11,7 +11,7 @@
  *  Output file : 
  * 				 ** data.dat **
  * 					contains the elements of the 11x11 mobility matrix in non-dimensional values; 
- * 					as seen in eqaution 326 of wouter notes; caution eat_s in his note equals 6*pi*eta_0 here  
+ * 					as seen in eqaution 326 of wouter notes; caution eta_s in his note equals 6*pi*eta_0 here  
  * 							
  * 			
  * Current version : assumes all particle radii to be same, also doesn't compute the lubrication forces
@@ -130,12 +130,11 @@ else {
         currentLine >> bead[i].pos.comp[0];
         currentLine >> bead[i].pos.comp[1];
         currentLine >> bead[i].pos.comp[2];
+        
       //  bead[i].radius = radius ;
 		bead[i].radius = 1.0 ; 	// bead radii hard-coded as 1.0 to avoid errors arising from non-dimensionalization procedure, but in principle it could be anything
     }
 }	
-	
- 	
       
 	mtrx3D Mobility_Tnsr_tt;
 	mtrx3D Mobility_Tnsr_tr;
@@ -156,7 +155,7 @@ else {
 	mtrx53D Resistance_Tnsr_dt;
 	mtrx53D Resistance_Tnsr_dr;
 	mtrx55D Resistance_Tnsr_dd;
-	
+
 // Kronecker delta
 
 	double kron_del[3][3] = {	
@@ -231,6 +230,7 @@ else {
 		{
 			xi_11x11[i] = 0.0; 
 		}        
+
 		
  std::ofstream outFile1("data.dat");
 
@@ -238,12 +238,6 @@ else {
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
 
-				double	a_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r
-				double	b_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r2
-				double	c_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius*bead[0].radius);						// mobility matrix a non-dimensionalized by 6*pi*mu*r3
-				double	g_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius*bead[0].radius);						//		assuming correction factor of 6*pi*mu*r3	
-				double	h_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius*bead[0].radius);						//		assuming correction factor of 6*pi*mu*r3				
-				double	m_norm = 1.0; // /(6.0*M_PI*eta_0*bead[0].radius*bead[0].radius*bead[0].radius);						//		assuming correction factor of 6*pi*mu*r3	
 		
 for (int a=0; a<NrParticles; a++)
 	{
@@ -468,8 +462,8 @@ for (int a=0; a<NrParticles; a++)
 							zeta_11N[k	+	11*NrParticles*l	+	3*a	+	33*NrParticles*b	+	3*NrParticles									] 	=	 Mobility_Tnsr_rt.comp[k][l];
 							zeta_11N[k	+	11*NrParticles*l	+	3*a	+	33*NrParticles*b	+	33*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Mobility_Tnsr_rr.comp[k][l];							
 							zeta_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a														] 	=	 Mobility_Tnsr_tt.comp[k][l];
-							zeta_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a	+	33*NrParticles*NrParticles						] 	=	-Mobility_Tnsr_rt.comp[k][l];	// because Mobility_Tnsr_tr(a,b) = Mobility_Tnsr_tr(b,a);
-							zeta_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a	+	3*NrParticles									] 	=	-Mobility_Tnsr_rt.comp[k][l];	// because Mobility_Tnsr_rt(a,b) = Mobility_Tnsr_rt(b,a);
+							zeta_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a	+	33*NrParticles*NrParticles						] 	=	-Mobility_Tnsr_rt.comp[k][l];	// because Mobility_Tnsr_tr(a,b) = - Mobility_Tnsr_tr(b,a);
+							zeta_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a	+	3*NrParticles									] 	=	-Mobility_Tnsr_rt.comp[k][l];	// because Mobility_Tnsr_rt(a,b) = - Mobility_Tnsr_rt(b,a);
 							zeta_11N[k	+	11*NrParticles*l	+	3*b	+	33*NrParticles*a	+	33*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Mobility_Tnsr_rr.comp[k][l];
 /*							// 6N column major format
 							zeta_11N[k	+	6*NrParticles*l	+	3*a	+	18*NrParticles*b														] 	=	 Mobility_Tnsr_tt.comp[k][l];
@@ -488,7 +482,7 @@ for (int a=0; a<NrParticles; a++)
 				for (int k=0; k<3; k++)
 					{				
 						// column major format
-						zeta_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles						] 	=	 -Mobility_Tnsr_td.comp[k][l];		// because Mobility_Tnsr_td(a,b) = Mobility_Tnsr_td(b,a);
+						zeta_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles						] 	=	 -Mobility_Tnsr_td.comp[k][l];		// because Mobility_Tnsr_td(a,b) = - Mobility_Tnsr_td(b,a);
 						zeta_11N[k	+	11*NrParticles*l	+	3*a	+	55*NrParticles*b	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Mobility_Tnsr_rd.comp[k][l];
 						zeta_11N[k	+	11*NrParticles*l	+	3*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles						] 	=	 Mobility_Tnsr_td.comp[k][l];
 						zeta_11N[k	+	11*NrParticles*l	+	3*b	+	55*NrParticles*a	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 Mobility_Tnsr_rd.comp[k][l];
@@ -769,6 +763,7 @@ for (int a=0; a<NrParticles; a++)
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
 
+/*
  // test the 3-indice form of the g,h (td, rd) mobility matrices
 
 	
@@ -835,7 +830,7 @@ for (int s=0; s<3; s++)
 		cout<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
 		cout<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
 		cout<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
-/*
+
 		outFile1<<std::endl ;
 		outFile1<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
 		outFile1<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
@@ -846,13 +841,14 @@ for (int s=0; s<3; s++)
 		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
 
 */
+/*
 // Ellipsoid mobilities from Kim and Karrila book ; Page 64
 
 double c = 1.0;	// short axis
 
-double a = 6.0*c;	// long axis
+double a = 5.0*c;	// long axis
 
-double a_bead = 49.0521;	// long axis of bead ellipsoid
+double a_bead = 5.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 
@@ -927,7 +923,7 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 										ep_jkl_e_l	+=	Levi_Civi[j][k][l]*e_ab_unit.comp[l];
 										ep_ikl_e_l	+=	Levi_Civi[i][k][l]*e_ab_unit.comp[l];
 										
-										M_IJKL_anl[i][j][k][l]	=	 m_norm*((3.0/2.0)*XM*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 			-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
+										M_IJKL_anl[i][j][k][l]	=	 ((3.0/2.0)*XM*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 			-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
 																-(1.0/3.0)*kron_del[k][l])
 																+(1.0/2.0)*YM*(e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	+	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
 																					+ e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	+ 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
@@ -944,17 +940,17 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 									
 								ep_ijk_e_k					+=	Levi_Civi[i][j][k]*e_ab_unit.comp[k];
 								
-								G_IJK_anl[i][j][k]	=	g_norm*(XG*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
+								G_IJK_anl[i][j][k]	=	(XG*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
 																+ 		YG*(e_ab_unit.comp[i]*kron_del[j][k]		+ 	e_ab_unit.comp[j]*kron_del[i][k]	-	2.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]	)	);
 										
-								H_IJK_anl[i][j][k]	= 	h_norm*(YH*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
+								H_IJK_anl[i][j][k]	= 	(YH*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
 							}	// k		
 
-							Friction_Tnsr_tt_anl.comp[i][j]		=	a_norm*(XA*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	YA*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
+							Friction_Tnsr_tt_anl.comp[i][j]		=	(XA*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	YA*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
 							
-							Friction_Tnsr_rt_anl.comp[i][j]		=	b_norm*(													YB*ep_ijk_e_k													);
+							Friction_Tnsr_rt_anl.comp[i][j]		=	(													YB*ep_ijk_e_k													);
 						
-							Friction_Tnsr_rr_anl.comp[i][j]		=	c_norm*(XC*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	YC*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
+							Friction_Tnsr_rr_anl.comp[i][j]		=	(XC*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	YC*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
 									
 							Friction_Tnsr_tr_anl	= 	    Friction_Tnsr_rt_anl*(1.0);		
 	
@@ -972,9 +968,9 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 					{
 
 						Friction_Tnsr_dt_anl.comp[p][g]		+=		e_S_a[p][a][b]*G_IJK_anl[a][b][g];	
-						Friction_Tnsr_dr_anl.comp[p][g]		+=		e_S_a[p][a][b]*H_IJK_anl[a][b][g]*a_bead3*(4.0/6.0) ;		
+						Friction_Tnsr_dr_anl.comp[p][g]		+=		e_S_a[p][a][b]*H_IJK_anl[a][b][g]*a_bead3*(4.0/6.0) ;	// corection for ellipsoid size	
 						Friction_Tnsr_td_anl.comp[g][p]		+=		G_IJK_anl[a][b][g]*e_g_E[p][a][b];	// going from g_dt matrix to ~g_td matrix hence circulation of indices 
-						Friction_Tnsr_rd_anl.comp[g][p]		+=		H_IJK_anl[a][b][g]*e_g_E[p][a][b]*a_bead3*(4.0/6.0) ;
+						Friction_Tnsr_rd_anl.comp[g][p]		+=		H_IJK_anl[a][b][g]*e_g_E[p][a][b]*a_bead3*(4.0/6.0) ;	// corection for ellipsoid size
 								
 					}
 				}				
@@ -989,7 +985,7 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 						{
 						for (int d=0; d<3; d++)
 							{							
-								Friction_Tnsr_dd_anl.comp[p][s]		+=		e_S_a[p][a][b]*M_IJKL_anl[a][b][g][d]*e_g_E[s][g][d]*a_bead3*(20.0/18.0);			
+								Friction_Tnsr_dd_anl.comp[p][s]		+=		e_S_a[p][a][b]*M_IJKL_anl[a][b][g][d]*e_g_E[s][g][d]*a_bead3*(20.0/18.0);	// corection for ellipsoid size		
 							}
 						}													
 					}
@@ -1006,19 +1002,19 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 	Friction_Tnsr_rt_anl.echo();
 	Friction_Tnsr_rr.echo();
 	Friction_Tnsr_rr_anl.echo();
-/*	
-	Friction_Tnsr_tt = Friction_Tnsr_tt_anl*a_bead ;
+
+	Friction_Tnsr_tt = Friction_Tnsr_tt_anl*a_bead ;		// corection for ellipsoid size
 	Friction_Tnsr_rt = Friction_Tnsr_rt_anl ;
 	Friction_Tnsr_tr = Friction_Tnsr_tr_anl ;
-	Friction_Tnsr_rr = Friction_Tnsr_rr_anl*a_bead3*(8.0/6.0) ;
+	Friction_Tnsr_rr = Friction_Tnsr_rr_anl*a_bead3*(8.0/6.0) ;	// corection for ellipsoid size
 	Friction_Tnsr_dt = Friction_Tnsr_dt_anl ;
 	Friction_Tnsr_dr = Friction_Tnsr_dr_anl ;
 	Friction_Tnsr_td = Friction_Tnsr_td_anl ;
 	Friction_Tnsr_rd = Friction_Tnsr_rd_anl ;
 	Friction_Tnsr_dd = Friction_Tnsr_dd_anl ;
-*/
+
 	
-/*
+
 	for (int k=0; k<5; k++)
 		{				
 			// column major format
@@ -1072,7 +1068,7 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 			}
 			cout<< endl;
 		}
-		*/
+		
 		
 	 			// 6x6 format					
 	 				// column major format
@@ -1116,7 +1112,7 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 					xi_11x11[33] = Friction_Tnsr_rr.comp[2][0] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
-		
+*/		
 			inverse ( xi_11x11 , 6 )	 ; 			
 
 /*	for (int i=0; i<36; i++)

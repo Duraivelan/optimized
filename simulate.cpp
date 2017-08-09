@@ -116,7 +116,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt) 
 							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*torque_norm*dt)
 							//	+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm*sqrt_2kbTdt)
-								/*+u_inf*vel_norm*dt*/-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
+								+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 				cluster[i].pos = cluster[i].pos*pos_norm ; 
 				for(int m=0;m<5;m++) 
 					{
@@ -309,7 +309,7 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-long long int step=0, nSteps=10000, frame=100000;
+long long int step=0, nSteps=10000, frame=100;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
@@ -688,7 +688,7 @@ else {
 				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
-		cluster[i].quat={0.7071   , 0.7071    ,   0.0   ,      0.0 };
+		cluster[i].quat={0.7071   , 0.7071     ,  0.0   ,      0.0 };
 	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
 	//	cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
 		// update A matrix
@@ -1073,7 +1073,7 @@ if (step%(frame)==0)
 		
 
 
-			//	outFile_orient<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2]<<'\t'<< yaw << std::endl;
+				outFile_orient<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2]<<'\t'<< yaw << std::endl;
 				
 				outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
 
@@ -1138,7 +1138,7 @@ for ( int i = 0 ; i < 100; i ++ )
 
 for ( int i = 0 ; i < NrPoints; i ++ )
 	{
-			outFile_orient<< orientHist[i] << endl;
+		//	outFile_orient<< orientHist[i] << endl;
 	}
 	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
 
