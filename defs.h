@@ -13,9 +13,6 @@ const double r_min2= r_min*r_min;
 const double rs = 3.0*r_min/4.0; // saturation radius, below this potential is assumed linear and force remains constant, to prevent calculation of huge forces at extremely close contacts 
 const double rs2=rs*rs;
 
-const double kb=1.0;
-const double T0=1.0;
-const double sqrt_2kbTdt=sqrt(2.0*kb*T0*dt);
 const double RPTOL = 1.0E-6 ;
 const double TOL=0.1*r_min;
 const double TOL2 = 2.0 * TOL;
@@ -32,13 +29,6 @@ const double sigma12 = sigma6*sigma6;
 const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
-const double shear_rate = 0.01 ; 
-// simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
-const mtrx3D E_inf(	{0.0,shear_rate/2.0,0.0},
-					{shear_rate/2.0,0.0,0.0},
-					{0.0,0.0,0.0});
-
-const vctr3D w_inf(0.0,0.0,-0.5*shear_rate);
 
 const vctr3D Elec_fld(0.0,0.0,5.0);
 	

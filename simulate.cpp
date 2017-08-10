@@ -5,6 +5,9 @@
  * 					viscoity 
  * 					radius
  * 					no. of beads 
+ * 					kb 
+ * 					T
+ * 					shear rate
  * 				** XYZ.dat **
  *					X,Y,Z particle positons
  *
@@ -84,7 +87,9 @@ void brownian( long long int step , vector<ParticleData>& cluster, vector<SubDat
 	const double torque_norm,
 	const double pos_norm	,
 	const double vel_norm 	,
-	const double stochas_norm) {
+	const double stochas_norm,
+	const double shear_rate,
+	const double sqrt_2kbTdt) {
 double a, b , c, lambda;
 vctr4D quat_old;
 						    						
@@ -92,7 +97,17 @@ for(int i=0;i<*Max_Cluster_N;i++)
 	{
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
+		
+		// simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
+
 		vctr3D u_inf(shear_rate*cluster[i].pos.comp[1],0.0,0.0); 		// shear flow gradient in y-direction
+
+		const mtrx3D E_inf(	{0.0,shear_rate/2.0,0.0},
+							{shear_rate/2.0,0.0,0.0},
+							{0.0,0.0,0.0});
+
+		const vctr3D w_inf(0.0,0.0,-0.5*shear_rate);
+		
 		mtrx3D E_inf_b = (~cluster[i].rotmat)*E_inf*cluster[i].rotmat;
 		vctr5D E_inf_bt;
 		mtrx3D S_b ;
@@ -114,8 +129,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 //		if (cluster[i].Sub_Length>0) 
 //			{
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt) 
-							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(w_inf*torque_norm*dt)
-							//	+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm*sqrt_2kbTdt)
+								+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
+								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm*sqrt_2kbTdt)
 								+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 				cluster[i].pos = cluster[i].pos*pos_norm ; 
 				for(int m=0;m<5;m++) 
@@ -164,8 +179,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// J. Chem. Phys. 142, 114103 (2015)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
-									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(w_inf*force_norm*dt)
-									//	+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*stochas_norm*sqrt_2kbTdt)
+										+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(cluster[i].trq*force_norm*dt)
+										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*stochas_norm*sqrt_2kbTdt)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
 				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
@@ -232,6 +247,9 @@ double eta_0_temp ;
 double eta_6pi_temp ; 
 double bead_radii_temp ; 	// radius of bead used in the mobility calculation i.e. X2mu.cpp file; ideally kept = 1.0 to avoid non-dimensionaliztion errors
 int NrParticles_temp;
+double kb_temp;
+double T0_temp;
+double shear_rate_temp;
 
 std::ifstream dataFile;
 std::string fileName="init.dat";
@@ -264,17 +282,46 @@ else {
 
 	currentLine0 >> NrParticles_temp;
    	cout << NrParticles_temp << endl;
+
+	currentLine0.str("");
+	currentLine0.clear(); // Clear state flags.
+	std::getline(dataFile,line0);
+	currentLine0.str(line0); 
+
+	currentLine0 >> kb_temp;
+   	cout << kb_temp << endl;
+   	
+	currentLine0.str("");
+	currentLine0.clear(); // Clear state flags.
+	std::getline(dataFile,line0);
+	currentLine0.str(line0); 
+
+	currentLine0 >> T0_temp;
+   	cout << T0_temp << endl;
+   	
+	currentLine0.str("");
+	currentLine0.clear(); // Clear state flags.
+	std::getline(dataFile,line0);
+	currentLine0.str(line0); 
+
+	currentLine0 >> shear_rate_temp;
+   	cout << shear_rate_temp << endl;
 }
 
 dataFile.close();  
 dataFile.clear();
 
 const double eta_0 = eta_0_temp; 
-const double eta_6pi = eta_6pi_temp ; 
+const double eta_6pi = eta_6pi_temp ;
+ 
 const double bead_radii = bead_radii_temp ; 
-
 const int NrParticles = NrParticles_temp;
 
+const double kb = kb_temp;
+const double T0 = T0_temp;
+const double sqrt_2kbTdt= sqrt(2.0*kb*T0*dt) ;
+
+const double shear_rate = shear_rate_temp ; 
 
 const double mu = 1.0/(6.0*pi*eta_0*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions
 const double mu_sqrt=sqrt(mu);
@@ -820,7 +867,7 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	std::ofstream Stresslet_data("Stresslet_data.dat");
 	cout<<step<<endl;
 
-/*	
+	
 std::ofstream outFile12("vec1.dat");
 std::ofstream outFile13("vec2.dat");
 std::ofstream outFile14("vec3.dat");
@@ -828,7 +875,7 @@ vctr3D eig1(1.0 , 0.0 , 0.0 );
 vctr3D eig2(0.0 , 1.0 , 0.0 );
 vctr3D eig3(0.0 , 0.0 , 1.0 );
 vctr3D vec1, vec2, vec3;
-*/
+
 
 // create a grid and bin the points of geodesic dome
 
@@ -961,7 +1008,7 @@ cout << "cehck_here" << endl;
 simu_time =dt;
 do {
 
-	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm )	;
+	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm , shear_rate , sqrt_2kbTdt)	;
 
 /*
   	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
@@ -991,10 +1038,10 @@ do {
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
   }
-
 /*
- * // for rotational relaxation check
- * 
+
+  // for rotational relaxation check
+ 
 			vec1 = cluster[0].rotmat*eig1;
 			vec2 = cluster[0].rotmat*eig2;
 			vec3 = cluster[0].rotmat*eig3;
