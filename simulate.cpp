@@ -130,7 +130,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 //			{
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt) 
 								+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
-								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm*sqrt_2kbTdt)
+								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm)
 								+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 				cluster[i].pos = cluster[i].pos*pos_norm ; 
 				for(int m=0;m<5;m++) 
@@ -179,8 +179,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				// J. Chem. Phys. 142, 114103 (2015)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
-										+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(cluster[i].trq*force_norm*dt)
-										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*stochas_norm*sqrt_2kbTdt)
+									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt)
+										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*stochas_norm)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
 				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
@@ -323,7 +323,7 @@ const double sqrt_2kbTdt= sqrt(2.0*kb*T0*dt) ;
 
 const double shear_rate = shear_rate_temp ; 
 
-const double mu = 1.0/(6.0*pi*eta_0*(sigma/2.0)); // mu - mobility, eta - viscosity, r-radius of particle suspensions
+const double mu = 1.0/(6.0*pi*eta_0); // mu - mobility, eta - viscosity, r-radius of particle suspensions
 const double mu_sqrt=sqrt(mu);
 
 const int  cubic = 1 ; 	// cubic box 
@@ -367,13 +367,13 @@ vctr5D Stresslet_mean = null5D;
 
 double max_cos=0.0,min_cos=0.0,min_tan=0.0,max_tan=0.0, cos_val=0.0,tan_val=0.0;
 
-/*
+
 // variables for Electric field 
 vctr3D dipole_b(0.0,0.0,1.0);
 vctr3D dipole_s(0.0,0.0,1.0);
 double cos_theta = dipole_s*Elec_fld;
 int hist[25]={};
-*/
+
 
 // variables for polar , azimuthal angle histogram
 double nbins = 100.0; 
@@ -735,7 +735,7 @@ else {
 				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
-		cluster[i].quat={0.7071   , 0.7071     ,  0.0   ,      0.0 };
+	//	cluster[i].quat={0.7071   , 0.7071     ,  0.0   ,      0.0 };
 	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
 	//	cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
 		// update A matrix
@@ -818,23 +818,23 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
 
 // convert subforces into total generalized forces on particles 
 
-/*
- * For electric field generated torque
+
+// For electric field generated torque
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
 	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
-*/
 
+/*
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
   }
-  
+  */
 std::ofstream outFile8(dataFileName+"/logfile");
 
 	outFile8 << "start time"<< '\t'
@@ -1010,35 +1010,34 @@ do {
 
 	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm , shear_rate , sqrt_2kbTdt)	;
 
-/*
+
   	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
 	cos_theta = dipole_s*Elec_fld;					// calucate the angle between dipole and electric field, dot product gives the cosine of angle
 
-	hist[int (floor((cos_theta+5.0)/0.4))]+=1;
-*/
-
+	hist[int (floor((cos_theta+10.0)/0.8))]+=1;
+	
 // 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
 
 
 // convert subforces into total generalized forces on particles 
 
-/*
- * For electric field generated torque
+
+//  For electric field generated torque
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
 	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
-*/
 
+/*
   for ( int i = 0 ; i < 1; i ++ )
   {
 	cluster[i].frc=null3D;
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
   }
-/*
+
 
   // for rotational relaxation check
  
@@ -1049,10 +1048,12 @@ do {
 		outFile12<<vec1.comp[0] <<'\t'<< vec1.comp[1] << '\t'<< vec1.comp[2] <<  endl;      
 		outFile13<<vec2.comp[0] <<'\t'<< vec2.comp[1] << '\t'<< vec2.comp[2] <<  endl;      
 		outFile14<<vec3.comp[0] <<'\t'<< vec3.comp[1] << '\t'<< vec3.comp[2] <<  endl;      
-		*/
+						
+		outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
+*/
 
 	Stresslet_mean += cluster[0].Stresslet;
-
+/*
 if (step%(frame)==0) 
 	{ 
 
@@ -1128,7 +1129,8 @@ if (step%(frame)==0)
 			}
 
 	}
-	
+	*/
+	/*
 if (step%(frame)==0) 
 	{ 
 
@@ -1154,19 +1156,19 @@ if (step%(frame)==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-
+	*/
 	simu_time+=dt;
 	step+=1;
 
 } while(xxnstep);
 cout << step << endl;
-/*
- * output the histogram of the cosine angles
+
+// output the histogram of the cosine angles
 for ( int i = 0 ; i < 25; i ++ )
 	{
 		cout << hist[i] << endl;
 	}
-*/	
+
 
 /*
  // output the histogram of the polar and azimuthal angles
