@@ -134,6 +134,8 @@ struct SubData
   int PartNum;
   double radius;
   int cluster;
+  double charge;
+
 
 /*double sigma;
   double eps;

@@ -30,7 +30,7 @@ const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
 
-const vctr3D Elec_fld(0.0,0.0,10.0);
+const vctr3D Elec_fld(0.0,0.0,5.0);
 	
   const int dm[13][3] = { {  0,  0,  1 },
                        {  1,  0, -1 },

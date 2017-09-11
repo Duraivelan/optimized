@@ -89,7 +89,9 @@ void brownian( long long int step , vector<ParticleData>& cluster, vector<SubDat
 	const double vel_norm 	,
 	const double stochas_norm,
 	const double shear_rate,
-	const double sqrt_2kbTdt) {
+	const double sqrt_2kbTdt,
+	const vctr3D box,
+	const vctr3D rbox) {
 double a, b , c, lambda;
 vctr4D quat_old;
 						    						
@@ -198,13 +200,13 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			// update A matrix
 	//			}
 				cluster[i].quat2rotmat();
-	/*
+	
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
-					*/
+					
 			//	cluster[i].pos.PBC(box,rbox);
 //			} 
 /*			else 
@@ -348,6 +350,7 @@ const int cellz=(int) ceil(Lz/r_cut);
  const double stochas_norm	= sqrt(2.0*kb*T0*dt/(eta_6pi*bead_radii*bead_radii*bead_radii))		;
 
 const vctr3D box(Lx, Ly, Lz);
+const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
 
 int if_create_particles = xxcreate, ifrestart=xxrestart;
 double tauT=0.1;
@@ -384,7 +387,7 @@ cout << bin_cos << '\t' << bin_tan << endl;
 
 long long int hist_pol_azi[100][100]={};
 
-
+vctr3D dr_vec;
 vector<SubData>  particle(NrParticles);
 vector<ParticleData>  cluster( 1, ParticleData(NrSubs) );;
 
@@ -818,7 +821,7 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
 
 // convert subforces into total generalized forces on particles 
 
-
+/*
 // For electric field generated torque
   for ( int i = 0 ; i < 1; i ++ )
   {
@@ -826,6 +829,18 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
 	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
+*/
+// For electric field generated force with gives torque
+
+particle[0].charge = 1.0;
+particle[1].charge = -1.0;
+  for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+   {
+   for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+		{
+               particle[cluster[i].sub[j]].frc = Elec_fld*particle[cluster[i].sub[j]].charge;                                                                                                                                                                                                                              //      Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
+		}
+   }
 
 /*
   for ( int i = 0 ; i < 1; i ++ )
@@ -835,6 +850,26 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
 	cluster[i].Iner_tnsr=null33D;
   }
   */
+  
+  for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+   {
+        cluster[i].frc=null3D;
+        cluster[i].trq=null3D;
+        cluster[i].Iner_tnsr=null33D;
+
+   for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+		{
+               dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
+               dr_vec.PBC(box,rbox);
+               cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;             
+               cluster[i].trq +=                                               dr_vec^particle[cluster[i].sub[j]].frc;
+               mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
+               cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass;    //      refer following paper , page 3 equa. 3 for interia tensor formula
+                                                                                                                                                                                                                               //      Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
+		}
+   }
+
+  
 std::ofstream outFile8(dataFileName+"/logfile");
 
 	outFile8 << "start time"<< '\t'
@@ -1008,20 +1043,20 @@ cout << "cehck_here" << endl;
 simu_time =dt;
 do {
 
-	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm , shear_rate , sqrt_2kbTdt)	;
+	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm , shear_rate , sqrt_2kbTdt, box, rbox)	;
 
 
   	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
 	cos_theta = dipole_s*Elec_fld;					// calucate the angle between dipole and electric field, dot product gives the cosine of angle
 
-	hist[int (floor((cos_theta+10.0)/0.8))]+=1;
+	hist[int (floor((cos_theta+5.0)/0.4))]+=1;
 	
 // 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
 
 
 // convert subforces into total generalized forces on particles 
 
-
+/*
 //  For electric field generated torque
   for ( int i = 0 ; i < 1; i ++ )
   {
@@ -1029,6 +1064,27 @@ do {
 	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
+  */
+  // For electric field generated force with gives torque
+
+    for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+   {
+        cluster[i].frc=null3D;
+        cluster[i].trq=null3D;
+        cluster[i].Iner_tnsr=null33D;
+
+   for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+		{
+               dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
+               dr_vec.PBC(box,rbox);
+               cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;             
+               cluster[i].trq +=                                               dr_vec^particle[cluster[i].sub[j]].frc;
+               mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
+               cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass;    //      refer following paper , page 3 equa. 3 for interia tensor formula
+                                                                                                                                                                                                                               //      Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
+		}
+   }
+   
 
 /*
   for ( int i = 0 ; i < 1; i ++ )
