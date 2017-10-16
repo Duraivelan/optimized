@@ -55,7 +55,7 @@ void createInitialPosition_N_particles(std::string fileName, int N, double Lx, d
 std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
-
+/*
 double e_g_S[5][3][3]= {
 						{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
 						{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
@@ -80,8 +80,45 @@ double e_S_a[5][3][3]= {
 						{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
 						{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
 						};	
+*/
+
+// basis set for stress normal differences
+
+	double e_S_a[5][3][3]= {
+							{{1.0,0.0,0.0},{0.0,-1.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.5},{0.0,0.0,0.0},{0.5,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
+							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
+						};
+
+	double e_g_S[5][3][3]= {
+							{{ 2.0/3.0,0.0,0.0},{0.0,-1.0/3.0,0.0},{0.0,0.0,-1.0/3.0}},
+							{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
+							{{1.0/3.0,0.0,0.0},{0.0,1.0/3.0,0.0},{0.0,0.0,-2.0/3.0}}
+						};
+   
+
+	double e_E_a[5][3][3]= {
+							{{ 2.0/3.0,0.0,0.0},{0.0,-1.0/3.0,0.0},{0.0,0.0,-1.0/3.0}},
+							{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
+							{{1.0/3.0,0.0,0.0},{0.0,1.0/3.0,0.0},{0.0,0.0,-2.0/3.0}}
+						};
 
 
+	double e_g_E[5][3][3]= {
+							{{1.0,0.0,0.0},{0.0,-1.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.5},{0.0,0.0,0.0},{0.5,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
+							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
+						};
+
+						
 void brownian( long long int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double vel_scale , 
 	const double force_norm	,
 	const double torque_norm,
@@ -104,7 +141,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 
 		vctr3D u_inf(shear_rate*cluster[i].pos.comp[1],0.0,0.0); 		// shear flow gradient in y-direction
 
-		const mtrx3D E_inf(	{0.0,shear_rate/2.0,0.0},
+		const mtrx3D E_inf(	
+							{0.0,shear_rate/2.0,0.0},
 							{shear_rate/2.0,0.0,0.0},
 							{0.0,0.0,0.0});
 
@@ -375,9 +413,12 @@ double max_cos=0.0,min_cos=0.0,min_tan=0.0,max_tan=0.0, cos_val=0.0,tan_val=0.0;
 vctr3D dipole_b(0.0,0.0,1.0);
 vctr3D dipole_s(0.0,0.0,1.0);
 double cos_theta = dipole_s*Elec_fld;
-int hist[25]={};
-
-
+int hist_x[50]={};
+int hist_phi_x[50]={};
+int hist_y[50]={};
+int hist_phi_y[50]={};
+int hist_z[50]={};
+int hist_phi_z[50]={};
 // variables for polar , azimuthal angle histogram
 double nbins = 100.0; 
 double bin_cos = M_PI/nbins;			
@@ -738,7 +779,7 @@ else {
 				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
-	//	cluster[i].quat={0.7071   , 0.7071     ,  0.0   ,      0.0 };
+		cluster[i].quat={0.7071   , 0.7071     ,  0.0   ,      0.0 };
 	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
 	//	cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
 		// update A matrix
@@ -1049,8 +1090,29 @@ do {
   	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
 	cos_theta = dipole_s*Elec_fld;					// calucate the angle between dipole and electric field, dot product gives the cosine of angle
 
-	hist[int (floor((cos_theta+5.0)/0.4))]+=1;
+	// hist[int (floor((cos_theta+5.0)/0.4))]+=1;
+
+	double phi;
 	
+	cos_theta = cluster[0].rotmat.comp[0][2];
+	phi = atan2(cluster[0].rotmat.comp[1][2],cluster[0].rotmat.comp[0][2]);
+	
+	hist_phi_z[int (floor((phi+M_PI)/0.1257))]+=1;
+	hist_z[int (floor((cos_theta+1.0)/0.04))]+=1;
+
+	cos_theta = cluster[0].rotmat.comp[0][1];
+	phi = atan2(cluster[0].rotmat.comp[1][1],cluster[0].rotmat.comp[0][1]);
+	
+	hist_phi_y[int (floor((phi+M_PI)/0.1257))]+=1;
+	hist_y[int (floor((cos_theta+1.0)/0.04))]+=1;
+	
+	cos_theta = cluster[0].rotmat.comp[0][0];
+	phi = atan2(cluster[0].rotmat.comp[1][0],cluster[0].rotmat.comp[0][0]);
+	
+	hist_phi_x[int (floor((phi+M_PI)/0.1257))]+=1;
+	hist_x[int (floor((cos_theta+1.0)/0.04))]+=1;
+
+
 // 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
 
 
@@ -1109,7 +1171,7 @@ do {
 */
 
 	Stresslet_mean += cluster[0].Stresslet;
-/*
+
 if (step%(frame)==0) 
 	{ 
 
@@ -1185,8 +1247,8 @@ if (step%(frame)==0)
 			}
 
 	}
-	*/
-	/*
+	
+/*	
 if (step%(frame)==0) 
 	{ 
 
@@ -1212,7 +1274,7 @@ if (step%(frame)==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-	*/
+*/	
 	simu_time+=dt;
 	step+=1;
 
@@ -1220,9 +1282,9 @@ if (step%(frame)==0)
 cout << step << endl;
 
 // output the histogram of the cosine angles
-for ( int i = 0 ; i < 25; i ++ )
+for ( int i = 0 ; i < 50; i ++ )
 	{
-		cout << hist[i] << endl;
+		cout << hist_x[i] << '\t' << hist_phi_x[i] << '\t' << hist_y[i] << '\t' << hist_phi_y[i] << '\t' << hist_z[i] << '\t' << hist_phi_z[i] << endl;
 	}
 
 

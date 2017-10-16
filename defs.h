@@ -4,7 +4,7 @@
 # include "structure_definitions.h"
 const double m =1.0;
 const double inv_mass =1.0/m;
-const double dt=0.0001;
+const double dt=0.01;
 const double r_cut  = 1.0 ; //pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0;
@@ -30,7 +30,7 @@ const double i_unit_sphere=0.4*(sigma/2.0)*(sigma/2.0);
 const mtrx3D I_sphere(i_unit_sphere,i_unit_sphere,i_unit_sphere);
 const mtrx3D Unit_diag(1.0,1.0,1.0);
 
-const vctr3D Elec_fld(0.0,0.0,5.0);
+const vctr3D Elec_fld(0.0,0.0,0.0);
 	
   const int dm[13][3] = { {  0,  0,  1 },
                        {  1,  0, -1 },
