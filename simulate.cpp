@@ -118,7 +118,7 @@ double e_S_a[5][3][3]= {
 							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
 						};
 
-						
+					
 void brownian( long long int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double vel_scale , 
 	const double force_norm	,
 	const double torque_norm,
@@ -161,8 +161,12 @@ for(int i=0;i<*Max_Cluster_N;i++)
 						for(int l=0;l<3;l++) 
 							{
 								E_inf_bt.comp[j]	+=	 e_E_a[j][k][l]*E_inf_b.comp[k][l];
+							//	cout.precision(17);
+							//	cout<< E_inf_b.comp[k][l]<<'\t';
 							}
 					}
+				//	cout.precision(17);
+				//	cout<< E_inf_bt.comp[j]<<'\t';
 			}	
 
 		 
@@ -179,9 +183,15 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					for(int n=0;n<5;n++) 
 						{	
 						cluster[i].Stresslet.comp[m]-=	cluster[i].mobility_tnsr_dd.comp[m][n]*E_inf_bt.comp[n]	;
+						cout.precision(17);
+					//	cout<< cluster[i].mobility_tnsr_dd.comp[m][n]<<'\t';
+					//	cout<< cluster[i].Stresslet.comp[m]<<'\n';
 						}	
+					//	cout.precision(17);
+					//	cout<< cluster[i].Stresslet.comp[m]<<'\t';
 					}
-					
+
+				
 				for(int k=0;k<3;k++) 
 					{
 						for(int l=0;l<3;l++) 
@@ -229,7 +239,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
 			// assuming qi(t+dt) = ~qi + lambda*qi(t);
 			// hence 	|qi(t+dt)| = |~qi + lambda*qi(t)| =1;
-				a=1.0;
+				a=quat_old.norm2();
 				b=cluster[i].quat*quat_old*2.0;
 				c=cluster[i].quat.norm2()-1.0;
 				lambda = (-b+sqrt(b*b-4.0*a*c))/(2.0*a);
@@ -244,7 +254,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
-					
+							
+		
 			//	cluster[i].pos.PBC(box,rbox);
 //			} 
 /*			else 
@@ -644,6 +655,95 @@ for ( int i = 0 ; i < 1; i ++ )
 	for ( int i = 0 ; i < 1; i ++ )
 		{
         
+        
+ifstream File ( "data_binary.bin" , ios::in | ios::binary );
+if(!File.good()) {
+	std::cerr<<"Given file is corrupt /n"<<std::endl;
+}
+else {			
+		double xi_11x11[36];
+		double temp_mu;
+		
+		for (int l=0; l<36; l++)
+				{
+					File.read( (char*) &xi_11x11[l]     , sizeof(xi_11x11[l]     ) );
+					cout << temp_mu << '\n';
+				}
+				
+
+					cluster[i].mobility_tnsr.comp[0][0] = xi_11x11[0] ;  
+					cluster[i].mobility_tnsr.comp[0][1] = xi_11x11[1]  ;  
+					cluster[i].mobility_tnsr.comp[0][2] = xi_11x11[2]  ; 
+					cluster[i].mobility_tnsr.comp[1][0] = xi_11x11[6]  ; 
+					cluster[i].mobility_tnsr.comp[1][1] = xi_11x11[7]  ;  
+					cluster[i].mobility_tnsr.comp[1][2] = xi_11x11[8]  ;  
+					cluster[i].mobility_tnsr.comp[2][0] = xi_11x11[12]  ;   
+					cluster[i].mobility_tnsr.comp[2][1] = xi_11x11[13]  ; 
+					cluster[i].mobility_tnsr.comp[2][2] = xi_11x11[14]  ; 				
+
+					cluster[i].rot_mobility_tnsr_rt.comp[0][0] = xi_11x11[18] ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[0][1] = xi_11x11[19]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[0][2] = xi_11x11[20]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[1][0] = xi_11x11[24]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[1][1] = xi_11x11[25]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[1][2] = xi_11x11[26]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[2][0] = xi_11x11[30]  ;   
+					cluster[i].rot_mobility_tnsr_rt.comp[2][1] = xi_11x11[31]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[2][2] = xi_11x11[32]  ; 
+
+					cluster[i].mobility_tnsr_tr.comp[0][0] = xi_11x11[3] ;  
+					cluster[i].mobility_tnsr_tr.comp[0][1] = xi_11x11[4]  ;  
+					cluster[i].mobility_tnsr_tr.comp[0][2] = xi_11x11[5]  ; 
+					cluster[i].mobility_tnsr_tr.comp[1][0] = xi_11x11[9]  ; 
+					cluster[i].mobility_tnsr_tr.comp[1][1] = xi_11x11[10]  ;  
+					cluster[i].mobility_tnsr_tr.comp[1][2] = xi_11x11[11]  ;  
+					cluster[i].mobility_tnsr_tr.comp[2][0] = xi_11x11[15]  ;   
+					cluster[i].mobility_tnsr_tr.comp[2][1] = xi_11x11[16]  ; 
+					cluster[i].mobility_tnsr_tr.comp[2][2] = xi_11x11[17]  ; 				
+																					
+					cluster[i].rot_mobility_tnsr.comp[0][0] = xi_11x11[21] ;  
+					cluster[i].rot_mobility_tnsr.comp[0][1] = xi_11x11[22]  ;  
+					cluster[i].rot_mobility_tnsr.comp[0][2] = xi_11x11[23]  ; 
+					cluster[i].rot_mobility_tnsr.comp[1][0] = xi_11x11[27]  ; 
+					cluster[i].rot_mobility_tnsr.comp[1][1] = xi_11x11[28]  ;  
+					cluster[i].rot_mobility_tnsr.comp[1][2] = xi_11x11[29]  ;  
+					cluster[i].rot_mobility_tnsr.comp[2][0] = xi_11x11[33]  ;   
+					cluster[i].rot_mobility_tnsr.comp[2][1] = xi_11x11[34]  ; 
+					cluster[i].rot_mobility_tnsr.comp[2][2] = xi_11x11[35]  ; 				
+																			
+
+		for (int l=0; l<3; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_td.comp[l][k] = temp_mu;
+							cout << temp_mu << '\t';
+					}
+			}
+			
+		for (int l=3; l<6; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_rd.comp[l-3][k] = temp_mu;
+							cout << temp_mu << '\t';
+					}
+			}
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_dd.comp[l][k] = temp_mu;
+							cout << temp_mu << '\n';
+					}
+			}	
+        
+ }
+/*        
 std::ifstream dataFile("data.dat");
 std::string tmp;
 if(!dataFile.good()) {
@@ -710,7 +810,7 @@ else {
  
     }    
 }	 
-
+*/
 		cluster[i].mobility_tnsr_sqrt=null33D;
 		MatrixXd temp(6,6), temp_sqrt(6,6);
 		for (int k=0;k<3;k++) {
@@ -1081,6 +1181,7 @@ for ( int i = 0 ; i < NrPoints ; i ++ )
  
 // end grid creation 
 cout << "cehck_here" << endl;
+
 simu_time =dt;
 do {
 
@@ -1171,6 +1272,7 @@ do {
 */
 
 	Stresslet_mean += cluster[0].Stresslet;
+	
 
 if (step%(frame)==0) 
 	{ 
@@ -1182,6 +1284,7 @@ if (step%(frame)==0)
 			{
 				if(cluster[i].Sub_Length>0)
 				{
+				Stresslet_data.precision(17);
 				Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'<<std::endl;	
 	//			outFile_com<<cos_theta<<'\t'<<cos_theta<<'\t'<<cos_theta<<std::endl;
 	//			vctr3D director = cluster[0].rotmat*particle[cluster[0].sub[0]].pos_bdyfxd ; 
@@ -1248,7 +1351,7 @@ if (step%(frame)==0)
 
 	}
 	
-/*	
+
 if (step%(frame)==0) 
 	{ 
 
@@ -1274,7 +1377,7 @@ if (step%(frame)==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-*/	
+
 	simu_time+=dt;
 	step+=1;
 
@@ -1310,8 +1413,8 @@ for ( int i = 0 ; i < NrPoints; i ++ )
 	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
 
 	cout<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'<<std::endl;	
-
-
+	
+					
 	std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
 	outFile_rand_state << gen;
 	outFile_rand_state.close();

@@ -270,7 +270,8 @@ else {
 
 		
  std::ofstream outFile1("data.dat");
-
+ outFile1.precision(17);
+ 
 // important all lengths have been normalized by particle radius as metioned in Page 46, Appendix A - Durlofsky, Louis, John F. Brady, and Georges Bossis. 
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
@@ -1251,7 +1252,78 @@ double mu_dd[5][5];
 		outFile1<<mu_dd[2][0]<<'\t'<<mu_dd[2][1]<<'\t'<<mu_dd[2][2]<<'\t'<<mu_dd[2][3]<<'\t'<<mu_dd[2][4]<<std::endl ;
 		outFile1<<mu_dd[3][0]<<'\t'<<mu_dd[3][1]<<'\t'<<mu_dd[3][2]<<'\t'<<mu_dd[3][3]<<'\t'<<mu_dd[3][4]<<std::endl ;
 		outFile1<<mu_dd[4][0]<<'\t'<<mu_dd[4][1]<<'\t'<<mu_dd[4][2]<<'\t'<<mu_dd[4][3]<<'\t'<<mu_dd[4][4]<<std::endl ;
+		
 
+std::ofstream ofile("data_binary.bin", ios::out | ios::binary);
+
+cout << "temp_mu" << '\t';
+
+double temp_mu;
+
+		for (int l=0; l<36; l++)
+				{
+					ofile.write((char*) &xi_11x11[l], sizeof(xi_11x11[l]));
+
+				}
+				
+			for (int l=0; l<6; l++)
+				{
+				for (int k=0; k<5; k++)
+					{
+						temp_mu = mu_d[l][k] ; 
+						
+						cout << temp_mu << '\t';
+
+						ofile.write((char*) &temp_mu, sizeof(temp_mu));
+					
+					}
+				}
+
+			for (int l=0; l<5; l++)
+				{
+				for (int k=0; k<5; k++)
+					{
+						
+						ofile.write((char*) &mu_dd[l][k], sizeof(mu_dd[l][k]));
+						// cout << temp_mu << '\t';
+
+					}
+				}			
+				
+			ofile.close();
+/*			
+		ifstream File ( "data_binary.bin" , ios::in | ios::binary );
+
+		for (int l=0; l<36; l++)
+				{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cout << temp_mu << '\n';
+				}
+
+			for (int l=0; l<6; l++)
+				{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cout << temp_mu << '\t';
+					}
+				}
+
+
+ cout.precision(17);
+
+			for (int l=0; l<5; l++)
+				{
+				for (int k=0; k<5; k++)
+					{
+						
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cout << temp_mu << '\n';
+
+					}
+				}
+*/
+				 	
 /*
  * test the 3-indice form of the g,h matrices
 		
