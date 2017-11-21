@@ -262,6 +262,16 @@ else {
    double zeta_11N[121*NrParticles*NrParticles] ;  	// grand resistance matrix
    double rho_11N[121*NrParticles*NrParticles] ;  	// grand resistance matrix
    double xi_11x11[11*11] ; 							// generalized friction matrix
+   	
+	mtrx3D Friction_Tnsr_tt(0.0,0.0,0.0);
+	mtrx3D Friction_Tnsr_tr(0.0,0.0,0.0);
+	mtrx3D Friction_Tnsr_rt(0.0,0.0,0.0);
+	mtrx3D Friction_Tnsr_rr(0.0,0.0,0.0);
+ 	mtrx53D Friction_Tnsr_dt 	=	null53D;
+	mtrx53D Friction_Tnsr_dr	= 	null53D;
+	mtrx35D Friction_Tnsr_td	=	null35D;
+	mtrx35D Friction_Tnsr_rd	=	null35D;
+	mtrx55D Friction_Tnsr_dd	=	null55D;
    
    for (int i=0; i<121; i++)
 		{
@@ -276,6 +286,7 @@ else {
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
 
+#if 0
 		
 for (int a=0; a<NrParticles; a++)
 	{
@@ -554,16 +565,6 @@ for (int a=0; a<NrParticles; a++)
 			}	
 
 		}
-
-	mtrx3D Friction_Tnsr_tt(0.0,0.0,0.0);
-	mtrx3D Friction_Tnsr_tr(0.0,0.0,0.0);
-	mtrx3D Friction_Tnsr_rt(0.0,0.0,0.0);
-	mtrx3D Friction_Tnsr_rr(0.0,0.0,0.0);
- 	mtrx53D Friction_Tnsr_dt 	=	null53D;
-	mtrx53D Friction_Tnsr_dr	= 	null53D;
-	mtrx35D Friction_Tnsr_td	=	null35D;
-	mtrx35D Friction_Tnsr_rd	=	null35D;
-	mtrx55D Friction_Tnsr_dd	=	null55D;
                
 	inverse ( zeta_11N ,11*NrParticles )	 ; 	
 	
@@ -802,7 +803,6 @@ for (int a=0; a<NrParticles; a++)
 					xi_11x11[33] = Friction_Tnsr_rr.comp[2][0] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
-
 /*
  // test the 3-indice form of the g,h (td, rd) mobility matrices
 
@@ -881,7 +881,9 @@ for (int s=0; s<3; s++)
 		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
 
 */
-/*
+#endif
+
+
 // Ellipsoid mobilities from Kim and Karrila book ; Page 64
 
 double c = 1.0;	// short axis
@@ -1152,7 +1154,7 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 					xi_11x11[33] = Friction_Tnsr_rr.comp[2][0] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
-*/		
+	
 			inverse ( xi_11x11 , 6 )	 ; 			
 
 /*	for (int i=0; i<36; i++)

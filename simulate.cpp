@@ -139,14 +139,14 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		
 		// simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
 
-		vctr3D u_inf(shear_rate*cluster[i].pos.comp[1],0.0,0.0); 		// shear flow gradient in y-direction
+		vctr3D u_inf(0.0,shear_rate*cluster[i].pos.comp[0],0.0); 		// shear flow gradient in y-direction
 
 		const mtrx3D E_inf(	
 							{0.0,shear_rate/2.0,0.0},
 							{shear_rate/2.0,0.0,0.0},
 							{0.0,0.0,0.0});
 
-		const vctr3D w_inf(0.0,0.0,-0.5*shear_rate);
+		const vctr3D w_inf(0.0,0.0,0.5*shear_rate);
 		
 		mtrx3D E_inf_b = (~cluster[i].rotmat)*E_inf*cluster[i].rotmat;
 		vctr5D E_inf_bt;
@@ -430,6 +430,8 @@ int hist_y[50]={};
 int hist_phi_y[50]={};
 int hist_z[50]={};
 int hist_phi_z[50]={};
+int hist_C[100]={}; // histogram of orbit constant of ellipsids
+
 // variables for polar , azimuthal angle histogram
 double nbins = 100.0; 
 double bin_cos = M_PI/nbins;			
@@ -879,9 +881,15 @@ else {
 				
 		cluster[i].quat={1.0,0.0,0.0,0.0};
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
-		cluster[i].quat={0.7071   , 0.7071     ,  0.0   ,      0.0 };
+	//	cluster[i].quat={0.7071   , -0.7071     ,  0.0   ,      0.0 };
 	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
 	//	cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
+	//	cluster[i].quat={0.987688340595138,	0.156434465040231,	0.0,	0.0};	//   pi/10;
+	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
+		cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
+	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
+	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -1228,6 +1236,7 @@ do {
 	cluster[i].Iner_tnsr=null33D;
   }
   */
+/*
   // For electric field generated force with gives torque
 
     for ( int i = 0 ; i < Max_Cluster_N; i ++ )
@@ -1248,7 +1257,7 @@ do {
 		}
    }
    
-
+*/
 /*
   for ( int i = 0 ; i < 1; i ++ )
   {
@@ -1273,7 +1282,28 @@ do {
 
 	Stresslet_mean += cluster[0].Stresslet;
 	
+	// binning of orbital constant of ellipsoid , C
+			
+	vctr3D director = {cluster[0].rotmat.comp[0][2],cluster[0].rotmat.comp[1][2],cluster[0].rotmat.comp[2][2]}; 
+	
+	double tan_phi =  (director.comp[1])/(director.comp[0]);
+	double tan_phi2 = tan_phi*tan_phi;
+	double cos_theta = director.comp[2] ; 
+	double cos_theta2 = cos_theta*cos_theta;
+	double cos_phi = sqrt(1.0/(tan_phi2+1.0));
+	double tan_theta = sqrt(1.0/cos_theta2-1.0); 
+	double ar = 5.0;
+	double C = tan_theta*cos_phi*sqrt(ar*ar+tan_phi2);
+	double max_C_lim = ceil(M_PI/2.0) ; 
+	// outFile_com<< C<< '\t'<< atan(C) <<std::endl;
 
+	int i = round(atan(C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
+	// i = min( max(i,0), max_C_lim ) ;
+	hist_C[i]++; 
+	
+	// end of C binning 
+
+/*
 if (step%(frame)==0) 
 	{ 
 
@@ -1342,16 +1372,16 @@ if (step%(frame)==0)
 		
 
 
-				outFile_orient<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2]<<'\t'<< yaw << std::endl;
+			//	outFile_orient<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2]<<'\t'<< yaw << std::endl;
 				
-				outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
+			//	outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
 
 				}
 			}
 
 	}
-	
-
+*/	
+/*
 if (step%(frame)==0) 
 	{ 
 
@@ -1377,13 +1407,13 @@ if (step%(frame)==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-
+*/
 	simu_time+=dt;
 	step+=1;
 
 } while(xxnstep);
 cout << step << endl;
-
+/*
 // output the histogram of the cosine angles
 for ( int i = 0 ; i < 50; i ++ )
 	{
@@ -1391,7 +1421,7 @@ for ( int i = 0 ; i < 50; i ++ )
 	}
 
 
-/*
+
  // output the histogram of the polar and azimuthal angles
 for ( int i = 0 ; i < 100; i ++ )
 	{
@@ -1406,9 +1436,9 @@ for ( int i = 0 ; i < 100; i ++ )
  // output the histogram of the geodesic
  			cout<< "histogram of the geodesic" << endl;
 
-for ( int i = 0 ; i < NrPoints; i ++ )
+for ( int i = 0 ; i < 100; i ++ )
 	{
-		//	outFile_orient<< orientHist[i] << endl;
+			outFile_orient<< hist_C[i] << endl;
 	}
 	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
 
