@@ -152,6 +152,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		vctr5D E_inf_bt;
 		mtrx3D S_b ;
 		mtrx3D S_s ;
+		mtrx3D S_Br_b ;
+		mtrx3D S_Br_s ;
 		for(int j=0;j<5;j++) 
 			{		
 				E_inf_bt.comp[j] = 0.0;
@@ -182,7 +184,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 						cluster[i].Stresslet.comp[m]=0.0;			
 					for(int n=0;n<5;n++) 
 						{	
-						cluster[i].Stresslet.comp[m]-=	cluster[i].mobility_tnsr_dd.comp[m][n]*E_inf_bt.comp[n]	;
+						cluster[i].Stresslet.comp[m]+=	( -cluster[i].mobility_tnsr_dd.comp[m][n]*E_inf_bt.comp[n]	)	;
 						cout.precision(17);
 					//	cout<< cluster[i].mobility_tnsr_dd.comp[m][n]<<'\t';
 					//	cout<< cluster[i].Stresslet.comp[m]<<'\n';
@@ -190,32 +192,46 @@ for(int i=0;i<*Max_Cluster_N;i++)
 					//	cout.precision(17);
 					//	cout<< cluster[i].Stresslet.comp[m]<<'\t';
 					}
+					
+					cluster[i].Stresslet		+=		(	cluster[i].mobility_tnsr_dt*((~cluster[i].rotmat)*(cluster[i].frc*force_norm))
+														   +cluster[i].mobility_tnsr_dr*((~cluster[i].rotmat)*(cluster[i].trq*torque_norm)) ) ;
 
+// Brownian Stress calculation 
+cluster[i].Stresslet_Br = 
+				 cluster[i].mobility_tnsr_dt*(cluster[i].tt_mobility_tnsr_sqrt_inv*(rand*stochas_norm) + cluster[i].tr_mobility_tnsr_sqrt_inv*(rand1*stochas_norm*(1.0/dt)))
+				+cluster[i].mobility_tnsr_dr*(cluster[i].rt_mobility_tnsr_sqrt_inv*(rand*stochas_norm) + cluster[i].rr_mobility_tnsr_sqrt_inv*(rand1*stochas_norm*(1.0/dt))) ;
+
+// end of Brownian Stress calculation							
 				
 				for(int k=0;k<3;k++) 
 					{
 						for(int l=0;l<3;l++) 
 						{
-								S_b.comp[k][l] = 0.0;
+								S_b.comp[k][l] = 0.0; 
+								S_Br_b.comp[k][l] = 0.0; 
 								
 							for(int j=0;j<5;j++) 
 							{						
 								S_b.comp[k][l]	+=	 e_g_S[j][k][l]*cluster[i].Stresslet.comp[j];
+								S_Br_b.comp[k][l]	+=	 e_g_S[j][k][l]*cluster[i].Stresslet_Br.comp[j];
 							}
 						}
 					}
 					
 					S_s = (cluster[i].rotmat)*S_b*(~cluster[i].rotmat);		
+					S_Br_s = (cluster[i].rotmat)*S_Br_b*(~cluster[i].rotmat);		
 					
 					for(int m=0;m<5;m++) 
 						{		
 						cluster[i].Stresslet.comp[m]=0.0;			
+						cluster[i].Stresslet_Br.comp[m]=0.0;			
 							
 							for(int k=0;k<3;k++) 
 								{
 									for(int l=0;l<3;l++) 
 										{
 											cluster[i].Stresslet.comp[m]	+=	 e_S_a[m][k][l]*S_s.comp[k][l];
+											cluster[i].Stresslet_Br.comp[m]	+=	 e_S_a[m][k][l]*S_Br_s.comp[k][l];
 										}
 								}
 						}										
@@ -416,6 +432,11 @@ int NrSubs=NrParticles;
 int restart_frame_offset=0;
 
 vctr5D Stresslet_mean = null5D;
+vctr5D Stresslet_Br_mean = null5D;
+vctr5D Stresslet_sqr_mean = null5D;
+vctr5D Stresslet_Br_sqr_mean = null5D;
+vctr5D Stresslet_tot_mean = null5D;
+vctr5D Stresslet_tot_sqr_mean = null5D;
 
 double max_cos=0.0,min_cos=0.0,min_tan=0.0,max_tan=0.0, cos_val=0.0,tan_val=0.0;
 
@@ -430,13 +451,16 @@ int hist_y[50]={};
 int hist_phi_y[50]={};
 int hist_z[50]={};
 int hist_phi_z[50]={};
-int hist_C[100]={}; // histogram of orbit constant of ellipsids
+long long int hist_C[100]={}; // histogram of orbit constant of ellipsids
+long long int hist_C_tau[100][100]={};
 
 // variables for polar , azimuthal angle histogram
 double nbins = 100.0; 
 double bin_cos = M_PI/nbins;			
 double bin_tan = 2.0*M_PI/nbins;
-
+double bin_atan_C = M_PI/nbins;			
+double bin_tau = 2.0*M_PI/nbins;
+cout << "pi" << '\t'<< M_PI_2 << endl;
 cout << bin_cos << '\t' << bin_tan << endl;
 
 long long int hist_pol_azi[100][100]={};
@@ -743,7 +767,22 @@ else {
 							cout << temp_mu << '\n';
 					}
 			}	
-        
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<3; k++)
+					{
+							cluster[i].mobility_tnsr_dt.comp[l][k] = -cluster[i].mobility_tnsr_td.comp[k][l];	// mu_dt=-mu_td
+					}
+			}
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<3; k++)
+					{
+							cluster[i].mobility_tnsr_dr.comp[l][k] = -cluster[i].mobility_tnsr_rd.comp[k][l];		// mu_dr=-mu_rd
+					}
+			}        
  }
 /*        
 std::ifstream dataFile("data.dat");
@@ -814,7 +853,7 @@ else {
 }	 
 */
 		cluster[i].mobility_tnsr_sqrt=null33D;
-		MatrixXd temp(6,6), temp_sqrt(6,6);
+		MatrixXd temp(6,6), temp_sqrt(6,6), temp_sqrt_inv(6,6) ;
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
@@ -842,7 +881,8 @@ else {
 		}
 	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
 	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
-				
+	temp_sqrt_inv = temp_sqrt.inverse();
+			
 		cout<<"mobility_tnsr_sqrt"<<endl;
 
 		for (int k=0;k<3;k++) {
@@ -878,8 +918,35 @@ else {
 				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]<<endl;
 			}
 		}
+// inverse mobility square root for brownian stresslet calculation
+
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].tt_mobility_tnsr_sqrt_inv.comp[k][l]=temp_sqrt_inv(k,l);
+			}
+		}
+		
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].tr_mobility_tnsr_sqrt_inv.comp[k][l-3]=temp_sqrt_inv(k,l);
+			}
+		}
+
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rt_mobility_tnsr_sqrt_inv.comp[k-3][l]=temp_sqrt_inv(k,l);
+			}
+		}
+
+		for (int k=3;k<6;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].rr_mobility_tnsr_sqrt_inv.comp[k-3][l-3]=temp_sqrt_inv(k,l);
+			}
+		}
+
+// end of storing inverse mobility square root
 				
-		cluster[i].quat={1.0,0.0,0.0,0.0};
+	//	cluster[i].quat={1.0,0.0,0.0,0.0};
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
 	//	cluster[i].quat={0.7071   , -0.7071     ,  0.0   ,      0.0 };
 	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
@@ -888,7 +955,7 @@ else {
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
 		cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 
 		// update A matrix
 
@@ -1190,6 +1257,12 @@ for ( int i = 0 ; i < NrPoints ; i ++ )
 // end grid creation 
 cout << "cehck_here" << endl;
 
+std::ofstream outFile_C_tau("C_tau.dat");
+std::ofstream outFile_theta_phi("theta_phi.dat");
+std::ofstream outFile_theta_phi_hist("theta_phi_hist.dat");
+std::ofstream outFile_atan_C_tau_hist("outFile_atan_C_tau_hist.dat");
+    
+					  
 simu_time =dt;
 do {
 
@@ -1279,31 +1352,72 @@ do {
 						
 		outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
 */
-
+					  
 	Stresslet_mean += cluster[0].Stresslet;
+	Stresslet_Br_mean += cluster[0].Stresslet_Br;
+	Stresslet_tot_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br);
+	
+	Stresslet_sqr_mean += cluster[0].Stresslet.norm2();
+	Stresslet_Br_sqr_mean += cluster[0].Stresslet_Br.norm2();
+	Stresslet_tot_sqr_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br).norm2();
 	
 	// binning of orbital constant of ellipsoid , C
+	
 			
 	vctr3D director = {cluster[0].rotmat.comp[0][2],cluster[0].rotmat.comp[1][2],cluster[0].rotmat.comp[2][2]}; 
 	
-	double tan_phi =  (director.comp[1])/(director.comp[0]);
-	double tan_phi2 = tan_phi*tan_phi;
+//	double tan_phi =  (director.comp[1])/(director.comp[0]);
+//	double tan_phi2 = tan_phi*tan_phi;
 	double cos_theta = director.comp[2] ; 
+	if (cos_theta > 1.0) {cos_theta = 1.0 ;} ; 
+	if (cos_theta < -1.0) {cos_theta = -1.0 ;} ; 
 	double cos_theta2 = cos_theta*cos_theta;
-	double cos_phi = sqrt(1.0/(tan_phi2+1.0));
-	double tan_theta = sqrt(1.0/cos_theta2-1.0); 
+//	double cos_phi = sqrt(1.0/(tan_phi2+1.0));
+//	double tan_theta = sqrt(1.0/cos_theta2-1.0); 
 	double ar = 5.0;
-	double C = tan_theta*cos_phi*sqrt(ar*ar+tan_phi2);
+//	double C = (tan_theta*cos_phi/ar)*sqrt(ar*ar+tan_phi2);
+		
 	double max_C_lim = ceil(M_PI/2.0) ; 
-	// outFile_com<< C<< '\t'<< atan(C) <<std::endl;
+	double sign_C= 1.0;
+	if (director.comp[2] < 0.0) {sign_C = -1.0;} ;
+	double C_theta = acos(cos_theta) ; 
+	double C_phi = atan2(director.comp[1], director.comp[0]) ;
+	
+	double C = (tan(C_theta)/ar)*sqrt(sin(C_phi)*sin(C_phi)+ar*ar*cos(C_phi)*cos(C_phi));
+	
+	double tau  = atan2(director.comp[1], ar*director.comp[0]) ; // tau related to phi from eq. 11 leal and hinch, 1971, 46, 685.
+	double atan_C  = atan(C) ;
+ 	// C_phi =+ M_PI ;
+	
+	// outFile_C_tau<< tan_phi << '\t'<< cos_theta << '\t'<< cos_phi << '\t'<< tan_theta <<  '\t'<< sqrt(ar*ar+tan_phi2) <<std::endl;	// tau from eq. 11 leal and hinch, 1971, 46, 685.
 
-	int i = round(atan(C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
+	// outFile_C_tau<< (C) << '\t'<< tau <<std::endl;	// tau from eq. 11 leal and hinch, 1971, 46, 685.
+	
+	// outFile_theta_phi<< '\t'<<  C_theta << '\t'<< C_phi <<std::endl;	// theta and phi
+
+	// outFile_com<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2] << std::endl;
+
+	 hist_pol_azi[int (round( C_theta/bin_cos )) ][int (round( (C_phi+M_PI)/bin_tan )) ]+=1;
+
+	 hist_C_tau[int (round( (atan_C + M_PI_2)/bin_atan_C )) ][int (round( tau/bin_tau )) ]+=1;
+
+
+	int i = round(abs(atan_C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
 	// i = min( max(i,0), max_C_lim ) ;
 	hist_C[i]++; 
 	
 	// end of C binning 
-
 /*
+// output stresslets
+if (step%(10*frame)==0) 
+	{ 
+	int i =0; 
+		Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'
+		<<cluster[i].Stresslet_Br.comp[0]<<'\t'<<cluster[i].Stresslet_Br.comp[1]<<'\t'<<cluster[i].Stresslet_Br.comp[2]<<'\t'<<cluster[i].Stresslet_Br.comp[3]<<'\t'<<cluster[i].Stresslet_Br.comp[4]<<std::endl;	
+	}
+//
+
+
 if (step%(frame)==0) 
 	{ 
 
@@ -1410,6 +1524,45 @@ if (step%(frame)==0)
 */
 	simu_time+=dt;
 	step+=1;
+	
+if (step%(1000*1000*frame)==0) 
+	{ 
+
+outFile_orient << step << endl;
+
+for ( int i = 0 ; i < 100; i ++ )
+	{
+			outFile_orient<< hist_C[i] << endl;
+	}
+	
+ // output the histogram of the polar and azimuthal angles
+for ( int i = 0 ; i < 100; i ++ )
+	{
+		for ( int j = 0 ; j < 100; j ++ )
+		{
+			outFile_theta_phi_hist<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
+		}
+		outFile_theta_phi_hist << endl;
+	}
+	
+ // output the histogram of the polar and azimuthal angles
+for ( int i = 0 ; i < 100; i ++ )
+	{
+		for ( int j = 0 ; j < 100; j ++ )
+		{
+			outFile_atan_C_tau_hist<< std::setprecision(5) << hist_C_tau[i][j] <<'\t';
+		}
+		outFile_atan_C_tau_hist << endl;
+	}	
+	
+		Stresslet_data<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'
+					  <<Stresslet_sqr_mean.comp[0]<<'\t'<<Stresslet_sqr_mean.comp[1]<<'\t'<<Stresslet_sqr_mean.comp[2]<<'\t'<<Stresslet_sqr_mean.comp[3]<<'\t'<<Stresslet_sqr_mean.comp[4]<<'\t'	
+					  <<Stresslet_Br_mean.comp[0]<<'\t'<<Stresslet_Br_mean.comp[1]<<'\t'<<Stresslet_Br_mean.comp[2]<<'\t'<<Stresslet_Br_mean.comp[3]<<'\t'<<Stresslet_Br_mean.comp[4]<<'\t'	
+					  <<Stresslet_Br_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_sqr_mean.comp[4]<<'\t'	
+					  <<Stresslet_tot_mean.comp[0]<<'\t'<<Stresslet_tot_mean.comp[1]<<'\t'<<Stresslet_tot_mean.comp[2]<<'\t'<<Stresslet_tot_mean.comp[3]<<'\t'<<Stresslet_tot_mean.comp[4]<<'\t'	
+					  <<Stresslet_tot_sqr_mean.comp[0]<<'\t'<<Stresslet_tot_sqr_mean.comp[1]<<'\t'<<Stresslet_tot_sqr_mean.comp[2]<<'\t'<<Stresslet_tot_sqr_mean.comp[3]<<'\t'<<Stresslet_tot_sqr_mean.comp[4]<<'\t'	
+					  <<endl;
+}
 
 } while(xxnstep);
 cout << step << endl;
@@ -1420,18 +1573,27 @@ for ( int i = 0 ; i < 50; i ++ )
 		cout << hist_x[i] << '\t' << hist_phi_x[i] << '\t' << hist_y[i] << '\t' << hist_phi_y[i] << '\t' << hist_z[i] << '\t' << hist_phi_z[i] << endl;
 	}
 
-
+*/
 
  // output the histogram of the polar and azimuthal angles
 for ( int i = 0 ; i < 100; i ++ )
 	{
 		for ( int j = 0 ; j < 100; j ++ )
 		{
-			cout<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
+			outFile_theta_phi_hist<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
 		}
-		cout << endl;
+		outFile_theta_phi_hist << endl;
 	}
-*/
+	
+ // output the histogram of the polar and azimuthal angles
+for ( int i = 0 ; i < 100; i ++ )
+	{
+		for ( int j = 0 ; j < 100; j ++ )
+		{
+			outFile_atan_C_tau_hist<< std::setprecision(5) << hist_C_tau[i][j] <<'\t';
+		}
+		outFile_atan_C_tau_hist << endl;
+	}
 
  // output the histogram of the geodesic
  			cout<< "histogram of the geodesic" << endl;
@@ -1451,6 +1613,10 @@ for ( int i = 0 ; i < 100; i ++ )
 
 outFile_com.close();
 outFile_orient.close();
+outFile_theta_phi.close();
+outFile_C_tau.close();
+outFile_theta_phi_hist.close();
+outFile_atan_C_tau_hist.close();
   remove("End_Position_Full.xyz");
   char oldname[] ="End_Position_Full_new.xyz";
   char newname[] ="End_Position_Full.xyz";

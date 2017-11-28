@@ -447,7 +447,26 @@ struct vctr5D
     comp[4] += inp.comp[4];
     return (*this);
   }
-
+  
+//       addition 2 // trailing 'const': value of receiving object remains unchanged
+  vctr5D operator + ( const vctr5D& inp ) const
+  {
+    vctr5D result = *this;
+    result += inp;
+    return result;
+  }
+  
+//       square // trailing 'const': value of receiving object remains unchanged
+  vctr5D norm2 ( )
+  {
+	vctr5D result ;
+    result.comp[0] = comp[0]*comp[0];
+    result.comp[1] = comp[1]*comp[1];
+    result.comp[2] = comp[2]*comp[2];
+    result.comp[3] = comp[3]*comp[3];
+    result.comp[4] = comp[4]*comp[4];
+    return result;
+  }
 };
   
 struct mtrx35D
@@ -545,7 +564,47 @@ struct mtrx53D
     comp[4][1] = inp1.comp[4];
     comp[4][2] = inp2.comp[4];  
   }
+//       matrix - scalar multiplication 1
+  mtrx53D& operator *= ( const double inp )
+  {
+    comp[0][0] *= inp;
+    comp[0][1] *= inp;
+    comp[0][2] *= inp;
+    comp[1][0] *= inp;
+    comp[1][1] *= inp;
+    comp[1][2] *= inp;
+    comp[2][0] *= inp;
+    comp[2][1] *= inp;
+    comp[2][2] *= inp;
+    comp[3][0] *= inp;
+    comp[3][1] *= inp;
+    comp[3][2] *= inp;
+    comp[4][0] *= inp;
+    comp[4][1] *= inp;
+    comp[4][2] *= inp;
+    return (*this);
+  }
 
+//       matrix - scalar multiplication 2
+  mtrx53D operator * ( const double inp ) const
+  {
+    mtrx53D result = *this;
+    result *= inp;
+    return result;
+  }
+
+//       matrix - vector multiplication
+  vctr5D operator * ( const vctr3D& inp ) const
+  {
+    vctr5D result;
+    result.comp[0] = comp[0][0] * inp.comp[0] + comp[0][1] * inp.comp[1] + comp[0][2] * inp.comp[2] ;
+    result.comp[1] = comp[1][0] * inp.comp[0] + comp[1][1] * inp.comp[1] + comp[1][2] * inp.comp[2] ;
+    result.comp[2] = comp[2][0] * inp.comp[0] + comp[2][1] * inp.comp[1] + comp[2][2] * inp.comp[2] ;
+    result.comp[3] = comp[3][0] * inp.comp[0] + comp[3][1] * inp.comp[1] + comp[3][2] * inp.comp[2] ;
+    result.comp[4] = comp[4][0] * inp.comp[0] + comp[4][1] * inp.comp[1] + comp[4][2] * inp.comp[2] ;    
+    return result;
+  }
+  
 };
 
 struct mtrx55D

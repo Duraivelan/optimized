@@ -161,14 +161,21 @@ struct ParticleData
   mtrx3D rot_mobility_tnsr_rt;
   mtrx3D rot_mobility_tnsr_sqrt;
   mtrx3D rot_mobility_tnsr_rt_sqrt;
+  mtrx3D tt_mobility_tnsr_sqrt_inv;
+  mtrx3D tr_mobility_tnsr_sqrt_inv;
+  mtrx3D rt_mobility_tnsr_sqrt_inv;
+  mtrx3D rr_mobility_tnsr_sqrt_inv;
   mtrx35D mobility_tnsr_td;
   mtrx35D mobility_tnsr_rd;
+  mtrx53D mobility_tnsr_dt;
+  mtrx53D mobility_tnsr_dr;
   mtrx55D mobility_tnsr_dd;
   vctr3D trq;           // lab-fixed = cartesian
   vctr3D theta;
   vctr3D angmom;        // lab-fixed
   vctr4D quat;
   vctr5D Stresslet;
+  vctr5D Stresslet_Br;	// Brownian contribution to stresslet
   int Sub_Length;
   int clicked; 
   double radii;

@@ -907,6 +907,7 @@ double L = log((1.0+e)/(1.0-e));
 double XA = (8.0/3.0)*(e3)/(-2.0*e + ( 1.0+e2 )*L) ;
 
 cout << "XA = " << XA << endl;
+cout << "aspect ratio = " << a << endl;
 
 double YA = (16.0/3.0)*(e3)/(2.0*e + ( 3.0*(e2) - 1.0 )*L) ;
 
