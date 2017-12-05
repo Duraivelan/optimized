@@ -30,6 +30,8 @@
 #include <functional>
 #include <array>
 # include "defs.h"
+# include "rigid_force.h"
+
 //#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
 #include<Eigen/Eigenvalues>
 
@@ -37,6 +39,13 @@ using namespace Eigen;
 
 using namespace std;
 
+ struct RowSort {
+        bool operator()(vector<int> a, vector<int>  b)
+        {   
+            return a[0] < b[0];
+        }   
+    } ;
+    
 // random numbers using rand function
 void createInitialPosition_N_particles(std::string fileName, int N, double Lx, double Ly, double Lz) {
 	double x,y,z;
@@ -51,6 +60,145 @@ void createInitialPosition_N_particles(std::string fileName, int N, double Lx, d
  	outFile.close();
 }
 
+void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, int j,int *Max_Cluster_N, vctr3D box, vctr3D rbox ) {
+	
+ const double max_size = (box.comp[0]/2.0 + box.comp[1]/2.0 + box.comp[2]/2.0)/3.0;
+ 
+	/*	int cluster_swap ;
+		
+		if (i > j) {
+			cluster_swap = i;
+			i = j;
+			j = cluster_swap;
+			}
+	*/
+		vctr3D L_after, L_before ;
+		vctr3D old_pos= cluster[i].pos;
+		vctr3D dr;
+		double temp_r, r;
+		
+		L_before= ((cluster[i].pos^cluster[i].vel)*cluster[i].mass + cluster[i].Iner_tnsr*cluster[i].omega +
+				   (cluster[j].pos.revPBC(old_pos,box,rbox)^cluster[j].vel)*cluster[j].mass + cluster[j].Iner_tnsr*cluster[j].omega );
+	//	L_before[0] = ( mass[i]*(Cluster_XYZ[i][1]*Velocity[i][2]-Cluster_XYZ[i][2]*Velocity[i][2])+ I[i][0][0]*Ang_Velocity[i][0]+I[i][0][1]*Ang_Velocity[i][1]+I[i][0][2]*Ang_Velocity[i][2] +	mass[j]*(Cluster_XYZ[j][1]*Velocity[j][2]-Cluster_XYZ[j][2]*Velocity[j][1])+ I[j][0][0]*Ang_Velocity[j][0]+I[j][0][1]*Ang_Velocity[j][1]+I[j][0][2]*Ang_Velocity[j][2] );
+	//	L_before[1] = ( mass[i]*(Cluster_XYZ[i][2]*Velocity[i][0]-Cluster_XYZ[i][0]*Velocity[i][2])+ I[i][1][0]*Ang_Velocity[i][0]+I[i][1][1]*Ang_Velocity[i][1]+I[i][1][2]*Ang_Velocity[i][2] +	mass[j]*(Cluster_XYZ[j][2]*Velocity[j][0]-Cluster_XYZ[j][0]*Velocity[j][2])+ I[j][1][0]*Ang_Velocity[j][0]+I[j][1][1]*Ang_Velocity[j][1]+I[j][1][2]*Ang_Velocity[j][2] );
+	//	L_before[2] = ( mass[i]*(Cluster_XYZ[i][0]*Velocity[i][1]-Cluster_XYZ[i][1]*Velocity[i][0])+ I[i][2][0]*Ang_Velocity[i][0]+I[i][2][1]*Ang_Velocity[i][1]+I[i][2][2]*Ang_Velocity[i][2] +	mass[j]*(Cluster_XYZ[j][0]*Velocity[j][1]-Cluster_XYZ[j][1]*Velocity[j][0])+ I[j][2][0]*Ang_Velocity[j][0]+I[j][2][1]*Ang_Velocity[j][1]+I[j][2][2]*Ang_Velocity[j][2] );
+
+/*	L[i][0] = (I[i][0][0]*Ang_Velocity[i][0]+I[i][0][1]*Ang_Velocity[i][1]+I[i][0][2]*Ang_Velocity[i][2] + I[j][0][0]*Ang_Velocity[j][0]+I[j][0][1]*Ang_Velocity[j][1]+I[j][0][2]*Ang_Velocity[j][2] );
+		L[i][1] = (I[i][1][0]*Ang_Velocity[i][0]+I[i][1][1]*Ang_Velocity[i][1]+I[i][1][2]*Ang_Velocity[i][2] + I[j][1][0]*Ang_Velocity[j][0]+I[j][1][1]*Ang_Velocity[j][1]+I[j][1][2]*Ang_Velocity[j][2] );
+		L[i][2] = (I[i][2][0]*Ang_Velocity[i][0]+I[i][2][1]*Ang_Velocity[i][1]+I[i][2][2]*Ang_Velocity[i][2] + I[j][2][0]*Ang_Velocity[j][0]+I[j][2][1]*Ang_Velocity[j][1]+I[j][2][2]*Ang_Velocity[j][2] );
+*/			
+		cluster[i].pos=(cluster[i].pos*cluster[i].mass + cluster[j].pos*cluster[j].mass ) * (1.0/(cluster[i].mass+cluster[j].mass));		
+
+		cluster[i].mass=cluster[i].mass+cluster[j].mass;
+		
+		L_after = ((cluster[i].pos^cluster[i].vel)*cluster[i].mass) ;
+		
+		cluster[i].clicked = 1 ; 
+		
+		cluster[i].angmom=(L_before - L_after);
+
+	//	std::cout<<i<<'\t'<<j<<'\t'<<cluster[i].mass<<std::endl;
+
+ 
+	//	std::cout<<"inside_collision"<<'\t'<<i<<'\t'<<A[i][0][0]<<'\t'<<Ang_Velocity[i][0]<<'\t'<<Q[i][0]<<'\t'<<L[i][0]<<'\t'<<torque[i][0]<<std::endl;
+		
+		remove("cluster_ID.dat");
+
+		std::ofstream outFile70("cluster_ID.dat");
+
+		cluster[i].radii_gyr=0.0;		     	     	
+		
+		for (int  k=0; k<cluster[i].Sub_Length; k++) {
+
+		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
+	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);				
+		outFile70<<cluster[i].sub[k]<<'\t'<<i<<endl;
+		
+		} 
+		
+		for (int  k=cluster[i].Sub_Length; k<cluster[i].Sub_Length+cluster[j].Sub_Length; k++) {
+		
+	//	cluster[i].sub[k]	=	cluster[j].sub[k-cluster[i].Sub_Length];
+			cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
+			particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
+			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
+			outFile70<<cluster[i].sub[k]<<'\t'<<j<<endl;
+			particle[cluster[i].sub[k]].cluster=i;
+			
+		} 
+		outFile70.close();
+		cluster[i].pos.PBC(box,rbox);	
+		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
+
+		cluster[i].radii=0;
+		
+		for ( int l = 0 ; l < cluster[i].Sub_Length ; l ++ )
+			{
+				for ( int k = l+1 ; k < cluster[i].Sub_Length ; k ++ )
+					{
+						dr=(particle[cluster[i].sub[l]].pos_bdyfxd -particle[cluster[i].sub[k]].pos_bdyfxd );
+					//	dr.PBC(box,rbox);
+						temp_r= dr.norm2();
+						r	=	 0.56	+	sqrt(temp_r);
+						if(r>cluster[i].radii)
+							{
+								cluster[i].radii	= r;
+							} 
+					}
+			}
+					
+		if (cluster[i].radii>max_size)
+			{
+				cout <<"Radius"<<'\t'<<cluster[i].radii<< endl;
+				cout <<"Cluster No:"<<'\t'<<i<<'\t'<<", Nr. of particles in the cluster"<<'\t'<<cluster[i].Sub_Length<< endl;
+				cout << "*** cluster reached maximum allowed size " << endl;
+				abort();
+			}	
+		
+		cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].Sub_Length);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
+																						// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
+
+
+		// std::cout<<Length_cluster[i]<<'\t'<<Length_cluster[j]<<std::endl;
+		for ( int k = j ; k < *Max_Cluster_N-1 ; k ++ )
+			{
+		//	 cluster[k]=cluster[k+1];
+			cluster[k].clicked =cluster[k+1].clicked;
+			cluster[k].pos=cluster[k+1].pos;
+			cluster[k].frc=cluster[k+1].frc;
+			cluster[k].omega=cluster[k+1].omega;
+			cluster[k].rotmat=cluster[k+1].rotmat;
+			cluster[k].Iner_tnsr=cluster[k+1].Iner_tnsr;
+			cluster[k].mobility_tnsr=cluster[k+1].mobility_tnsr;
+			cluster[k].mobility_tnsr_sqrt=cluster[k+1].mobility_tnsr_sqrt;
+			cluster[k].rot_mobility_tnsr=cluster[k+1].rot_mobility_tnsr;
+			cluster[k].rot_mobility_tnsr_sqrt=cluster[k+1].rot_mobility_tnsr_sqrt;
+			cluster[k].trq=cluster[k+1].trq;
+			cluster[k].angmom=cluster[k+1].angmom;
+			cluster[k].quat=cluster[k+1].quat;
+			cluster[k].radii=cluster[k+1].radii;
+			cluster[k].mass=cluster[k+1].mass;
+ 			cluster[k].Sub_Length=cluster[k+1].Sub_Length; 
+			cluster[k].radii_gyr=cluster[k+1].radii_gyr;
+			for ( int l = 0 ; l < cluster[k].Sub_Length ; l ++ )
+			{
+			cluster[k].sub[l]			=	cluster[k+1].sub[l];
+			particle[cluster[k].sub[l]].cluster=k;
+			} 
+		}
+				
+		// modulus of A is one; A inverse is jsut the cofactor of A 
+	
+		*Max_Cluster_N=*Max_Cluster_N-1;
+		if (*Max_Cluster_N<=1) {
+		*Max_Cluster_N=1;
+		cout<<"all particles combined into Single Cluster "<<endl;
+		abort();
+		} 
+
+	}
 
 std::random_device seed;
 std::mt19937 gen{seed()};
@@ -174,9 +322,10 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		 
 //		if (cluster[i].Sub_Length>0) 
 //			{
-				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt) 
+				cluster[i].pos+= cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt) 
 								+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
 								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm)
+								+  cluster[i].rotmat*cluster[i].mobility_tnsr_tr_sqrt*(rand1*stochas_norm)
 								+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 				cluster[i].pos = cluster[i].pos*pos_norm ; 
 				for(int m=0;m<5;m++) 
@@ -245,7 +394,8 @@ cluster[i].Stresslet_Br =
 				// J. Chem. Phys. 142, 114103 (2015)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
-									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt)
+										+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt)
+										+  cluster[i].rot_mobility_tnsr_rt_sqrt*(rand*stochas_norm)
 										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*stochas_norm)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
@@ -270,9 +420,9 @@ cluster[i].Stresslet_Br =
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
-							
+						
 		
-			//	cluster[i].pos.PBC(box,rbox);
+				cluster[i].pos.PBC(box,rbox);
 //			} 
 /*			else 
 			{
@@ -289,7 +439,6 @@ cluster[i].Stresslet_Br =
 }
 
 int main() {
-
 
 if(xxcluster_restart) {
 	std::ifstream fin("random_device_state_new.txt");
@@ -395,7 +544,7 @@ const double mu_sqrt=sqrt(mu);
 
 const int  cubic = 1 ; 	// cubic box 
 	
-const double Lx = pow(NrParticles*(4.0/3.0)*M_PI*(bead_radii*bead_radii*bead_radii),1.0/3.0 ); 
+const double Lx = pow(NrParticles*(4.0/3.0)*M_PI*(bead_radii*bead_radii*bead_radii)/(0.04),1.0/3.0 ); 
 const double Ly = Lx ; // assuming cubic 
 const double Lz = Lx ; 
 const double Volume =Lx*Ly*Lz;
@@ -466,8 +615,12 @@ cout << bin_cos << '\t' << bin_tan << endl;
 long long int hist_pol_azi[100][100]={};
 
 vctr3D dr_vec;
+double  T_Energy, K_Energy, P_Energy, p_energy=0;
+
 vector<SubData>  particle(NrParticles);
-vector<ParticleData>  cluster( 1, ParticleData(NrSubs) );;
+vector<ParticleData>  cluster( NrParticles, ParticleData(NrSubs) );
+int combine_now=0;
+int combine[NrParticles][4];
 
 if(ifrestart)	{
 	if(!xxcluster_restart)	{
@@ -784,74 +937,7 @@ else {
 					}
 			}        
  }
-/*        
-std::ifstream dataFile("data.dat");
-std::string tmp;
-if(!dataFile.good()) {
-	std::cerr<<"Given file is corrupt /n"<<std::endl;
-}
-else {
-    std::string line;
-		std::getline(dataFile,line);
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_tr.comp[n][2];        
-    }
-		std::getline(dataFile,line);
 
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][1];
-        currentLine >> cluster[i].rot_mobility_tnsr_rt.comp[n][2];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][0];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][1];
-        currentLine >> cluster[i].rot_mobility_tnsr.comp[n][2];
- 
-    }
-		std::getline(dataFile,line);
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][3];
-        currentLine >> cluster[i].mobility_tnsr_td.comp[n][4];
-    }
-		std::getline(dataFile,line);
-
-    for (int n=0;n<3;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][3];
-        currentLine >> cluster[i].mobility_tnsr_rd.comp[n][4];
- 
-    }
-		std::getline(dataFile,line);
-
-    for (int n=0;n<5;n++) {
-		std::getline(dataFile,line);
-    	std::istringstream currentLine(line);    
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][0];
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][1];
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][2];
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][3];
-        currentLine >> cluster[i].mobility_tnsr_dd.comp[n][4];
- 
-    }    
-}	 
-*/
 		cluster[i].mobility_tnsr_sqrt=null33D;
 		MatrixXd temp(6,6), temp_sqrt(6,6), temp_sqrt_inv(6,6) ;
 		for (int k=0;k<3;k++) {
@@ -955,7 +1041,7 @@ else {
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
 		cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 
 		// update A matrix
 
@@ -965,7 +1051,6 @@ else {
 	
 }
 }
-Max_Cluster_N =1;
 
 /*
 //delete all files before writing data
@@ -1003,6 +1088,201 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 				cluster[i].mass=1.0;
 				cluster[i].vel={0.0,0.0,0.0};
 
+ifstream File ( "data_binary.bin" , ios::in | ios::binary );
+if(!File.good()) {
+	std::cerr<<"Given file is corrupt /n"<<std::endl;
+}
+else {			
+		double xi_11x11[36];
+		double temp_mu;
+		
+		for (int l=0; l<36; l++)
+				{
+					File.read( (char*) &xi_11x11[l]     , sizeof(xi_11x11[l]     ) );
+					cout << temp_mu << '\n';
+				}
+				
+
+					cluster[i].mobility_tnsr.comp[0][0] = xi_11x11[0] ;  
+					cluster[i].mobility_tnsr.comp[0][1] = xi_11x11[1]  ;  
+					cluster[i].mobility_tnsr.comp[0][2] = xi_11x11[2]  ; 
+					cluster[i].mobility_tnsr.comp[1][0] = xi_11x11[6]  ; 
+					cluster[i].mobility_tnsr.comp[1][1] = xi_11x11[7]  ;  
+					cluster[i].mobility_tnsr.comp[1][2] = xi_11x11[8]  ;  
+					cluster[i].mobility_tnsr.comp[2][0] = xi_11x11[12]  ;   
+					cluster[i].mobility_tnsr.comp[2][1] = xi_11x11[13]  ; 
+					cluster[i].mobility_tnsr.comp[2][2] = xi_11x11[14]  ; 				
+
+					cluster[i].rot_mobility_tnsr_rt.comp[0][0] = xi_11x11[18] ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[0][1] = xi_11x11[19]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[0][2] = xi_11x11[20]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[1][0] = xi_11x11[24]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[1][1] = xi_11x11[25]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[1][2] = xi_11x11[26]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[2][0] = xi_11x11[30]  ;   
+					cluster[i].rot_mobility_tnsr_rt.comp[2][1] = xi_11x11[31]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[2][2] = xi_11x11[32]  ; 
+
+					cluster[i].mobility_tnsr_tr.comp[0][0] = xi_11x11[3] ;  
+					cluster[i].mobility_tnsr_tr.comp[0][1] = xi_11x11[4]  ;  
+					cluster[i].mobility_tnsr_tr.comp[0][2] = xi_11x11[5]  ; 
+					cluster[i].mobility_tnsr_tr.comp[1][0] = xi_11x11[9]  ; 
+					cluster[i].mobility_tnsr_tr.comp[1][1] = xi_11x11[10]  ;  
+					cluster[i].mobility_tnsr_tr.comp[1][2] = xi_11x11[11]  ;  
+					cluster[i].mobility_tnsr_tr.comp[2][0] = xi_11x11[15]  ;   
+					cluster[i].mobility_tnsr_tr.comp[2][1] = xi_11x11[16]  ; 
+					cluster[i].mobility_tnsr_tr.comp[2][2] = xi_11x11[17]  ; 				
+																					
+					cluster[i].rot_mobility_tnsr.comp[0][0] = xi_11x11[21] ;  
+					cluster[i].rot_mobility_tnsr.comp[0][1] = xi_11x11[22]  ;  
+					cluster[i].rot_mobility_tnsr.comp[0][2] = xi_11x11[23]  ; 
+					cluster[i].rot_mobility_tnsr.comp[1][0] = xi_11x11[27]  ; 
+					cluster[i].rot_mobility_tnsr.comp[1][1] = xi_11x11[28]  ;  
+					cluster[i].rot_mobility_tnsr.comp[1][2] = xi_11x11[29]  ;  
+					cluster[i].rot_mobility_tnsr.comp[2][0] = xi_11x11[33]  ;   
+					cluster[i].rot_mobility_tnsr.comp[2][1] = xi_11x11[34]  ; 
+					cluster[i].rot_mobility_tnsr.comp[2][2] = xi_11x11[35]  ; 				
+																			
+
+		for (int l=0; l<3; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_td.comp[l][k] = temp_mu;
+							cout << temp_mu << '\t';
+					}
+			}
+			
+		for (int l=3; l<6; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_rd.comp[l-3][k] = temp_mu;
+							cout << temp_mu << '\t';
+					}
+			}
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_dd.comp[l][k] = temp_mu;
+							cout << temp_mu << '\n';
+					}
+			}	
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<3; k++)
+					{
+							cluster[i].mobility_tnsr_dt.comp[l][k] = -cluster[i].mobility_tnsr_td.comp[k][l];	// mu_dt=-mu_td
+					}
+			}
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<3; k++)
+					{
+							cluster[i].mobility_tnsr_dr.comp[l][k] = -cluster[i].mobility_tnsr_rd.comp[k][l];		// mu_dr=-mu_rd
+					}
+			}        
+ }
+
+		cluster[i].mobility_tnsr_sqrt=null33D;
+		MatrixXd temp(6,6), temp_sqrt(6,6), temp_sqrt_inv(6,6) ;
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
+				cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
+
+			}
+		}
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				temp(k,l)=cluster[i].mobility_tnsr_tr.comp[k][l-3];
+				cout<<cluster[i].mobility_tnsr_tr.comp[k][l-3]<<endl;
+			}
+		}
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr_rt.comp[k-3][l];
+				cout<<cluster[i].rot_mobility_tnsr_rt.comp[k-3][l]<<endl;
+			}
+		}
+		for (int k=3;k<6;k++) {		
+			for (int l=3;l<6;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k-3][l-3];
+				cout<<cluster[i].rot_mobility_tnsr.comp[k-3][l-3]<<endl;
+			}
+		}
+	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
+	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
+	temp_sqrt_inv = temp_sqrt.inverse();
+			
+		cout<<"mobility_tnsr_sqrt"<<endl;
+
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
+				cout<<cluster[i].mobility_tnsr_sqrt.comp[k][l]<<endl;
+			}
+		}
+
+		cout<<"mobility_tnsr_tr_sqrt"<<endl;
+		
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]=temp_sqrt(k,l);
+				cout<<cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]<<endl;
+			}
+		}
+
+		cout<<"rot_mobility_tnsr_rt_sqrt"<<endl;
+
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]=temp_sqrt(k,l);
+				cout<<cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]<<endl;
+			}
+		}
+
+		cout<<"rot_mobility_tnsr_sqrt"<<endl;
+
+		for (int k=3;k<6;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]=temp_sqrt(k,l);
+				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]<<endl;
+			}
+		}
+// inverse mobility square root for brownian stresslet calculation
+
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].tt_mobility_tnsr_sqrt_inv.comp[k][l]=temp_sqrt_inv(k,l);
+			}
+		}
+		
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].tr_mobility_tnsr_sqrt_inv.comp[k][l-3]=temp_sqrt_inv(k,l);
+			}
+		}
+
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rt_mobility_tnsr_sqrt_inv.comp[k-3][l]=temp_sqrt_inv(k,l);
+			}
+		}
+
+		for (int k=3;k<6;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].rr_mobility_tnsr_sqrt_inv.comp[k-3][l-3]=temp_sqrt_inv(k,l);
+			}
+		}
+		
 				// intialize Q, A matrix
 
 				cluster[i].quat={1.0,0.0,0.0,0.0};
@@ -1031,8 +1311,12 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 std::ofstream outFile10(dataFileName+"/End_positions.dat");
 std::ofstream outFile_com(dataFileName+"/com.dat");
 std::ofstream outFile_orient(dataFileName+"/orient.dat");
+std::ofstream outFile1(dataFileName+"/PE_energy.dat");
+std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 
-// forceUpdate( particle, &p_energy, &combine_now , combine, &step, NrParticles , Lx, Ly, Lz);
+step = restart_frame_offset*frame+1;
+
+forceUpdate( particle, &p_energy, &combine_now , combine, &step, NrParticles , Lx, Ly, Lz);
 
 
 // convert subforces into total generalized forces on particles 
@@ -1045,7 +1329,7 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
 	cluster[i].trq=dipole_s^Elec_fld;
 	cluster[i].Iner_tnsr=null33D;
   }
-*/
+
 // For electric field generated force with gives torque
 
 particle[0].charge = 1.0;
@@ -1057,21 +1341,14 @@ particle[1].charge = -1.0;
                particle[cluster[i].sub[j]].frc = Elec_fld*particle[cluster[i].sub[j]].charge;                                                                                                                                                                                                                              //      Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
 		}
    }
-
-/*
-  for ( int i = 0 ; i < 1; i ++ )
-  {
-	cluster[i].frc=null3D;
-	cluster[i].trq=null3D;
-	cluster[i].Iner_tnsr=null33D;
-  }
-  */
+*/
   
   for ( int i = 0 ; i < Max_Cluster_N; i ++ )
    {
         cluster[i].frc=null3D;
         cluster[i].trq=null3D;
         cluster[i].Iner_tnsr=null33D;
+		cluster[i].pos.echo();
 
    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 		{
@@ -1118,7 +1395,7 @@ std::ofstream outFile8(dataFileName+"/logfile");
 	std::ofstream Stresslet_data("Stresslet_data.dat");
 	cout<<step<<endl;
 
-	
+/*	
 std::ofstream outFile12("vec1.dat");
 std::ofstream outFile13("vec2.dat");
 std::ofstream outFile14("vec3.dat");
@@ -1126,7 +1403,7 @@ vctr3D eig1(1.0 , 0.0 , 0.0 );
 vctr3D eig2(0.0 , 1.0 , 0.0 );
 vctr3D eig3(0.0 , 0.0 , 1.0 );
 vctr3D vec1, vec2, vec3;
-
+*/
 
 // create a grid and bin the points of geodesic dome
 
@@ -1268,7 +1545,7 @@ do {
 
 	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm , shear_rate , sqrt_2kbTdt, box, rbox)	;
 
-
+/*
   	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
 	cos_theta = dipole_s*Elec_fld;					// calucate the angle between dipole and electric field, dot product gives the cosine of angle
 
@@ -1294,10 +1571,334 @@ do {
 	hist_phi_x[int (floor((phi+M_PI)/0.1257))]+=1;
 	hist_x[int (floor((cos_theta+1.0)/0.04))]+=1;
 
+*/
+	combine_now=0;
 
-// 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
+	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
 
+if (xxclustering && combine_now>0) 
+		{	
+		//	cout<<combine_now<<endl;
+			vector<vector<int>> temp_combine(combine_now+1,vector<int> (4)) ;
+			for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+					for (int j = 0; j< 4 ; j ++) 
+						{
+							temp_combine[pn][j]=combine[pn][j];
+						}
+					//	cout<<pn<<'\t'<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide main beroe sort"<<endl;
+				}			
+		
+	if(combine_now>1) {	sort (temp_combine.begin()+1,temp_combine.end(), RowSort()); }
+	
+			/*	for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<"insdide main after sort"<<endl;
+				}	*/
 
+	if(combine_now>1) {	
+	int count=1;
+	do
+		{
+			int j=1;
+		do
+			{
+			if ((temp_combine[count][0]==temp_combine[count+j][0]) && (temp_combine[count][1]==temp_combine[count+j][1]) )
+				{
+					temp_combine.erase( temp_combine.begin() + count+ j );
+					combine_now-=1;
+					j-=1;
+				}
+				j+=1;
+			}	while (j<=(combine_now-count));
+			count=count+1;			
+		} while (count<combine_now);
+	}	
+			/*	for (int pn = 1; pn<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[pn][0]<<'\t'<<temp_combine[pn][1]<<'\t'<<"insdide mainf after unique"<<endl;
+				} */
+	// collision detection
+	 	//		cout<<combine_now<<endl;
+
+	for ( int pn = 1 ; pn <=combine_now; pn ++ )
+		{
+			if(particle[temp_combine[pn][2]].cluster!=particle[temp_combine[pn][3]].cluster) {
+ 			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
+				
+				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
+					{
+					 
+							if ( temp_combine[pp][0]==temp_combine[pn][1] ) {
+								if (temp_combine[pp][1] > temp_combine[pn][0]) {
+								
+									temp_combine[pp][0]=temp_combine[pn][0] ;
+									
+								}
+								else {
+										temp_combine[pp][0]=temp_combine[pp][1] ;
+										temp_combine[pp][1]=temp_combine[pn][0] ;
+									} 
+									
+								}
+									
+							if ( temp_combine[pp][1]==temp_combine[pn][1] ) {
+								if (temp_combine[pp][0] < temp_combine[pn][0]) {
+								
+									temp_combine[pp][1]=temp_combine[pn][0] ;
+									
+								}
+								else {
+										temp_combine[pp][1]=temp_combine[pp][0] ;
+										temp_combine[pp][0]=temp_combine[pn][0] ;
+									} 
+									
+								}
+					
+						if (temp_combine[pp][0]>=temp_combine[pn][1]) {temp_combine[pp][0]-=1; } 
+									
+						if (temp_combine[pp][1]>=temp_combine[pn][1]) {temp_combine[pp][1]-=1; } 
+		
+					}
+					
+				}	
+					//	sort (temp_combine.begin()+pn+1,temp_combine.end(), RowSort());
+
+				/*	for (int px = 1; px<=combine_now ; pn++) 
+				{ 		
+						cout<<temp_combine[px][0]<<'\t'<<temp_combine[px][1]<<'\t'<<" after combine"<<endl;
+				} */
+			//	cout << "Doner one combine " << '\t'<< pn <<  endl;
+		}
+		
+// calculate new diffusion tensors	
+	for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+		{
+			if(cluster[i].clicked == 1 ) {
+		remove("XYZ.dat");
+
+		std::ofstream outFile7("XYZ.dat");
+
+		outFile7<<cluster[i].Sub_Length<<",        !Number of beads"<<endl;
+		
+		for (int  k=0; k<cluster[i].Sub_Length; k++) {
+
+		outFile7<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[k]].pos_bdyfxd.comp[2]<<'\t'<<particle[cluster[i].sub[k]].radius<<std::endl;
+		
+		} 
+		
+		outFile7.close();	
+		
+	//	system("../diffusion_tensor/hydro++10-lnx.exe < ../diffusion_tensor/input.txt  > /dev/null ");
+		system(" ./X2mu.out >>& log -a ");
+		
+ifstream File ( "data_binary.bin" , ios::in | ios::binary );
+if(!File.good()) {
+	std::cerr<<"Given file is corrupt /n"<<std::endl;
+}
+else {			
+		double xi_11x11[36];
+		double temp_mu;
+		
+		for (int l=0; l<36; l++)
+				{
+					File.read( (char*) &xi_11x11[l]     , sizeof(xi_11x11[l]     ) );
+					cout << temp_mu << '\n';
+				}
+				
+
+					cluster[i].mobility_tnsr.comp[0][0] = xi_11x11[0] ;  
+					cluster[i].mobility_tnsr.comp[0][1] = xi_11x11[1]  ;  
+					cluster[i].mobility_tnsr.comp[0][2] = xi_11x11[2]  ; 
+					cluster[i].mobility_tnsr.comp[1][0] = xi_11x11[6]  ; 
+					cluster[i].mobility_tnsr.comp[1][1] = xi_11x11[7]  ;  
+					cluster[i].mobility_tnsr.comp[1][2] = xi_11x11[8]  ;  
+					cluster[i].mobility_tnsr.comp[2][0] = xi_11x11[12]  ;   
+					cluster[i].mobility_tnsr.comp[2][1] = xi_11x11[13]  ; 
+					cluster[i].mobility_tnsr.comp[2][2] = xi_11x11[14]  ; 				
+
+					cluster[i].rot_mobility_tnsr_rt.comp[0][0] = xi_11x11[18] ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[0][1] = xi_11x11[19]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[0][2] = xi_11x11[20]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[1][0] = xi_11x11[24]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[1][1] = xi_11x11[25]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[1][2] = xi_11x11[26]  ;  
+					cluster[i].rot_mobility_tnsr_rt.comp[2][0] = xi_11x11[30]  ;   
+					cluster[i].rot_mobility_tnsr_rt.comp[2][1] = xi_11x11[31]  ; 
+					cluster[i].rot_mobility_tnsr_rt.comp[2][2] = xi_11x11[32]  ; 
+
+					cluster[i].mobility_tnsr_tr.comp[0][0] = xi_11x11[3] ;  
+					cluster[i].mobility_tnsr_tr.comp[0][1] = xi_11x11[4]  ;  
+					cluster[i].mobility_tnsr_tr.comp[0][2] = xi_11x11[5]  ; 
+					cluster[i].mobility_tnsr_tr.comp[1][0] = xi_11x11[9]  ; 
+					cluster[i].mobility_tnsr_tr.comp[1][1] = xi_11x11[10]  ;  
+					cluster[i].mobility_tnsr_tr.comp[1][2] = xi_11x11[11]  ;  
+					cluster[i].mobility_tnsr_tr.comp[2][0] = xi_11x11[15]  ;   
+					cluster[i].mobility_tnsr_tr.comp[2][1] = xi_11x11[16]  ; 
+					cluster[i].mobility_tnsr_tr.comp[2][2] = xi_11x11[17]  ; 				
+																					
+					cluster[i].rot_mobility_tnsr.comp[0][0] = xi_11x11[21] ;  
+					cluster[i].rot_mobility_tnsr.comp[0][1] = xi_11x11[22]  ;  
+					cluster[i].rot_mobility_tnsr.comp[0][2] = xi_11x11[23]  ; 
+					cluster[i].rot_mobility_tnsr.comp[1][0] = xi_11x11[27]  ; 
+					cluster[i].rot_mobility_tnsr.comp[1][1] = xi_11x11[28]  ;  
+					cluster[i].rot_mobility_tnsr.comp[1][2] = xi_11x11[29]  ;  
+					cluster[i].rot_mobility_tnsr.comp[2][0] = xi_11x11[33]  ;   
+					cluster[i].rot_mobility_tnsr.comp[2][1] = xi_11x11[34]  ; 
+					cluster[i].rot_mobility_tnsr.comp[2][2] = xi_11x11[35]  ; 				
+																			
+
+		for (int l=0; l<3; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_td.comp[l][k] = temp_mu;
+							cout << temp_mu << '\t';
+					}
+			}
+			
+		for (int l=3; l<6; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_rd.comp[l-3][k] = temp_mu;
+							cout << temp_mu << '\t';
+					}
+			}
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_dd.comp[l][k] = temp_mu;
+							cout << temp_mu << '\n';
+					}
+			}	
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<3; k++)
+					{
+							cluster[i].mobility_tnsr_dt.comp[l][k] = -cluster[i].mobility_tnsr_td.comp[k][l];	// mu_dt=-mu_td
+					}
+			}
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<3; k++)
+					{
+							cluster[i].mobility_tnsr_dr.comp[l][k] = -cluster[i].mobility_tnsr_rd.comp[k][l];		// mu_dr=-mu_rd
+					}
+			}        
+ }
+
+		cluster[i].mobility_tnsr_sqrt=null33D;
+		MatrixXd temp(6,6), temp_sqrt(6,6), temp_sqrt_inv(6,6) ;
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
+				cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
+
+			}
+		}
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				temp(k,l)=cluster[i].mobility_tnsr_tr.comp[k][l-3];
+				cout<<cluster[i].mobility_tnsr_tr.comp[k][l-3]<<endl;
+			}
+		}
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr_rt.comp[k-3][l];
+				cout<<cluster[i].rot_mobility_tnsr_rt.comp[k-3][l]<<endl;
+			}
+		}
+		for (int k=3;k<6;k++) {		
+			for (int l=3;l<6;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k-3][l-3];
+				cout<<cluster[i].rot_mobility_tnsr.comp[k-3][l-3]<<endl;
+			}
+		}
+	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
+	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
+	temp_sqrt_inv = temp_sqrt.inverse();
+			
+		cout<<"mobility_tnsr_sqrt"<<endl;
+
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
+				cout<<cluster[i].mobility_tnsr_sqrt.comp[k][l]<<endl;
+			}
+		}
+
+		cout<<"mobility_tnsr_tr_sqrt"<<endl;
+		
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]=temp_sqrt(k,l);
+				cout<<cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]<<endl;
+			}
+		}
+
+		cout<<"rot_mobility_tnsr_rt_sqrt"<<endl;
+
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]=temp_sqrt(k,l);
+				cout<<cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]<<endl;
+			}
+		}
+
+		cout<<"rot_mobility_tnsr_sqrt"<<endl;
+
+		for (int k=3;k<6;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]=temp_sqrt(k,l);
+				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]<<endl;
+			}
+		}
+// inverse mobility square root for brownian stresslet calculation
+
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].tt_mobility_tnsr_sqrt_inv.comp[k][l]=temp_sqrt_inv(k,l);
+			}
+		}
+		
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].tr_mobility_tnsr_sqrt_inv.comp[k][l-3]=temp_sqrt_inv(k,l);
+			}
+		}
+
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rt_mobility_tnsr_sqrt_inv.comp[k-3][l]=temp_sqrt_inv(k,l);
+			}
+		}
+
+		for (int k=3;k<6;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].rr_mobility_tnsr_sqrt_inv.comp[k-3][l-3]=temp_sqrt_inv(k,l);
+			}
+		}
+		
+		cluster[i].quat={1.0,0.0,0.0,0.0};
+
+		// update A matrix
+
+        cluster[i].quat2rotmat();
+	}
+		cluster[i].clicked = 0; 
+	}
+	
+	}
+		
+				
 // convert subforces into total generalized forces on particles 
 
 /*
@@ -1352,7 +1953,7 @@ do {
 						
 		outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
 */
-					  
+/*					  
 	Stresslet_mean += cluster[0].Stresslet;
 	Stresslet_Br_mean += cluster[0].Stresslet_Br;
 	Stresslet_tot_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br);
@@ -1395,8 +1996,6 @@ do {
 	
 	// outFile_theta_phi<< '\t'<<  C_theta << '\t'<< C_phi <<std::endl;	// theta and phi
 
-	// outFile_com<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2] << std::endl;
-
 	 hist_pol_azi[int (round( C_theta/bin_cos )) ][int (round( (C_phi+M_PI)/bin_tan )) ]+=1;
 
 	 hist_C_tau[int (round( (atan_C + M_PI_2)/bin_atan_C )) ][int (round( tau/bin_tau )) ]+=1;
@@ -1407,6 +2006,8 @@ do {
 	hist_C[i]++; 
 	
 	// end of C binning 
+*/
+	
 /*
 // output stresslets
 if (step%(10*frame)==0) 
@@ -1495,36 +2096,95 @@ if (step%(frame)==0)
 
 	}
 */	
-/*
-if (step%(frame)==0) 
+
+if (step%frame==0) 
 	{ 
 
-		std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/(frame)) +".xyz");   
+      std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
    		outFile5<<NrParticles<<std::endl;
    		outFile5<<"X Y Z co-ordinates"<<std::endl;
-
-		// save position every 'frame' steps 
+		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
+		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
-		for ( int i = 0 ; i < 1; i ++ )
-			{
+		std::ofstream outFile9(dataFileName+"/Cluster_dist"+ std::to_string(step/frame) +".dat");
 
+		K_Energy=0;
+
+		for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+			{
+				if(cluster[i].Sub_Length>1)
+				{
+				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
+				}
 			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
-
-						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
-					//	particle[cluster[i].sub[j]].pos.PBC(box,rbox);
-						
+					
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
 			}
+
+
+/*		for ( int i = 0 ; i < NrParticles; i ++ )
+			{
+						outFile5<<'H'<<'\t'<<particle[i].pos.comp[0]<<'\t'<<particle[i].pos.comp[1]<<'\t'<<particle[i].pos.comp[2]<<std::endl;
+						K_Energy+=0.5*m*(particle[i].vel.comp[0]*particle[i].vel.comp[0]
+									   + particle[i].vel.comp[1]*particle[i].vel.comp[1]
+									   + particle[i].vel.comp[2]*particle[i].vel.comp[2]);
+			}
+ */
  
      	outFile5<<'\n'<<std::endl;
+		outFile1<<p_energy<<std::endl;
 		outFile5.close();
+		outFile9.close();
+		
+		// store info to restart file End_Position_Full.xyz
+		std::ofstream outFile7(dataFileName+"/End_Position_Full_new.xyz");
+		std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
+
+outFile7<<'\t'<<Max_Cluster_N<<'\t'<<(int) (step/frame)<<endl;
+
+for ( int i = 0 ; i < Max_Cluster_N; i ++ )
+	{
+		outFile7<<cluster[i].Sub_Length<<'\t'<<cluster[i].radii_gyr<<'\t'<<cluster[i].pos.comp[0]<<'\t'<<cluster[i].pos.comp[1]<<'\t'<<cluster[i].pos.comp[2]<<std::endl;
+		outFile7<<cluster[i].quat.comp[0]<<'\t'<<cluster[i].quat.comp[1]<<'\t'<<cluster[i].quat.comp[2]<<'\t'<<cluster[i].quat.comp[3]<<std::endl;
+		if (cluster[i].Sub_Length>1) 
+			{
+				cluster[i].mobility_tnsr.writeToFile(outFile7);
+				cluster[i].mobility_tnsr_sqrt.writeToFile(outFile7);
+		if(xx_rotation)	
+			{
+				cluster[i].rot_mobility_tnsr.writeToFile(outFile7);
+				cluster[i].rot_mobility_tnsr_sqrt.writeToFile(outFile7);
+			}
+			}
+	    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+			{
+				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<std::endl;
+				outFile7<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos_bdyfxd.comp[2]<<std::endl;
+			}
 	}
-*/
+
+	outFile_rand_state << gen;
+	outFile_rand_state.close();
+
+	outFile7.close();
+
+ remove("random_device_state.txt");
+  char oldname_rand_state[] ="random_device_state_new.txt";
+  char newname_rand_state[] ="random_device_state.txt";
+  rename( oldname_rand_state , newname_rand_state );
+
+ remove("End_Position_Full.xyz");
+  char oldname[] ="End_Position_Full_new.xyz";
+  char newname[] ="End_Position_Full.xyz";
+  rename( oldname , newname );
+
+	}
 	simu_time+=dt;
 	step+=1;
-	
+
+/*	
 if (step%(1000*1000*frame)==0) 
 	{ 
 
@@ -1563,6 +2223,7 @@ for ( int i = 0 ; i < 100; i ++ )
 					  <<Stresslet_tot_sqr_mean.comp[0]<<'\t'<<Stresslet_tot_sqr_mean.comp[1]<<'\t'<<Stresslet_tot_sqr_mean.comp[2]<<'\t'<<Stresslet_tot_sqr_mean.comp[3]<<'\t'<<Stresslet_tot_sqr_mean.comp[4]<<'\t'	
 					  <<endl;
 }
+*/
 
 } while(xxnstep);
 cout << step << endl;

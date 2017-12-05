@@ -20,7 +20,7 @@ using namespace std;
         }   
     } ;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], int* step,const int NrParticles, const double Lx,  const double Ly,  const double Lz ) {
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4],long long int* step,const int NrParticles, const double Lx,  const double Ly,  const double Lz ) {
 
 	const vctr3D box(Lx, Ly, Lz);
 	const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);

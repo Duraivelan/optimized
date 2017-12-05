@@ -5,8 +5,8 @@ alias clang++='clang++-3.5 -std=c++11'
 while ( $a < 410 )
 	mkdir $a
 	cd $a
-	@ ifcreate = 0; 
-	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<=2/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ ; s/xx_diffusion/1/ " ../../simulate.cpp > simulate.cpp
+	@ ifcreate = 1; 
+	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/1/ ; s/xxnstep/step<=100000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ ; s/xx_diffusion/0/ " ../../simulate.cpp > simulate.cpp
 	sed "s/xxshift/0/ ; s/xxclustering/1/" ../../pairforce.h > pairforce.h
 
   cp ../../rigid_force.h .
@@ -21,10 +21,10 @@ while ( $a < 410 )
 		rm -f log
   endif
   
- g++ -std=c++11 X2mu.cpp -O2 -o X2mu.out -llapack	
- ./X2mu.out >>& log -a &
+# g++ -std=c++11 X2mu.cpp -O2 -o X2mu.out -llapack	
+# ./X2mu.out >>& log -a &
  
- wait
+#  wait
   
  g++ -std=c++11 simulate.cpp rigid_force.cpp -O2 -o simulate.out -llapack
  ./simulate.out >>& log -a &
@@ -32,5 +32,3 @@ while ( $a < 410 )
   cd ..
   @ a = $a + 1
 end
-
-

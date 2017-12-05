@@ -123,6 +123,9 @@ if(!dataFile.good()) {
 }
 else {
     std::string line;
+	std::getline(dataFile,line);
+   	std::istringstream currentLine0(line);  
+   	currentLine0 >> NrParticles;
    	
     for (int i=0;i<NrParticles;i++) {
 		std::getline(dataFile,line);
@@ -130,7 +133,10 @@ else {
         currentLine >> bead[i].pos.comp[0];
         currentLine >> bead[i].pos.comp[1];
         currentLine >> bead[i].pos.comp[2];
-        
+	//	bead[i].pos +=	{0.00005928340346402,	0.00080821531050206,	-0.00235868146021563};
+	//	bead[i].pos +=	{10.00005928340346402,	10.00080821531050206,	-10.00235868146021563};
+	//	bead[i].pos -=	{-0.00011388819248180,	0.00062502834907899,-0.00070102319815044};
+
       //  bead[i].radius = radius ;
 		bead[i].radius = 1.0 ; 	// bead radii hard-coded as 1.0 to avoid errors arising from non-dimensionalization procedure, but in principle it could be anything
     }
@@ -286,7 +292,6 @@ else {
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
 
-#if 0
 		
 for (int a=0; a<NrParticles; a++)
 	{
@@ -881,9 +886,8 @@ for (int s=0; s<3; s++)
 		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
 
 */
-#endif
 
-
+/*
 // Ellipsoid mobilities from Kim and Karrila book ; Page 64
 
 double c = 1.0;	// short axis
@@ -1155,7 +1159,7 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 					xi_11x11[33] = Friction_Tnsr_rr.comp[2][0] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
-	
+*/	
 			inverse ( xi_11x11 , 6 )	 ; 			
 
 /*	for (int i=0; i<36; i++)
@@ -1206,7 +1210,8 @@ ctr_diff.comp[1] = temp_mat[1]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[4]*(xi_1
 ctr_diff.comp[2] = temp_mat[2]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[5]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[8]*(xi_11x11[9] - xi_11x11[4]) ;
 
 ctr_diff.echo();
-cout<<ctr_diff.comp[0]<<'\t'<<ctr_diff.comp[1]<<'\t'<<ctr_diff.comp[2]<<std::endl ;
+ cout.precision(17);
+cout<<"center of diffusion"<<'\t'<<ctr_diff.comp[0]<<'\t'<<ctr_diff.comp[1]<<'\t'<<ctr_diff.comp[2]<<std::endl ;
 
 // using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
 double mu_d[6][5];
