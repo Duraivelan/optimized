@@ -133,7 +133,7 @@ else {
         currentLine >> bead[i].pos.comp[0];
         currentLine >> bead[i].pos.comp[1];
         currentLine >> bead[i].pos.comp[2];
-	//	bead[i].pos +=	{0.00005928340346402,	0.00080821531050206,	-0.00235868146021563};
+	//	bead[i].pos -=	{0.00005928340346402,	0.00080821531050206,	-0.00235868146021563};
 	//	bead[i].pos +=	{10.00005928340346402,	10.00080821531050206,	-10.00235868146021563};
 	//	bead[i].pos -=	{-0.00011388819248180,	0.00062502834907899,-0.00070102319815044};
 
@@ -1205,13 +1205,132 @@ temp_mat[8] =  xi_11x11[28] + xi_11x11[21]	;
 
 inverse ( temp_mat , 3 )	 ; 	
 
-ctr_diff.comp[0] = temp_mat[0]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[3]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[6]*(xi_11x11[9] - xi_11x11[4]) ;
-ctr_diff.comp[1] = temp_mat[1]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[4]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[7]*(xi_11x11[9] - xi_11x11[4]) ;
-ctr_diff.comp[2] = temp_mat[2]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[5]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[8]*(xi_11x11[9] - xi_11x11[4]) ;
+ctr_diff.comp[0] = (temp_mat[0]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[3]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[6]*(xi_11x11[9] - xi_11x11[4]) ) ;
+ctr_diff.comp[1] = (temp_mat[1]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[4]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[7]*(xi_11x11[9] - xi_11x11[4]) ) ;
+ctr_diff.comp[2] = (temp_mat[2]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[5]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[8]*(xi_11x11[9] - xi_11x11[4]) ) ;
 
 ctr_diff.echo();
  cout.precision(17);
 cout<<"center of diffusion"<<'\t'<<ctr_diff.comp[0]<<'\t'<<ctr_diff.comp[1]<<'\t'<<ctr_diff.comp[2]<<std::endl ;
+
+mtrx3D D_tt, D_tr, D_rt , D_rr, U_OD;
+mtrx35D D_td;
+
+mtrx35D	Delj;
+mtrx53D	Deli;
+mtrx53D	Unit_tnsr_Redc;
+
+	for (int k=0; k<5; k++)
+	{							
+		for (int a=0; a<3; a++)
+		{
+			Delj.comp[a][k]	=	0.0	;
+			Deli.comp[k][a]	=	0.0	;
+			for (int b=0; b<3; b++)
+			{
+				Delj.comp[a][k]	+=	e_g_E[k][b][a]	*	ctr_diff.comp[b]	;
+				Deli.comp[k][a]	+=	e_g_E[k][a][b]	*	ctr_diff.comp[b]	;
+		/*		for (int c=0; c<3; c++)
+				{
+					Unit_tnsr_Redc.comp[k][a]	+=	e_l[k][b][c]		* (b==c)	*	bead[i].pos.comp[a]	;	
+				}
+		*/	}
+		}		
+	}
+ 
+D_tt.comp[0][0] = xi_11x11[0];
+D_tt.comp[1][0] = xi_11x11[1];
+D_tt.comp[2][0] = xi_11x11[2];
+D_tt.comp[0][1] = xi_11x11[6];
+D_tt.comp[1][1] = xi_11x11[7];
+D_tt.comp[2][1] = xi_11x11[8];
+D_tt.comp[0][2] = xi_11x11[12];
+D_tt.comp[1][2] = xi_11x11[13];
+D_tt.comp[2][2] = xi_11x11[14];
+
+D_tr.comp[0][0] = xi_11x11[3];
+D_tr.comp[1][0] = xi_11x11[4];
+D_tr.comp[2][0] = xi_11x11[5];
+D_tr.comp[0][1] = xi_11x11[9];
+D_tr.comp[1][1] = xi_11x11[10];
+D_tr.comp[2][1] = xi_11x11[11];
+D_tr.comp[0][2] = xi_11x11[15];
+D_tr.comp[1][2] = xi_11x11[16];
+D_tr.comp[2][2] = xi_11x11[17];
+
+D_rt.comp[0][0] = xi_11x11[18];
+D_rt.comp[1][0] = xi_11x11[19];
+D_rt.comp[2][0] = xi_11x11[20];
+D_rt.comp[0][1] = xi_11x11[24];
+D_rt.comp[1][1] = xi_11x11[25];
+D_rt.comp[2][1] = xi_11x11[26];
+D_rt.comp[0][2] = xi_11x11[30];
+D_rt.comp[1][2] = xi_11x11[31];
+D_rt.comp[2][2] = xi_11x11[32];
+
+D_rr.comp[0][0] = xi_11x11[21];
+D_rr.comp[1][0] = xi_11x11[22];
+D_rr.comp[2][0] = xi_11x11[23];
+D_rr.comp[0][1] = xi_11x11[27];
+D_rr.comp[1][1] = xi_11x11[28];
+D_rr.comp[2][1] = xi_11x11[29];
+D_rr.comp[0][2] = xi_11x11[33];
+D_rr.comp[1][2] = xi_11x11[34];
+D_rr.comp[2][2] = xi_11x11[35];
+
+U_OD.comp[0][0] =  0.0;
+U_OD.comp[1][0] =  ctr_diff.comp[2];
+U_OD.comp[2][0] = -ctr_diff.comp[1];
+U_OD.comp[0][1] = -ctr_diff.comp[2];
+U_OD.comp[1][1] =  0.0;
+U_OD.comp[2][1] =  ctr_diff.comp[0];
+U_OD.comp[0][2] =  ctr_diff.comp[1];
+U_OD.comp[1][2] = -ctr_diff.comp[0];
+U_OD.comp[2][2] =  0.0;
+
+mtrx3D D_tt_CoD = D_tt -  U_OD*D_rr*U_OD + D_rt*U_OD - U_OD*D_tr ; 
+mtrx3D D_tr_CoD = D_tr +  D_rr*U_OD ;  // based on equations 42 from Wouter's notes "clusterdyn"
+mtrx3D D_rt_CoD = D_rt -  U_OD*D_rr ;  // based on equations 43 from Wouter's notes "clusterdyn"
+
+xi_11x11[0]  = D_tt_CoD.comp[0][0];
+xi_11x11[1]  = D_tt_CoD.comp[1][0];
+xi_11x11[2]  = D_tt_CoD.comp[2][0];
+xi_11x11[6]  = D_tt_CoD.comp[0][1];
+xi_11x11[7]  = D_tt_CoD.comp[1][1];
+xi_11x11[8]  = D_tt_CoD.comp[2][1];
+xi_11x11[12] = D_tt_CoD.comp[0][2];
+xi_11x11[13] = D_tt_CoD.comp[1][2];
+xi_11x11[14] = D_tt_CoD.comp[2][2];
+
+xi_11x11[3]  = D_tr_CoD.comp[0][0];
+xi_11x11[4]  = D_tr_CoD.comp[1][0];
+xi_11x11[5]  = D_tr_CoD.comp[2][0];
+xi_11x11[9]  = D_tr_CoD.comp[0][1];
+xi_11x11[10] = D_tr_CoD.comp[1][1];
+xi_11x11[11] = D_tr_CoD.comp[2][1];
+xi_11x11[15] = D_tr_CoD.comp[0][2];
+xi_11x11[16] = D_tr_CoD.comp[1][2];
+xi_11x11[17] = D_tr_CoD.comp[2][2];
+
+xi_11x11[18]  = D_rt_CoD.comp[0][0];
+xi_11x11[19]  = D_rt_CoD.comp[1][0];
+xi_11x11[20]  = D_rt_CoD.comp[2][0];
+xi_11x11[24]  = D_rt_CoD.comp[0][1];
+xi_11x11[25]  = D_rt_CoD.comp[1][1];
+xi_11x11[26]  = D_rt_CoD.comp[2][1];
+xi_11x11[30]  = D_rt_CoD.comp[0][2];
+xi_11x11[31]  = D_rt_CoD.comp[1][2];
+xi_11x11[32]  = D_rt_CoD.comp[2][2];
+	
+		outFile1<<std::endl ;
+		outFile1<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
+		outFile1<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
+		outFile1<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
+		outFile1<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
+		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
+		
 
 // using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
 double mu_d[6][5];
@@ -1261,7 +1380,36 @@ double mu_dd[5][5];
 		outFile1<<mu_dd[3][0]<<'\t'<<mu_dd[3][1]<<'\t'<<mu_dd[3][2]<<'\t'<<mu_dd[3][3]<<'\t'<<mu_dd[3][4]<<std::endl ;
 		outFile1<<mu_dd[4][0]<<'\t'<<mu_dd[4][1]<<'\t'<<mu_dd[4][2]<<'\t'<<mu_dd[4][3]<<'\t'<<mu_dd[4][4]<<std::endl ;
 		
-
+mu_d[0][0] = mu_d[0][0] - ( - Delj.comp[0][0] +  U_OD.comp[0][0]*mu_d[3][0] + U_OD.comp[0][1]*mu_d[4][0] + U_OD.comp[0][2]*mu_d[5][0] ) ;
+mu_d[0][1] = mu_d[0][1] - ( - Delj.comp[0][1] +  U_OD.comp[0][0]*mu_d[3][1] + U_OD.comp[0][1]*mu_d[4][1] + U_OD.comp[0][2]*mu_d[5][1] ) ;
+mu_d[0][2] = mu_d[0][2] - ( - Delj.comp[0][2] +  U_OD.comp[0][0]*mu_d[3][2] + U_OD.comp[0][1]*mu_d[4][2] + U_OD.comp[0][2]*mu_d[5][2] ) ;
+mu_d[0][3] = mu_d[0][3] - ( - Delj.comp[0][3] +  U_OD.comp[0][0]*mu_d[3][3] + U_OD.comp[0][1]*mu_d[4][3] + U_OD.comp[0][2]*mu_d[5][3] ) ;
+mu_d[0][4] = mu_d[0][4] - ( - Delj.comp[0][4] +  U_OD.comp[0][0]*mu_d[3][4] + U_OD.comp[0][1]*mu_d[4][4] + U_OD.comp[0][2]*mu_d[5][4] ) ;
+mu_d[1][0] = mu_d[1][0] - ( - Delj.comp[1][0] +  U_OD.comp[1][0]*mu_d[3][0] + U_OD.comp[1][1]*mu_d[4][0] + U_OD.comp[1][2]*mu_d[5][0] ) ;
+mu_d[1][1] = mu_d[1][1] - ( - Delj.comp[1][1] +  U_OD.comp[1][0]*mu_d[3][1] + U_OD.comp[1][1]*mu_d[4][1] + U_OD.comp[1][2]*mu_d[5][1] ) ;
+mu_d[1][2] = mu_d[1][2] - ( - Delj.comp[1][2] +  U_OD.comp[1][0]*mu_d[3][2] + U_OD.comp[1][1]*mu_d[4][2] + U_OD.comp[1][2]*mu_d[5][2] ) ;
+mu_d[1][3] = mu_d[1][3] - ( - Delj.comp[1][3] +  U_OD.comp[1][0]*mu_d[3][3] + U_OD.comp[1][1]*mu_d[4][3] + U_OD.comp[1][2]*mu_d[5][3] ) ;
+mu_d[1][4] = mu_d[1][4] - ( - Delj.comp[1][4] +  U_OD.comp[1][0]*mu_d[3][4] + U_OD.comp[1][1]*mu_d[4][4] + U_OD.comp[1][2]*mu_d[5][4] ) ;
+mu_d[2][0] = mu_d[2][0] - ( - Delj.comp[2][0] +  U_OD.comp[2][0]*mu_d[3][0] + U_OD.comp[2][1]*mu_d[4][0] + U_OD.comp[2][2]*mu_d[5][0] ) ;
+mu_d[2][1] = mu_d[2][1] - ( - Delj.comp[2][1] +  U_OD.comp[2][0]*mu_d[3][1] + U_OD.comp[2][1]*mu_d[4][1] + U_OD.comp[2][2]*mu_d[5][1] ) ;
+mu_d[2][2] = mu_d[2][2] - ( - Delj.comp[2][2] +  U_OD.comp[2][0]*mu_d[3][2] + U_OD.comp[2][1]*mu_d[4][2] + U_OD.comp[2][2]*mu_d[5][2] ) ;
+mu_d[2][3] = mu_d[2][3] - ( - Delj.comp[2][3] +  U_OD.comp[2][0]*mu_d[3][3] + U_OD.comp[2][1]*mu_d[4][3] + U_OD.comp[2][2]*mu_d[5][3] ) ;
+mu_d[2][4] = mu_d[2][4] - ( - Delj.comp[2][4] +  U_OD.comp[2][0]*mu_d[3][4] + U_OD.comp[2][1]*mu_d[4][4] + U_OD.comp[2][2]*mu_d[5][4] ) ;    
+	
+		outFile1<<std::endl ;
+		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
+		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
+		outFile1<<mu_d[2][0]<<'\t'<<mu_d[2][1]<<'\t'<<mu_d[2][2]<<'\t'<<mu_d[2][3]<<'\t'<<mu_d[2][4]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
+		outFile1<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
+		outFile1<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;		
+		outFile1<<std::endl ;
+		outFile1<<mu_dd[0][0]<<'\t'<<mu_dd[0][1]<<'\t'<<mu_dd[0][2]<<'\t'<<mu_dd[0][3]<<'\t'<<mu_dd[0][4]<<std::endl ;
+		outFile1<<mu_dd[1][0]<<'\t'<<mu_dd[1][1]<<'\t'<<mu_dd[1][2]<<'\t'<<mu_dd[1][3]<<'\t'<<mu_dd[1][4]<<std::endl ;
+		outFile1<<mu_dd[2][0]<<'\t'<<mu_dd[2][1]<<'\t'<<mu_dd[2][2]<<'\t'<<mu_dd[2][3]<<'\t'<<mu_dd[2][4]<<std::endl ;
+		outFile1<<mu_dd[3][0]<<'\t'<<mu_dd[3][1]<<'\t'<<mu_dd[3][2]<<'\t'<<mu_dd[3][3]<<'\t'<<mu_dd[3][4]<<std::endl ;
+		outFile1<<mu_dd[4][0]<<'\t'<<mu_dd[4][1]<<'\t'<<mu_dd[4][2]<<'\t'<<mu_dd[4][3]<<'\t'<<mu_dd[4][4]<<std::endl ;
 std::ofstream ofile("data_binary.bin", ios::out | ios::binary);
 
 cout << "temp_mu" << '\t';

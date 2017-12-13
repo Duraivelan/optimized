@@ -21,13 +21,13 @@ while ( $a < 410 )
 		rm -f log
   endif
   
-# g++ -std=c++11 X2mu.cpp -O2 -o X2mu.out -llapack	
-# ./X2mu.out >>& log -a &
+ g++ -std=c++11 X2mu.cpp -O2 -o X2mu.out -llapack	
+ ./X2mu.out >>& log -a &
  
 #  wait
   
- g++ -std=c++11 simulate.cpp rigid_force.cpp -O2 -o simulate.out -llapack
- ./simulate.out >>& log -a &
+# g++ -std=c++11 simulate.cpp rigid_force.cpp -O2 -o simulate.out -llapack
+# ./simulate.out >>& log -a &
 
   cd ..
   @ a = $a + 1

@@ -20,7 +20,55 @@ using namespace std;
         }   
     } ;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4],long long int* step,const int NrParticles, const double Lx,  const double Ly,  const double Lz ) {
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4],long long int* step,const int NrParticles, const double Lx,  const double Ly,  const double Lz, double STRAIN ) {
+
+
+	STRAIN = STRAIN - round ( STRAIN ) ; 
+    int IIX   = int ( ( STRAIN + 1.0 ) * NrCells[x] ) ; 
+        
+
+
+	const int dm_top[16][3] = { {  0,  0,  1 },		// if shear then top layer neighbour list
+                       {  1		,  0, -1 },
+                       {  1		,  0,  0 },
+                       {  1		,  0,  1 },
+                       { -1 -IIX,  1, -1 },
+                       { -1 -IIX,  1,  0 },
+                       { -1 -IIX,  1,  1 },
+                       {  0 -IIX,  1, -1 },
+                       {  0 -IIX,  1,  0 },
+                       {  0 -IIX,  1,  1 },
+                       {  1 -IIX,  1, -1 },
+                       {  1 -IIX,  1,  0 },
+                       {  1 -IIX,  1,  1 },
+                       { -2 -IIX,  1, -1 },
+                       { -2 -IIX,  1,  0 },
+                       { -2 -IIX,  1,  1 }  };
+
+       IY = M
+
+        DO 50 IZ = 1, M
+
+           DO 30 IX = 1, M
+
+              IMAP = ( ICELL ( IX, IY, IZ ) - 1 ) * 16
+
+              MAP( IMAP + 1  ) = ICELL ( IX + 1      , IY    , IZ     )
+              MAP( IMAP + 2  ) = ICELL ( IX + 1 - IIX, IY + 1, IZ     )
+              MAP( IMAP + 3  ) = ICELL ( IX     - IIX, IY + 1, IZ     )
+              MAP( IMAP + 4  ) = ICELL ( IX - 1 - IIX, IY + 1, IZ     )
+              MAP( IMAP + 5  ) = ICELL ( IX + 1      , IY    , IZ - 1 )
+              MAP( IMAP + 6  ) = ICELL ( IX + 1 - IIX, IY + 1, IZ - 1 )
+              MAP( IMAP + 7  ) = ICELL ( IX     - IIX, IY + 1, IZ - 1 )
+              MAP( IMAP + 8  ) = ICELL ( IX - 1 - IIX, IY + 1, IZ - 1 )
+              MAP( IMAP + 9  ) = ICELL ( IX + 1      , IY    , IZ + 1 )
+              MAP( IMAP + 10 ) = ICELL ( IX + 1 - IIX, IY + 1, IZ + 1 )
+              MAP( IMAP + 11 ) = ICELL ( IX     - IIX, IY + 1, IZ + 1 )
+              MAP( IMAP + 12 ) = ICELL ( IX - 1 - IIX, IY + 1, IZ + 1 )
+              MAP( IMAP + 13 ) = ICELL ( IX          , IY    , IZ + 1 )
+              MAP( IMAP + 14 ) = ICELL ( IX - 2 - IIX, IY + 1, IZ     )
+              MAP( IMAP + 15 ) = ICELL ( IX - 2 - IIX, IY + 1, IZ - 1 )
+              MAP( IMAP + 16 ) = ICELL ( IX - 2 - IIX, IY + 1, IZ + 1 )	
 
 	const vctr3D box(Lx, Ly, Lz);
 	const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
@@ -115,7 +163,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
   {
     for ( mi[y] = 0 ; mi[y] < NrCells[y] ; mi[y]++ )
     {
-      for ( mi[z] = 0 ; mi[z] < NrCells[z] ; mi[z]++ )
+      for ( mi[z] = 0 ; mi[z] < NrCells[z]-1 ; mi[z]++ )
       {
         for ( ii = 1 ; ii <= grid[mi[x]][mi[y]][mi[z]][0] ; ii++ )
         {
@@ -152,6 +200,44 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
           } // m
         } // ii
       } // miz
+      for ( mi[z] = NrCells[z]-1 ; mi[z] < NrCells[z] ; mi[z]++ )
+      {
+        for ( ii = 1 ; ii <= grid[mi[x]][mi[y]][mi[z]][0] ; ii++ )
+        {
+          i = grid[mi[x]][mi[y]][mi[z]][ii];
+
+          // particle j in same cell as i
+          dR = null3D;
+          for ( jj = ii + 1 ; jj <= grid[mi[x]][mi[y]][mi[z]][0] ; jj++ )
+          {
+			j = grid[mi[x]][mi[y]][mi[z]][jj];
+		//	if (particle[i].cluster!=particle[j].cluster)
+			//	{
+					#include "pairforce.h"
+			//	}
+          } // jj
+
+          // particle j in neighbour cell to i
+          for ( m = 0 ; m < 16 ; m++ )
+          {
+            mj[x]      = periodN[ mi[x] + dm_top[m][x] + 1 ][x];
+            mj[y]      = periodN[ mi[y] + dm_top[m][y] + 1 ][y];
+            mj[z]      = periodN[ mi[z] + dm_top[m][z] + 1 ][z];
+            dR.comp[x] = periodR[ mi[x] + dm_top[m][x] + 1 ][x];
+            dR.comp[y] = periodR[ mi[y] + dm_top[m][y] + 1 ][y];
+            dR.comp[z] = periodR[ mi[z] + dm_top[m][z] + 1 ][z];
+            for ( jj = 1 ; jj <= grid[mj[x]][mj[y]][mj[z]][0] ; jj++ )
+            {
+				j = grid[mj[x]][mj[y]][mj[z]][jj];
+		//	if (particle[i].cluster!=particle[j].cluster)
+			//	{
+					#include "pairforce.h"
+			//	}
+            } // jj
+          } // m
+        } // ii
+      } // miz
+
     } // miy
   } // mix
 

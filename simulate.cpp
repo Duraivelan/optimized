@@ -287,14 +287,14 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		
 		// simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
 
-		vctr3D u_inf(0.0,shear_rate*cluster[i].pos.comp[0],0.0); 		// shear flow gradient in y-direction
+		vctr3D u_inf(shear_rate*cluster[i].pos.comp[1],0.0,0.0); 		// shear flow gradient in y-direction
 
 		const mtrx3D E_inf(	
 							{0.0,shear_rate/2.0,0.0},
 							{shear_rate/2.0,0.0,0.0},
 							{0.0,0.0,0.0});
 
-		const vctr3D w_inf(0.0,0.0,0.5*shear_rate);
+		const vctr3D w_inf(0.0,0.0,-0.5*shear_rate);
 		
 		mtrx3D E_inf_b = (~cluster[i].rotmat)*E_inf*cluster[i].rotmat;
 		vctr5D E_inf_bt;
@@ -327,6 +327,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm)
 								+  cluster[i].rotmat*cluster[i].mobility_tnsr_tr_sqrt*(rand1*stochas_norm)
 								+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
+								
+				cluster[i].pos.comp[0] -=  round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*box.comp[0]*step*dt ;				
 				cluster[i].pos = cluster[i].pos*pos_norm ; 
 				for(int m=0;m<5;m++) 
 					{
