@@ -87,7 +87,7 @@ else {
    	std::istringstream currentLine0(line0);  
    	currentLine0 >> eta_0;
    	eta_6pi = eta_0*6.0*M_PI ; 
-   	cout << eta_0 << endl;
+//   	cout << eta_0 << endl;
 	
 	currentLine0.str("");
 	currentLine0.clear(); // Clear state flags.
@@ -95,7 +95,7 @@ else {
 	currentLine0.str(line0); 
 
    	currentLine0 >> radius;
-   	cout << radius << endl;
+//   	cout << radius << endl;
 
 	currentLine0.str("");
 	currentLine0.clear(); // Clear state flags.
@@ -103,7 +103,7 @@ else {
 	currentLine0.str(line0); 
 
 	currentLine0 >> NrParticles;
-   	cout << NrParticles << endl;
+ //  	cout << NrParticles << endl;
 
 }
 
@@ -133,12 +133,13 @@ else {
         currentLine >> bead[i].pos.comp[0];
         currentLine >> bead[i].pos.comp[1];
         currentLine >> bead[i].pos.comp[2];
+        currentLine >> bead[i].radius;
 	//	bead[i].pos -=	{0.00005928340346402,	0.00080821531050206,	-0.00235868146021563};
 	//	bead[i].pos +=	{10.00005928340346402,	10.00080821531050206,	-10.00235868146021563};
 	//	bead[i].pos -=	{-0.00011388819248180,	0.00062502834907899,-0.00070102319815044};
-
-      //  bead[i].radius = radius ;
-		bead[i].radius = 1.0 ; 	// bead radii hard-coded as 1.0 to avoid errors arising from non-dimensionalization procedure, but in principle it could be anything
+		bead[i].pos = bead[i].pos*(1.0/bead[i].radius);
+     //   bead[i].radius = radius ;
+	//	bead[i].radius = 1.0 ; 	// bead radii hard-coded as 1.0 to avoid errors arising from non-dimensionalization procedure, but in principle it could be anything
     }
 }	
       
@@ -314,18 +315,18 @@ for (int a=0; a<NrParticles; a++)
 					}	
 				else
 					{
-						if(	e_ab2 < (4.0*bead[a].radius*bead[a].radius)	)	
+				/*		if(	e_ab2 < (4.0)	)	
 							{	
-							
+							//	cout<<'\n';
 								cout << e_ab2 << " "<< a << " and "<<b<<" numbered particles are touching or overlapping " << endl;
-								cout << bead[a].pos.comp[0] << "\t" << bead[a].pos.comp[1] << "\t" << bead[a].pos.comp[2] << "\t" <<  endl;
-								cout << bead[b].pos.comp[0] << "\t" << bead[b].pos.comp[1] << "\t" << bead[b].pos.comp[2] << "\t" <<  endl;
+							//	cout << bead[a].pos.comp[0] << "\t" << bead[a].pos.comp[1] << "\t" << bead[a].pos.comp[2] << "\t" <<  endl;
+							//	cout << bead[b].pos.comp[0] << "\t" << bead[b].pos.comp[1] << "\t" << bead[b].pos.comp[2] << "\t" <<  endl;
 
 								abort();
 							}	
-					}
+				*/	}
 
-			    double r 	= sqrt(e_ab2)/bead[a].radius;			// distance between particle vector 'r' magnitude |r| normalized by particle radius 'a' ;
+			    double r 	= sqrt(e_ab2);			// distance between particle vector 'r' magnitude |r| normalized by particle radius 'a' ;
 			    double r_1 	= 1.0/(r);
 			    double r_2 	= 1.0/(r*r);			    
 			    double r_3 	= 1.0/(r*r*r);
@@ -1209,9 +1210,9 @@ ctr_diff.comp[0] = (temp_mat[0]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[3]*(xi_
 ctr_diff.comp[1] = (temp_mat[1]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[4]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[7]*(xi_11x11[9] - xi_11x11[4]) ) ;
 ctr_diff.comp[2] = (temp_mat[2]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[5]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[8]*(xi_11x11[9] - xi_11x11[4]) ) ;
 
-ctr_diff.echo();
+// ctr_diff.echo();
  cout.precision(17);
-cout<<"center of diffusion"<<'\t'<<ctr_diff.comp[0]<<'\t'<<ctr_diff.comp[1]<<'\t'<<ctr_diff.comp[2]<<std::endl ;
+// cout<<"center of diffusion"<<'\t'<<ctr_diff.comp[0]<<'\t'<<ctr_diff.comp[1]<<'\t'<<ctr_diff.comp[2]<<std::endl ;
 
 mtrx3D D_tt, D_tr, D_rt , D_rr, U_OD;
 mtrx35D D_td;
@@ -1412,7 +1413,7 @@ mu_d[2][4] = mu_d[2][4] - ( - Delj.comp[2][4] +  U_OD.comp[2][0]*mu_d[3][4] + U_
 		outFile1<<mu_dd[4][0]<<'\t'<<mu_dd[4][1]<<'\t'<<mu_dd[4][2]<<'\t'<<mu_dd[4][3]<<'\t'<<mu_dd[4][4]<<std::endl ;
 std::ofstream ofile("data_binary.bin", ios::out | ios::binary);
 
-cout << "temp_mu" << '\t';
+ // cout << "temp_mu" << '\t';
 
 double temp_mu;
 
@@ -1428,7 +1429,7 @@ double temp_mu;
 					{
 						temp_mu = mu_d[l][k] ; 
 						
-						cout << temp_mu << '\t';
+					//	cout << temp_mu << '\t';
 
 						ofile.write((char*) &temp_mu, sizeof(temp_mu));
 					

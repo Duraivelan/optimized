@@ -20,8 +20,8 @@ using namespace std;
         }   
     } ;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4],long long int* step,const int NrParticles, const double Lx,  const double Ly,  const double Lz, double STRAIN ) {
-
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4],long long int* step,const int NrParticles, const double Lx,  const double Ly,  const double Lz ) {
+/*
 
 	STRAIN = STRAIN - round ( STRAIN ) ; 
     int IIX   = int ( ( STRAIN + 1.0 ) * NrCells[x] ) ; 
@@ -69,7 +69,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
               MAP( IMAP + 14 ) = ICELL ( IX - 2 - IIX, IY + 1, IZ     )
               MAP( IMAP + 15 ) = ICELL ( IX - 2 - IIX, IY + 1, IZ - 1 )
               MAP( IMAP + 16 ) = ICELL ( IX - 2 - IIX, IY + 1, IZ + 1 )	
-
+*/
 	const vctr3D box(Lx, Ly, Lz);
 	const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
 	const vctr3D havbox (Lx/2.0, Ly/2.0 , Lz/2.0);
@@ -163,7 +163,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
   {
     for ( mi[y] = 0 ; mi[y] < NrCells[y] ; mi[y]++ )
     {
-      for ( mi[z] = 0 ; mi[z] < NrCells[z]-1 ; mi[z]++ )
+      for ( mi[z] = 0 ; mi[z] < NrCells[z] ; mi[z]++ )
       {
         for ( ii = 1 ; ii <= grid[mi[x]][mi[y]][mi[z]][0] ; ii++ )
         {
@@ -200,7 +200,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
           } // m
         } // ii
       } // miz
-      for ( mi[z] = NrCells[z]-1 ; mi[z] < NrCells[z] ; mi[z]++ )
+/*      for ( mi[z] = NrCells[z]-1 ; mi[z] < NrCells[z] ; mi[z]++ )
       {
         for ( ii = 1 ; ii <= grid[mi[x]][mi[y]][mi[z]][0] ; ii++ )
         {
@@ -237,7 +237,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
           } // m
         } // ii
       } // miz
-
+*/
     } // miy
   } // mix
 
