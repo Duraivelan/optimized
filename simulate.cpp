@@ -30,8 +30,8 @@
 #include <functional>
 #include <array>
 # include "defs.h"
-//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-#include<Eigen/Eigenvalues>
+#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+//#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -264,13 +264,13 @@ cluster[i].Stresslet_Br =
 			// update A matrix
 	//			}
 				cluster[i].quat2rotmat();
-	
+/*
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
-							
+*/							
 		
 			//	cluster[i].pos.PBC(box,rbox);
 //			} 
@@ -455,10 +455,10 @@ long long int hist_C[100]={}; // histogram of orbit constant of ellipsids
 long long int hist_C_tau[100][100]={};
 
 // variables for polar , azimuthal angle histogram
-double nbins = 100.0; 
-double bin_cos = M_PI/nbins;			
+double nbins = 100.0;
+double bin_cos = M_PI/nbins;
 double bin_tan = 2.0*M_PI/nbins;
-double bin_atan_C = M_PI/nbins;			
+double bin_atan_C = M_PI/nbins;
 double bin_tau = 2.0*M_PI/nbins;
 cout << "pi" << '\t'<< M_PI_2 << endl;
 cout << bin_cos << '\t' << bin_tan << endl;
@@ -955,7 +955,7 @@ else {
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
 		cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+    //	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 
 		// update A matrix
 
@@ -1267,7 +1267,7 @@ simu_time =dt;
 do {
 
 	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm , shear_rate , sqrt_2kbTdt, box, rbox)	;
-
+/*
 
   	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
 	cos_theta = dipole_s*Elec_fld;					// calucate the angle between dipole and electric field, dot product gives the cosine of angle
@@ -1293,7 +1293,7 @@ do {
 	
 	hist_phi_x[int (floor((phi+M_PI)/0.1257))]+=1;
 	hist_x[int (floor((cos_theta+1.0)/0.04))]+=1;
-
+*/
 
 // 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
 
@@ -1399,7 +1399,7 @@ do {
 
 	 hist_pol_azi[int (round( C_theta/bin_cos )) ][int (round( (C_phi+M_PI)/bin_tan )) ]+=1;
 
-	 hist_C_tau[int (round( (atan_C + M_PI_2)/bin_atan_C )) ][int (round( tau/bin_tau )) ]+=1;
+	 hist_C_tau[int (round( (atan_C + M_PI_2)/bin_atan_C )) ][int (round( (tau+M_PI)/bin_tau )) ]+=1;
 
 
 	int i = round(abs(atan_C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
@@ -1534,7 +1534,18 @@ for ( int i = 0 ; i < 100; i ++ )
 	{
 			outFile_orient<< hist_C[i] << endl;
 	}
-	
+
+		Stresslet_data<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'
+					  <<Stresslet_sqr_mean.comp[0]<<'\t'<<Stresslet_sqr_mean.comp[1]<<'\t'<<Stresslet_sqr_mean.comp[2]<<'\t'<<Stresslet_sqr_mean.comp[3]<<'\t'<<Stresslet_sqr_mean.comp[4]<<'\t'	
+					  <<Stresslet_Br_mean.comp[0]<<'\t'<<Stresslet_Br_mean.comp[1]<<'\t'<<Stresslet_Br_mean.comp[2]<<'\t'<<Stresslet_Br_mean.comp[3]<<'\t'<<Stresslet_Br_mean.comp[4]<<'\t'	
+					  <<Stresslet_Br_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_sqr_mean.comp[4]<<'\t'	
+					  <<Stresslet_tot_mean.comp[0]<<'\t'<<Stresslet_tot_mean.comp[1]<<'\t'<<Stresslet_tot_mean.comp[2]<<'\t'<<Stresslet_tot_mean.comp[3]<<'\t'<<Stresslet_tot_mean.comp[4]<<'\t'	
+					  <<Stresslet_tot_sqr_mean.comp[0]<<'\t'<<Stresslet_tot_sqr_mean.comp[1]<<'\t'<<Stresslet_tot_sqr_mean.comp[2]<<'\t'<<Stresslet_tot_sqr_mean.comp[3]<<'\t'<<Stresslet_tot_sqr_mean.comp[4]<<'\t'	
+					  <<endl;
+    }
+if (step%(1000*1000*10*frame)==0) 
+	{ 
+
  // output the histogram of the polar and azimuthal angles
 for ( int i = 0 ; i < 100; i ++ )
 	{
@@ -1555,13 +1566,6 @@ for ( int i = 0 ; i < 100; i ++ )
 		outFile_atan_C_tau_hist << endl;
 	}	
 	
-		Stresslet_data<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'
-					  <<Stresslet_sqr_mean.comp[0]<<'\t'<<Stresslet_sqr_mean.comp[1]<<'\t'<<Stresslet_sqr_mean.comp[2]<<'\t'<<Stresslet_sqr_mean.comp[3]<<'\t'<<Stresslet_sqr_mean.comp[4]<<'\t'	
-					  <<Stresslet_Br_mean.comp[0]<<'\t'<<Stresslet_Br_mean.comp[1]<<'\t'<<Stresslet_Br_mean.comp[2]<<'\t'<<Stresslet_Br_mean.comp[3]<<'\t'<<Stresslet_Br_mean.comp[4]<<'\t'	
-					  <<Stresslet_Br_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_sqr_mean.comp[4]<<'\t'	
-					  <<Stresslet_tot_mean.comp[0]<<'\t'<<Stresslet_tot_mean.comp[1]<<'\t'<<Stresslet_tot_mean.comp[2]<<'\t'<<Stresslet_tot_mean.comp[3]<<'\t'<<Stresslet_tot_mean.comp[4]<<'\t'	
-					  <<Stresslet_tot_sqr_mean.comp[0]<<'\t'<<Stresslet_tot_sqr_mean.comp[1]<<'\t'<<Stresslet_tot_sqr_mean.comp[2]<<'\t'<<Stresslet_tot_sqr_mean.comp[3]<<'\t'<<Stresslet_tot_sqr_mean.comp[4]<<'\t'	
-					  <<endl;
 }
 
 } while(xxnstep);
