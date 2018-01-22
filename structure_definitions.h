@@ -147,6 +147,7 @@ struct SubData
 struct ParticleData
 {
   vctr3D pos;
+  vctr3D ctr_difu;
   vctr3D vel;
   vctr3D frc;
   vector <int> sub;

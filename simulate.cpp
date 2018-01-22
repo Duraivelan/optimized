@@ -177,6 +177,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt) 
 								+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
 								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm)
+								+ cluster[i].rotmat*cluster[i].mobility_tnsr_tr_sqrt*(rand1*stochas_norm)
 								+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 				cluster[i].pos = cluster[i].pos*pos_norm ; 
 				for(int m=0;m<5;m++) 
@@ -245,8 +246,9 @@ cluster[i].Stresslet_Br =
 				// J. Chem. Phys. 142, 114103 (2015)
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
-									//	+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt)
+										+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt)
 										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*stochas_norm)
+										+  cluster[i].rot_mobility_tnsr_rt_sqrt*(rand*stochas_norm)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
 				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
@@ -272,7 +274,7 @@ cluster[i].Stresslet_Br =
 					}
 							
 		
-			//	cluster[i].pos.PBC(box,rbox);
+				cluster[i].pos.PBC(box,rbox);
 //			} 
 /*			else 
 			{
@@ -631,51 +633,6 @@ else {
 }
 if (xx_diffusion) {			// calculate the diffusion tensor for the particles read-in ; if starting with paticles of varies shape then initializing diffusion tensors
 	
-	/* sort particles into cells */
-for ( int i = 0 ; i < 1; i ++ )
-	{
-		if (!xxcluster_restart) 
-			{
-				cluster[i].Sub_Length=Max_Cluster_N;		// initially each cluster has size one
-				cluster[i].mass=Max_Cluster_N;
-				cluster[i].vel={0.0,0.0,0.0};
-
-				// intialize Q, A matrix
-
-				cluster[i].quat={1.0,0.0,0.0,0.0};
-				cluster[i].quat2rotmat();
-		}
-	for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
-		{ 
-		if (!xxcluster_restart) {
-			cluster[i].sub[j]=j;
-			particle[cluster[i].sub[j]].cluster=0;
-			particle[cluster[i].sub[j]].mass=1.0;
-			particle[cluster[i].sub[j]].radius=0.5;
-			cluster[i].radii=0.56;
-			// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
-			particle[cluster[i].sub[j]].vel=cluster[i].vel;
-			particle[cluster[i].sub[j]].pos_bdyfxd=particle[cluster[i].sub[j]].pos;//cluster[i].sub[j].pos;
-			cluster[i].pos={0.0,0.0,0.0};
-			cluster[i].omega={0.0,0.0,0.0};//{((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
-			cluster[i].angmom={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
-		} 				
-	}
-}
-/*
-		cluster[0].quat={0.9659,  0.0, 0.0,  0.2588	};
- 
-		// update A matrix
-
-        cluster[0].quat2rotmat();     
-        
-		for (int  k=0; k< Max_Cluster_N; k++) {
-			
-			particle[k].pos = cluster[0].rotmat*particle[k].pos;
-			}
-			*/
-			
-//	 forceUpdate( particle, &p_energy, &combine_now , combine, 0, NrParticles, Lx, Ly, Lz );
 
 // calculate new diffusion tensors	
 	for ( int i = 0 ; i < 1; i ++ )
@@ -783,6 +740,14 @@ else {
 							cluster[i].mobility_tnsr_dr.comp[l][k] = -cluster[i].mobility_tnsr_rd.comp[k][l];		// mu_dr=-mu_rd
 					}
 			}        
+ 		for (int l=0; l<3; l++)
+			{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].ctr_difu.comp[l] = temp_mu;
+							cout << temp_mu << '\n';
+			}	
+			
+ 
  }
 /*        
 std::ifstream dataFile("data.dat");
@@ -945,17 +910,65 @@ else {
 		}
 
 // end of storing inverse mobility square root
+
+	/* sort particles into cells */
+for ( int i = 0 ; i < 1; i ++ )
+	{
+		if (!xxcluster_restart) 
+			{
+				cluster[i].Sub_Length=Max_Cluster_N;		// initially each cluster has size one
+				cluster[i].mass=Max_Cluster_N;
+				cluster[i].vel={0.0,0.0,0.0};
+
+				// intialize Q, A matrix
+
+				cluster[i].quat={1.0,0.0,0.0,0.0};
+				cluster[i].quat2rotmat();
+		}
+	for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+		{ 
+		if (!xxcluster_restart) {
+			cluster[i].sub[j]=j;
+			particle[cluster[i].sub[j]].cluster=0;
+			particle[cluster[i].sub[j]].mass=1.0;
+			particle[cluster[i].sub[j]].frc=null3D;
+			particle[cluster[i].sub[j]].radius=0.5;
+			cluster[i].radii=0.56;
+			// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
+			particle[cluster[i].sub[j]].vel=cluster[i].vel;
+			particle[cluster[i].sub[j]].pos_bdyfxd=particle[cluster[i].sub[j]].pos-cluster[i].ctr_difu;//cluster[i].sub[j].pos;
+			cluster[i].pos=cluster[i].ctr_difu;
+			cluster[i].omega={0.0,0.0,0.0};//{((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
+			cluster[i].angmom={((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5),((double) rand()/(RAND_MAX)-0.5)};
+		} 				
+	}
+}
+/*
+		cluster[0].quat={0.9659,  0.0, 0.0,  0.2588	};
+ 
+		// update A matrix
+
+        cluster[0].quat2rotmat();     
+        
+		for (int  k=0; k< Max_Cluster_N; k++) {
+			
+			particle[k].pos = cluster[0].rotmat*particle[k].pos;
+			}
+			*/
+			
+//	 forceUpdate( particle, &p_energy, &combine_now , combine, 0, NrParticles, Lx, Ly, Lz );
+
 				
-	//	cluster[i].quat={1.0,0.0,0.0,0.0};
+		cluster[i].quat={1.0,0.0,0.0,0.0};
 	//	cluster[i].quat={0.8467   , 0.5320    ,   0.0   ,      0.0 };
 	//	cluster[i].quat={0.7071   , -0.7071     ,  0.0   ,      0.0 };
 	//	cluster[i].quat={0.972369920397677,	0.233445363855905,	0.,	0.};
 	//	cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
 	//	cluster[i].quat={0.987688340595138,	0.156434465040231,	0.0,	0.0};	//   pi/10;
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
-		cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
+	//	cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 
 		// update A matrix
 
@@ -1047,7 +1060,7 @@ std::ofstream outFile_orient(dataFileName+"/orient.dat");
   }
 */
 // For electric field generated force with gives torque
-
+/*
 particle[0].charge = 1.0;
 particle[1].charge = -1.0;
   for ( int i = 0 ; i < Max_Cluster_N; i ++ )
@@ -1057,7 +1070,7 @@ particle[1].charge = -1.0;
                particle[cluster[i].sub[j]].frc = Elec_fld*particle[cluster[i].sub[j]].charge;                                                                                                                                                                                                                              //      Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
 		}
    }
-
+*/
 /*
   for ( int i = 0 ; i < 1; i ++ )
   {
@@ -1267,7 +1280,7 @@ simu_time =dt;
 do {
 
 	brownian(step, cluster, particle, &Max_Cluster_N , vel_scale, force_norm, torque_norm, pos_norm, vel_norm, stochas_norm , shear_rate , sqrt_2kbTdt, box, rbox)	;
-
+/*
 
   	dipole_s  = cluster[0].rotmat*dipole_b;			// rotate the body fixed dipole
 	cos_theta = dipole_s*Elec_fld;					// calucate the angle between dipole and electric field, dot product gives the cosine of angle
@@ -1293,7 +1306,7 @@ do {
 	
 	hist_phi_x[int (floor((phi+M_PI)/0.1257))]+=1;
 	hist_x[int (floor((cos_theta+1.0)/0.04))]+=1;
-
+*/
 
 // 	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
 
@@ -1352,7 +1365,7 @@ do {
 						
 		outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
 */
-					  
+/*					  
 	Stresslet_mean += cluster[0].Stresslet;
 	Stresslet_Br_mean += cluster[0].Stresslet_Br;
 	Stresslet_tot_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br);
@@ -1405,7 +1418,7 @@ do {
 	int i = round(abs(atan_C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
 	// i = min( max(i,0), max_C_lim ) ;
 	hist_C[i]++; 
-	
+*/	
 	// end of C binning 
 /*
 // output stresslets
@@ -1495,7 +1508,8 @@ if (step%(frame)==0)
 
 	}
 */	
-/*
+outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
+
 if (step%(frame)==0) 
 	{ 
 
@@ -1521,7 +1535,7 @@ if (step%(frame)==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-*/
+
 	simu_time+=dt;
 	step+=1;
 	
