@@ -26,8 +26,8 @@ while ( $a < 418 )
  
  wait
   
- g++ -std=c++11 simulate.cpp rigid_force.cpp -O2 -o simulate.out -llapack
- ./simulate.out >>& log -a &
+ g++ -std=c++11 simulate.cpp rigid_force.cpp -O2 -o ${a}_simulate.out -llapack
+ ./${a}_simulate.out >>& log -a &
 
   cd ..
   @ a = $a + 1
