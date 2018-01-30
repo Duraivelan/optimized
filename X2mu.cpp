@@ -133,6 +133,7 @@ else {
  //       bead[i].pos.comp[2] = bead[i].pos.comp[2]*(-1.0);
       //  bead[i].radius = radius ;
 		bead[i].radius = 1.0 ; 	// bead radii hard-coded as 1.0 to avoid errors arising from non-dimensionalization procedure, but in principle it could be anything
+	//	bead[i].pos = bead[i].pos - cntr ;
     }
 }	
       
@@ -1182,6 +1183,54 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[38]<<'\t'<<xi_11x11[49]<<'\t'<<xi_11x11[60]<<std::endl ;
 */
 
+// using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
+double mu_d[6][5];
+double mu_dd[5][5];
+
+			for (int l=0; l<6; l++)
+				{
+				for (int k=0; k<5; k++)
+					{	
+						mu_d[l][k] = 0.0;
+				//		mu_d[l+3][k] = 0.0;
+					for (int m=0; m<3; m++)
+						{				
+							// column major format
+							mu_d[l][k]	-=	xi_11x11[l	+	6*m]*Friction_Tnsr_td.comp[m][k];
+							mu_d[l][k]	-=	xi_11x11[l	+	6*(m+3)]*Friction_Tnsr_rd.comp[m][k];
+						}
+				//	mu_d[l][k] *= g_norm;
+					}
+				}
+			for (int l=0; l<5; l++)
+				{
+				for (int k=0; k<5; k++)
+					{	
+						mu_dd[l][k] = Friction_Tnsr_dd.comp[l][k];
+					for (int m=0; m<3; m++)
+						{				
+							// column major format
+							mu_dd[l][k]	+=	Friction_Tnsr_dt.comp[l][m]*mu_d[m][k];
+							mu_dd[l][k]	+=	Friction_Tnsr_dr.comp[l][m]*mu_d[m+3][k];
+						}
+					}
+				}				
+		
+		outFile1<<std::endl ;
+		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
+		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
+		outFile1<<mu_d[2][0]<<'\t'<<mu_d[2][1]<<'\t'<<mu_d[2][2]<<'\t'<<mu_d[2][3]<<'\t'<<mu_d[2][4]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
+		outFile1<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
+		outFile1<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;		
+		outFile1<<std::endl ;
+		outFile1<<mu_dd[0][0]<<'\t'<<mu_dd[0][1]<<'\t'<<mu_dd[0][2]<<'\t'<<mu_dd[0][3]<<'\t'<<mu_dd[0][4]<<std::endl ;
+		outFile1<<mu_dd[1][0]<<'\t'<<mu_dd[1][1]<<'\t'<<mu_dd[1][2]<<'\t'<<mu_dd[1][3]<<'\t'<<mu_dd[1][4]<<std::endl ;
+		outFile1<<mu_dd[2][0]<<'\t'<<mu_dd[2][1]<<'\t'<<mu_dd[2][2]<<'\t'<<mu_dd[2][3]<<'\t'<<mu_dd[2][4]<<std::endl ;
+		outFile1<<mu_dd[3][0]<<'\t'<<mu_dd[3][1]<<'\t'<<mu_dd[3][2]<<'\t'<<mu_dd[3][3]<<'\t'<<mu_dd[3][4]<<std::endl ;
+		outFile1<<mu_dd[4][0]<<'\t'<<mu_dd[4][1]<<'\t'<<mu_dd[4][2]<<'\t'<<mu_dd[4][3]<<'\t'<<mu_dd[4][4]<<std::endl ;
+		
 // center of diffusion calculation based on "Hydrodynamic properties of rigid particles: comparison of different modeling and computational procedures." Biophysical journal 76.6 (1999): 3044-3057.			
 // Page 3046 equation 13.
 vctr3D ctr_diff ; 
@@ -1281,9 +1330,9 @@ U_OD.comp[0][2] =  ctr_diff.comp[1];
 U_OD.comp[1][2] = -ctr_diff.comp[0];
 U_OD.comp[2][2] =  0.0;
 
-mtrx3D D_tt_CoD = D_tt -  U_OD*D_rr*U_OD - D_rt*U_OD + U_OD*D_tr ; 
-mtrx3D D_tr_CoD = D_tr -  D_rr*U_OD ;  // based on equations 42 from Wouter's notes "clusterdyn"
-mtrx3D D_rt_CoD = D_rt +  U_OD*D_rr ;  // based on equations 43 from Wouter's notes "clusterdyn"
+mtrx3D D_tt_CoD = D_tt -  U_OD*D_rr*U_OD + D_rt*U_OD - U_OD*D_tr ; 
+mtrx3D D_tr_CoD = D_tr +  D_rr*U_OD ;  // based on equations 42 from Wouter's notes "clusterdyn"
+mtrx3D D_rt_CoD = D_rt -  U_OD*D_rr ;  // based on equations 43 from Wouter's notes "clusterdyn"
 
 xi_11x11[0]  = D_tt_CoD.comp[0][0];
 xi_11x11[1]  = D_tt_CoD.comp[1][0];
@@ -1325,54 +1374,6 @@ xi_11x11[32]  = D_rt_CoD.comp[2][2];
 		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
 		
 
-// using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
-double mu_d[6][5];
-double mu_dd[5][5];
-
-			for (int l=0; l<6; l++)
-				{
-				for (int k=0; k<5; k++)
-					{	
-						mu_d[l][k] = 0.0;
-				//		mu_d[l+3][k] = 0.0;
-					for (int m=0; m<3; m++)
-						{				
-							// column major format
-							mu_d[l][k]	-=	xi_11x11[l	+	6*m]*Friction_Tnsr_td.comp[m][k];
-							mu_d[l][k]	-=	xi_11x11[l	+	6*(m+3)]*Friction_Tnsr_rd.comp[m][k];
-						}
-				//	mu_d[l][k] *= g_norm;
-					}
-				}
-			for (int l=0; l<5; l++)
-				{
-				for (int k=0; k<5; k++)
-					{	
-						mu_dd[l][k] = Friction_Tnsr_dd.comp[l][k];
-					for (int m=0; m<3; m++)
-						{				
-							// column major format
-							mu_dd[l][k]	+=	Friction_Tnsr_dt.comp[l][m]*mu_d[m][k];
-							mu_dd[l][k]	+=	Friction_Tnsr_dr.comp[l][m]*mu_d[m+3][k];
-						}
-					}
-				}				
-		
-		outFile1<<std::endl ;
-		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
-		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
-		outFile1<<mu_d[2][0]<<'\t'<<mu_d[2][1]<<'\t'<<mu_d[2][2]<<'\t'<<mu_d[2][3]<<'\t'<<mu_d[2][4]<<std::endl ;
-		outFile1<<std::endl ;
-		outFile1<<mu_d[3][0]<<'\t'<<mu_d[3][1]<<'\t'<<mu_d[3][2]<<'\t'<<mu_d[3][3]<<'\t'<<mu_d[3][4]<<std::endl ;
-		outFile1<<mu_d[4][0]<<'\t'<<mu_d[4][1]<<'\t'<<mu_d[4][2]<<'\t'<<mu_d[4][3]<<'\t'<<mu_d[4][4]<<std::endl ;
-		outFile1<<mu_d[5][0]<<'\t'<<mu_d[5][1]<<'\t'<<mu_d[5][2]<<'\t'<<mu_d[5][3]<<'\t'<<mu_d[5][4]<<std::endl ;		
-		outFile1<<std::endl ;
-		outFile1<<mu_dd[0][0]<<'\t'<<mu_dd[0][1]<<'\t'<<mu_dd[0][2]<<'\t'<<mu_dd[0][3]<<'\t'<<mu_dd[0][4]<<std::endl ;
-		outFile1<<mu_dd[1][0]<<'\t'<<mu_dd[1][1]<<'\t'<<mu_dd[1][2]<<'\t'<<mu_dd[1][3]<<'\t'<<mu_dd[1][4]<<std::endl ;
-		outFile1<<mu_dd[2][0]<<'\t'<<mu_dd[2][1]<<'\t'<<mu_dd[2][2]<<'\t'<<mu_dd[2][3]<<'\t'<<mu_dd[2][4]<<std::endl ;
-		outFile1<<mu_dd[3][0]<<'\t'<<mu_dd[3][1]<<'\t'<<mu_dd[3][2]<<'\t'<<mu_dd[3][3]<<'\t'<<mu_dd[3][4]<<std::endl ;
-		outFile1<<mu_dd[4][0]<<'\t'<<mu_dd[4][1]<<'\t'<<mu_dd[4][2]<<'\t'<<mu_dd[4][3]<<'\t'<<mu_dd[4][4]<<std::endl ;
-		
 mu_d[0][0] = mu_d[0][0] - ( - Delj.comp[0][0] +  U_OD.comp[0][0]*mu_d[3][0] + U_OD.comp[0][1]*mu_d[4][0] + U_OD.comp[0][2]*mu_d[5][0] ) ;
 mu_d[0][1] = mu_d[0][1] - ( - Delj.comp[0][1] +  U_OD.comp[0][0]*mu_d[3][1] + U_OD.comp[0][1]*mu_d[4][1] + U_OD.comp[0][2]*mu_d[5][1] ) ;
 mu_d[0][2] = mu_d[0][2] - ( - Delj.comp[0][2] +  U_OD.comp[0][0]*mu_d[3][2] + U_OD.comp[0][1]*mu_d[4][2] + U_OD.comp[0][2]*mu_d[5][2] ) ;

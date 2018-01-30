@@ -30,8 +30,8 @@
 #include <functional>
 #include <array>
 # include "defs.h"
-#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-//#include<Eigen/Eigenvalues>
+//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -912,6 +912,7 @@ else {
 // end of storing inverse mobility square root
 
 	/* sort particles into cells */
+		
 for ( int i = 0 ; i < 1; i ++ )
 	{
 		if (!xxcluster_restart) 
@@ -968,7 +969,7 @@ for ( int i = 0 ; i < 1; i ++ )
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
 	//	cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -1506,9 +1507,13 @@ if (step%(frame)==0)
 			}
 
 	}
-*/	
-outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
+*/
 
+if (step%(1)==0) 
+	{ 
+	
+outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
+}
 if (step%(frame)==0) 
 	{ 
 
