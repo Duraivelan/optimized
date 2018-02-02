@@ -40,26 +40,57 @@ using namespace std;
 
 // random numbers using rand function
 void createInitialPosition_N_particles(std::string fileName, int N, double Lx, double Ly, double Lz) {
-	double x,y,z;
- 	srand (time(NULL)); // initialize random seed
- 	std::ofstream outFile(fileName);
- 	for(int i=0;i<N;i++) {
- 		x=((double) rand() / (RAND_MAX/Lx))-Lx/2.0;  // create particle position from -Lx/2 to Lx/2
-		y=((double) rand() / (RAND_MAX/Ly))-Ly/2.0;
-		z=((double) rand() / (RAND_MAX/Lz))-Lz/2.0;
-		outFile<<x<<'\t'<<y<<'\t'<<z<<std::endl;
- 	}
- 	outFile.close();
-}
+    double x,y,z;
+    double xyz[N][3];
+    double r2,x2,y2,z2;
+    
+    x=((double) rand() / (RAND_MAX/Lx))-Lx/2.0;  // create particle position from -Lx/2 to Lx/2
+    y=((double) rand() / (RAND_MAX/Ly))-Ly/2.0;
+    z=((double) rand() / (RAND_MAX/Lz))-Lz/2.0;
 
-std::vector<int> radialDistFunc(double XYZ[][3], double Lx,double Ly, double Lz, double dr, int N) {
-    std::vector<int> rdf((int) floor(sqrt(pow(Lx/2,2)+pow(Ly/2,2)+pow(Lz/2,2)))/dr,0);
-	double r;
-	for(int j=0;j<N;j++) {
-		r=sqrt(pow(XYZ[j][0],2)+pow(XYZ[j][1],2)+pow(XYZ[j][2],2));
-	    rdf[(int) floor(r/dr)]+=1;                        // put each particle in a bin according to its position from origin ie. (0,0)
-	}
-	return rdf;
+    xyz[0][0]=x;
+    xyz[0][1]=y;
+    xyz[0][2]=z;
+        
+    int clear=0;
+    srand (time(NULL)); // initialize random seed
+    std::ofstream outFile(fileName);
+
+    outFile<<x<<'\t'<<y<<'\t'<<z<<std::endl;
+    
+    for(int i=1;i<N;i++) {
+        x=((double) rand() / (RAND_MAX/Lx))-Lx/2.0;  // create particle position from -Lx/2 to Lx/2 
+        y=((double) rand() / (RAND_MAX/Ly))-Ly/2.0;
+        z=((double) rand() / (RAND_MAX/Lz))-Lz/2.0;
+        clear = 0;
+        for(int j=0;j<i;j++) {
+        
+        x2 = xyz[j][0]-x; 
+        y2 = xyz[j][1]-y;
+        z2 = xyz[j][2]-z;
+        
+        x2 -= round( x2 /Lx ) * Lx;
+        y2 -= round( y2 /Ly ) * Ly;
+        z2 -= round( z2 /Lz ) * Lz;
+        
+        r2 = x2*x2 + y2*y2 + z2*z2 ;
+        if(r2 > 9.0 ){  
+            
+        }else{
+        clear = 1;
+        }       
+    }
+    if(clear){
+        i=i-1;
+    }else{
+        xyz[i][0]=x;
+        xyz[i][1]=y;
+        xyz[i][2]=z;
+             
+        outFile<<x<<'\t'<<y<<'\t'<<z<<std::endl;
+    }
+}
+    outFile.close();
 }
 
 // forceUpdate fucntion included as force.h header file
