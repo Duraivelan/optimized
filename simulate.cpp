@@ -30,8 +30,8 @@
 #include <functional>
 #include <array>
 # include "defs.h"
-//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-#include<Eigen/Eigenvalues>
+#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+//#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -454,7 +454,7 @@ int hist_phi_y[50]={};
 int hist_z[50]={};
 int hist_phi_z[50]={};
 long long int hist_C[100]={}; // histogram of orbit constant of ellipsids
-long long int hist_C_tau[100][100]={};
+long long int hist_C_tau[101][101]={};
 
 // variables for polar , azimuthal angle histogram
 double nbins = 100.0;
@@ -465,7 +465,7 @@ double bin_tau = 2.0*M_PI/nbins;
 cout << "pi" << '\t'<< M_PI_2 << endl;
 cout << bin_cos << '\t' << bin_tan << endl;
 
-long long int hist_pol_azi[100][100]={};
+long long int hist_pol_azi[101][101]={};
 
 vctr3D dr_vec;
 vector<SubData>  particle(NrParticles);
@@ -969,7 +969,7 @@ for ( int i = 0 ; i < 1; i ++ )
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
 	//	cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -1274,6 +1274,7 @@ std::ofstream outFile_C_tau("C_tau.dat");
 std::ofstream outFile_theta_phi("theta_phi.dat");
 std::ofstream outFile_theta_phi_hist("theta_phi_hist.dat");
 std::ofstream outFile_atan_C_tau_hist("outFile_atan_C_tau_hist.dat");
+std::ofstream outFile_quat("outFile_quat.dat");
     
 					  
 simu_time =dt;
@@ -1365,7 +1366,7 @@ do {
 						
 		outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
 */
-/*					  
+					  
 	Stresslet_mean += cluster[0].Stresslet;
 	Stresslet_Br_mean += cluster[0].Stresslet_Br;
 	Stresslet_tot_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br);
@@ -1389,36 +1390,35 @@ do {
 //	double tan_theta = sqrt(1.0/cos_theta2-1.0); 
 	double ar = 5.0;
 //	double C = (tan_theta*cos_phi/ar)*sqrt(ar*ar+tan_phi2);
-		
-	double max_C_lim = ceil(M_PI/2.0) ; 
+
+	double max_C_lim = ceil(M_PI/2.0) ;
 	double sign_C= 1.0;
 	if (director.comp[2] < 0.0) {sign_C = -1.0;} ;
-	double C_theta = acos(cos_theta) ; 
+	double C_theta = acos(cos_theta) ;
 	double C_phi = atan2(director.comp[1], director.comp[0]) ;
-	
+
 	double C = (tan(C_theta)/ar)*sqrt(sin(C_phi)*sin(C_phi)+ar*ar*cos(C_phi)*cos(C_phi));
-	
+
 	double tau  = atan2(director.comp[1], ar*director.comp[0]) ; // tau related to phi from eq. 11 leal and hinch, 1971, 46, 685.
 	double atan_C  = atan(C) ;
  	// C_phi =+ M_PI ;
-	
+
 	// outFile_C_tau<< tan_phi << '\t'<< cos_theta << '\t'<< cos_phi << '\t'<< tan_theta <<  '\t'<< sqrt(ar*ar+tan_phi2) <<std::endl;	// tau from eq. 11 leal and hinch, 1971, 46, 685.
 
 	// outFile_C_tau<< (C) << '\t'<< tau <<std::endl;	// tau from eq. 11 leal and hinch, 1971, 46, 685.
-	
+
 	// outFile_theta_phi<< '\t'<<  C_theta << '\t'<< C_phi <<std::endl;	// theta and phi
 
 	// outFile_com<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2] << std::endl;
 
-	 hist_pol_azi[int (round( C_theta/bin_cos )) ][int (round( (C_phi+M_PI)/bin_tan )) ]+=1;
+	 hist_pol_azi[int (floor( (cos_theta+1.0)/(0.02) )) ][int (floor( (C_phi+M_PI)/bin_tan )) ]+=1;
 
-	 hist_C_tau[int (round( (atan_C + M_PI_2)/bin_atan_C )) ][int (round( (tau+M_PI)/bin_tau )) ]+=1;
+	 hist_C_tau[int (floor( (atan_C + M_PI_2)/bin_atan_C )) ][int (floor( (tau+M_PI)/bin_tau )) ]+=1;
 
-
-	int i = round(abs(atan_C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
+	int i = floor(abs(atan_C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
 	// i = min( max(i,0), max_C_lim ) ;
-	hist_C[i]++; 
-*/	
+	hist_C[i]++;
+
 	// end of C binning 
 /*
 // output stresslets
@@ -1507,13 +1507,8 @@ if (step%(frame)==0)
 			}
 
 	}
-*/
 
-if (step%(1)==0) 
-	{ 
-	
-outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
-}
+
 if (step%(frame)==0) 
 	{ 
 
@@ -1539,10 +1534,10 @@ if (step%(frame)==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-
+*/
 	simu_time+=dt;
 	step+=1;
-	
+
 if (step%(1000*1000*frame)==0) 
 	{ 
 
@@ -1565,9 +1560,9 @@ if (step%(1000*1000*10*frame)==0)
 	{ 
 
  // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 100; i ++ )
+for ( int i = 0 ; i < 101; i ++ )
 	{
-		for ( int j = 0 ; j < 100; j ++ )
+		for ( int j = 0 ; j < 101; j ++ )
 		{
 			outFile_theta_phi_hist<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
 		}
@@ -1575,9 +1570,9 @@ for ( int i = 0 ; i < 100; i ++ )
 	}
 	
  // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 100; i ++ )
+for ( int i = 0 ; i < 101; i ++ )
 	{
-		for ( int j = 0 ; j < 100; j ++ )
+		for ( int j = 0 ; j < 101; j ++ )
 		{
 			outFile_atan_C_tau_hist<< std::setprecision(5) << hist_C_tau[i][j] <<'\t';
 		}
@@ -1588,6 +1583,8 @@ for ( int i = 0 ; i < 100; i ++ )
 
 } while(xxnstep);
 cout << step << endl;
+outFile_quat.close();
+
 /*
 // output the histogram of the cosine angles
 for ( int i = 0 ; i < 50; i ++ )
@@ -1598,9 +1595,9 @@ for ( int i = 0 ; i < 50; i ++ )
 */
 
  // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 100; i ++ )
+for ( int i = 0 ; i < 101; i ++ )
 	{
-		for ( int j = 0 ; j < 100; j ++ )
+		for ( int j = 0 ; j < 101; j ++ )
 		{
 			outFile_theta_phi_hist<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
 		}
@@ -1608,9 +1605,9 @@ for ( int i = 0 ; i < 100; i ++ )
 	}
 	
  // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 100; i ++ )
+for ( int i = 0 ; i < 101; i ++ )
 	{
-		for ( int j = 0 ; j < 100; j ++ )
+		for ( int j = 0 ; j < 101; j ++ )
 		{
 			outFile_atan_C_tau_hist<< std::setprecision(5) << hist_C_tau[i][j] <<'\t';
 		}

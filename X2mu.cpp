@@ -286,7 +286,8 @@ else {
 // important all lengths have been normalized by particle radius as metioned in Page 46, Appendix A - Durlofsky, Louis, John F. Brady, and Georges Bossis. 
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
-		
+#if 0
+
 for (int a=0; a<NrParticles; a++)
 	{
 		for (int b=a; b<NrParticles; b++)
@@ -880,15 +881,15 @@ for (int s=0; s<3; s++)
 		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
 
 */
+#endif
 
-/*
 // Ellipsoid mobilities from Kim and Karrila book ; Page 64
 
 double c = 1.0;	// short axis
 
-double a = 5.0*c;	// long axis
+double a = 100.0*c;	// long axis
 
-double a_bead = 5.0;	// long axis of bead ellipsoid
+double a_bead = 100.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 
@@ -1153,7 +1154,7 @@ mtrx55D Friction_Tnsr_dd_anl	=	null55D;
 					xi_11x11[33] = Friction_Tnsr_rr.comp[2][0] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[2][1] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
-*/	
+
 			inverse ( xi_11x11 , 6 )	 ; 			
 
 /*	for (int i=0; i<36; i++)
