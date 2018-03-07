@@ -30,8 +30,8 @@
 #include <functional>
 #include <array>
 # include "defs.h"
-#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-//#include<Eigen/Eigenvalues>
+//#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -274,7 +274,7 @@ cluster[i].Stresslet_Br =
 					}
 */							
 		
-				cluster[i].pos.PBC(box,rbox);
+		//		cluster[i].pos.PBC(box,rbox);
 //			} 
 /*			else 
 			{
@@ -969,7 +969,7 @@ for ( int i = 0 ; i < 1; i ++ )
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
 	//	cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -1507,7 +1507,7 @@ if (step%(frame)==0)
 			}
 
 	}
-
+*/
 
 if (step%(frame)==0) 
 	{ 
@@ -1534,7 +1534,7 @@ if (step%(frame)==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-*/
+
 	simu_time+=dt;
 	step+=1;
 

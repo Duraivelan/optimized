@@ -1,12 +1,12 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 443
+@ a = 446
 @ init = $a 
-while ( $a < 444 )
+while ( $a < 447 )
 	mkdir $a
 	cd $a
 	@ ifcreate = 0; 
-	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step>=0/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ ; s/xx_diffusion/1/ " ../../simulate.cpp > simulate.cpp
+	sed "s/xxx/$a/; s/xxxnew/$a/ ; s/xxclustering/step<-1/ ; s/xxnstep/step<=200000/ ; s/xxcreate/$ifcreate/ ; s/xxrestart/0/ ; s/xxthermo/0/ ; s/xxcluster_restart/0/ ; s/xx_rotation/1/ ; s/xx_diffusion/1/ " ../../simulate.cpp > simulate.cpp
 	sed "s/xxshift/0/ ; s/xxclustering/1/" ../../pairforce.h > pairforce.h
 
   cp ../../rigid_force.h .
