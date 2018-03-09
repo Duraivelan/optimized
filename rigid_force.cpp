@@ -20,7 +20,9 @@ using namespace std;
         }   
     } ;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4],long long int* step,const int NrParticles, const double Lx,  const double Ly,  const double Lz ) {
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], double* DEL_BOX, const int NrParticles, const double Lx,  const double Ly,  const double Lz ) {
+
+
 /*
 
 	STRAIN = STRAIN - round ( STRAIN ) ; 
@@ -28,6 +30,7 @@ void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now
         
 
 
+	
 	const int dm_top[16][3] = { {  0,  0,  1 },		// if shear then top layer neighbour list
                        {  1		,  0, -1 },
                        {  1		,  0,  0 },

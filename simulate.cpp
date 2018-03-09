@@ -101,8 +101,8 @@ void createInitialPosition_N_particles(std::string fileName, int N, double Lx, d
  	outFile.close();
 }
 
-void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, int j,int *Max_Cluster_N, vctr3D box, vctr3D rbox ) {
-	
+void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, int j,int *Max_Cluster_N, vctr3D box, vctr3D rbox , double *DEL_BOX) {
+
  const double max_size = (box.comp[0]/2.0 + box.comp[1]/2.0 + box.comp[2]/2.0)/3.0;
  
 	/*	int cluster_swap ;
@@ -128,7 +128,22 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		L[i][1] = (I[i][1][0]*Ang_Velocity[i][0]+I[i][1][1]*Ang_Velocity[i][1]+I[i][1][2]*Ang_Velocity[i][2] + I[j][1][0]*Ang_Velocity[j][0]+I[j][1][1]*Ang_Velocity[j][1]+I[j][1][2]*Ang_Velocity[j][2] );
 		L[i][2] = (I[i][2][0]*Ang_Velocity[i][0]+I[i][2][1]*Ang_Velocity[i][1]+I[i][2][2]*Ang_Velocity[i][2] + I[j][2][0]*Ang_Velocity[j][0]+I[j][2][1]*Ang_Velocity[j][1]+I[j][2][2]*Ang_Velocity[j][2] );
 */			
+
+		double com_shift = ( round( ( cluster[i].pos.comp[1] - cluster[j].pos.comp[1] ) * rbox.comp[1] ) * (*DEL_BOX) ) ;
+		
+		cluster[j].pos.comp[0] -= com_shift ; 
+/*
+		if (cluster[j].pos.comp[0] > cluster[i].pos.comp[0])
+		{
+			cluster[j].pos.comp[0] -= com_shift ; 
+		}
+		else{
+			cluster[j].pos.comp[0] += com_shift ; 
+		}
+	*/	
 		cluster[i].pos=(cluster[i].pos*cluster[i].mass + cluster[j].pos*cluster[j].mass ) * (1.0/(cluster[i].mass+cluster[j].mass));		
+
+
 
 		cluster[i].mass=cluster[i].mass+cluster[j].mass;
 		
@@ -152,6 +167,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 
 		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+		particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
 	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);				
 		outFile70<<cluster[i].sub[k]<<'\t'<<i<<endl;
@@ -163,6 +179,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 	//	cluster[i].sub[k]	=	cluster[j].sub[k-cluster[i].Sub_Length];
 			cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
 			particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+			particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
 			outFile70<<cluster[i].sub[k]<<'\t'<<j<<endl;
@@ -320,6 +337,10 @@ void brownian( long long int step , vector<ParticleData>& cluster, vector<SubDat
 	const vctr3D rbox) {
 double a, b , c, lambda;
 vctr4D quat_old;
+
+double DEL_BOX	= ( shear_rate * box.comp[0] * step * dt ) -  floor (  shear_rate * step * dt  )*( box.comp[0] )	 ; // amount by which box shifts when sheared 
+
+ 
 						    						
 for(int i=0;i<*Max_Cluster_N;i++) 
 	{
@@ -460,10 +481,20 @@ cluster[i].Stresslet_Br =
 				for (int j=0; j<cluster[i].Sub_Length; j++) 
 					{
 						particle[cluster[i].sub[j]].pos = cluster[i].pos + cluster[i].rotmat*particle[cluster[i].sub[j]].pos_bdyfxd;
+						
+						particle[cluster[i].sub[j]].pos.comp[0] -= ( round( particle[cluster[i].sub[j]].pos.comp[1] * rbox.comp[1] ) * DEL_BOX ) ;
+					//	particle[cluster[i].sub[j]].pos.comp[0] -= ( round( particle[cluster[i].sub[j]].pos.comp[1] * rbox.comp[1] ) * shear_rate * box.comp[0] * step * dt  
+					//											   + round( particle[cluster[i].sub[j]].pos.comp[0] * rbox.comp[0] ) * box.comp[0] ) ;
+					//	particle[cluster[i].sub[j]].pos.comp[1] -=   round( particle[cluster[i].sub[j]].pos.comp[1] * rbox.comp[1] ) * box.comp[1];
+					//	particle[cluster[i].sub[j]].pos.comp[2] -=   round( particle[cluster[i].sub[j]].pos.comp[2] * rbox.comp[2] ) * box.comp[2];
 						particle[cluster[i].sub[j]].pos.PBC(box,rbox);
 					}
-						
-		
+
+				cluster[i].pos.comp[0] -= ( round( cluster[i].pos.comp[1] * rbox.comp[1] ) * DEL_BOX ) ;						
+			//	cluster[i].pos.comp[0] -= ( round( cluster[i].pos.comp[1] * rbox.comp[1] ) * shear_rate * box.comp[0] * step * dt  
+			//							  + round( cluster[i].pos.comp[0] * rbox.comp[0] ) * box.comp[0] ) ;
+			//	cluster[i].pos.comp[1] -=   round( cluster[i].pos.comp[1] * rbox.comp[1] ) * box.comp[1];
+			//	cluster[i].pos.comp[2] -=   round( cluster[i].pos.comp[2] * rbox.comp[2] ) * box.comp[2];		
 				cluster[i].pos.PBC(box,rbox);
 //			} 
 /*			else 
@@ -879,7 +910,7 @@ for ( int i = 0 ; i < 1; i ++ )
         
 ifstream File ( "data_binary.bin" , ios::in | ios::binary );
 if(!File.good()) {
-	std::cerr<<"Given file is corrupt /n"<<std::endl;
+	std::cerr<<"Given data_binary file is corrupt /n"<<std::endl;
 }
 else {			
 		double xi_11x11[36];
@@ -1358,7 +1389,9 @@ std::ofstream outFile11(dataFileName+"/no_of_clusters.dat");
 
 step = restart_frame_offset*frame+1;
 
-forceUpdate( particle, &p_energy, &combine_now , combine, &step, NrParticles , Lx, Ly, Lz);
+double DEL_BOX	= ( shear_rate * box.comp[0] * step * dt ) -  floor (  shear_rate * step * dt  )*( box.comp[0] )	 ; // amount by which box shifts when sheared 
+
+forceUpdate( particle, &p_energy, &combine_now , combine, &DEL_BOX, NrParticles , Lx, Ly, Lz);
 
 
 // convert subforces into total generalized forces on particles 
@@ -1616,10 +1649,14 @@ do {
 */
 	combine_now=0;
 
-	forceUpdate( particle, &p_energy, &combine_now , combine, &step , NrParticles, Lx, Ly, Lz);
+	double DEL_BOX	= ( shear_rate * box.comp[0] * step * dt ) -  floor (  shear_rate * step * dt  )*( box.comp[0] )	 ; // amount by which box shifts when sheared 
+
+
+	forceUpdate( particle, &p_energy, &combine_now , combine, &DEL_BOX , NrParticles, Lx, Ly, Lz);
 
 if (xxclustering && combine_now>0) 
 		{	
+
 		//	cout<<combine_now<<endl;
 			vector<vector<int>> temp_combine(combine_now+1,vector<int> (4)) ;
 			for (int pn = 1; pn<=combine_now ; pn++) 
@@ -1666,7 +1703,7 @@ if (xxclustering && combine_now>0)
 	for ( int pn = 1 ; pn <=combine_now; pn ++ )
 		{
 			if(particle[temp_combine[pn][2]].cluster!=particle[temp_combine[pn][3]].cluster) {
- 			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox );
+ 			Collision(particle, cluster, temp_combine[pn][0], temp_combine[pn][1], &Max_Cluster_N, box, rbox, &DEL_BOX );
 				
 				for ( int pp = pn+1 ; pp <=combine_now; pp ++ )
 					{
@@ -1937,214 +1974,16 @@ else {
 	}
 		cluster[i].clicked = 0; 
 	}
-	
-	}
-		
-				
-// convert subforces into total generalized forces on particles 
-
-/*
-//  For electric field generated torque
-  for ( int i = 0 ; i < 1; i ++ )
-  {
-	cluster[i].frc=null3D;
-	cluster[i].trq=dipole_s^Elec_fld;
-	cluster[i].Iner_tnsr=null33D;
-  }
-  */
-/*
-  // For electric field generated force with gives torque
-
-    for ( int i = 0 ; i < Max_Cluster_N; i ++ )
-   {
-        cluster[i].frc=null3D;
-        cluster[i].trq=null3D;
-        cluster[i].Iner_tnsr=null33D;
-
-   for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
-		{
-               dr_vec = particle[cluster[i].sub[j]].pos-cluster[i].pos;
-               dr_vec.PBC(box,rbox);
-               cluster[i].frc +=                                                  particle[cluster[i].sub[j]].frc;             
-               cluster[i].trq +=                                               dr_vec^particle[cluster[i].sub[j]].frc;
-               mtrx3D dr_mat(dr_vec*dr_vec.comp[0],dr_vec*dr_vec.comp[1],dr_vec*dr_vec.comp[2]);
-               cluster[i].Iner_tnsr+=(I_sphere+Unit_diag*(dr_vec.norm2())-dr_mat)*particle[cluster[i].sub[j]].mass;    //      refer following paper , page 3 equa. 3 for interia tensor formula
-                                                                                                                                                                                                                               //      Modification of Numerical Model for Ellipsoidal Monomers by Erwin Gostomski
-		}
-   }
-   
-*/
-/*
-  for ( int i = 0 ; i < 1; i ++ )
-  {
-	cluster[i].frc=null3D;
-	cluster[i].trq=null3D;
-	cluster[i].Iner_tnsr=null33D;
-  }
-
-
-  // for rotational relaxation check
- 
-			vec1 = cluster[0].rotmat*eig1;
-			vec2 = cluster[0].rotmat*eig2;
-			vec3 = cluster[0].rotmat*eig3;
-			
-		outFile12<<vec1.comp[0] <<'\t'<< vec1.comp[1] << '\t'<< vec1.comp[2] <<  endl;      
-		outFile13<<vec2.comp[0] <<'\t'<< vec2.comp[1] << '\t'<< vec2.comp[2] <<  endl;      
-		outFile14<<vec3.comp[0] <<'\t'<< vec3.comp[1] << '\t'<< vec3.comp[2] <<  endl;      
-						
-		outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
-*/
-/*					  
-	Stresslet_mean += cluster[0].Stresslet;
-	Stresslet_Br_mean += cluster[0].Stresslet_Br;
-	Stresslet_tot_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br);
-	
-	Stresslet_sqr_mean += cluster[0].Stresslet.norm2();
-	Stresslet_Br_sqr_mean += cluster[0].Stresslet_Br.norm2();
-	Stresslet_tot_sqr_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br).norm2();
-	
-	// binning of orbital constant of ellipsoid , C
-	
-			
-	vctr3D director = {cluster[0].rotmat.comp[0][2],cluster[0].rotmat.comp[1][2],cluster[0].rotmat.comp[2][2]}; 
-	
-//	double tan_phi =  (director.comp[1])/(director.comp[0]);
-//	double tan_phi2 = tan_phi*tan_phi;
-	double cos_theta = director.comp[2] ; 
-	if (cos_theta > 1.0) {cos_theta = 1.0 ;} ; 
-	if (cos_theta < -1.0) {cos_theta = -1.0 ;} ; 
-	double cos_theta2 = cos_theta*cos_theta;
-//	double cos_phi = sqrt(1.0/(tan_phi2+1.0));
-//	double tan_theta = sqrt(1.0/cos_theta2-1.0); 
-	double ar = 5.0;
-//	double C = (tan_theta*cos_phi/ar)*sqrt(ar*ar+tan_phi2);
-		
-	double max_C_lim = ceil(M_PI/2.0) ; 
-	double sign_C= 1.0;
-	if (director.comp[2] < 0.0) {sign_C = -1.0;} ;
-	double C_theta = acos(cos_theta) ; 
-	double C_phi = atan2(director.comp[1], director.comp[0]) ;
-	
-	double C = (tan(C_theta)/ar)*sqrt(sin(C_phi)*sin(C_phi)+ar*ar*cos(C_phi)*cos(C_phi));
-	
-	double tau  = atan2(director.comp[1], ar*director.comp[0]) ; // tau related to phi from eq. 11 leal and hinch, 1971, 46, 685.
-	double atan_C  = atan(C) ;
- 	// C_phi =+ M_PI ;
-	
-	// outFile_C_tau<< tan_phi << '\t'<< cos_theta << '\t'<< cos_phi << '\t'<< tan_theta <<  '\t'<< sqrt(ar*ar+tan_phi2) <<std::endl;	// tau from eq. 11 leal and hinch, 1971, 46, 685.
-
-	// outFile_C_tau<< (C) << '\t'<< tau <<std::endl;	// tau from eq. 11 leal and hinch, 1971, 46, 685.
-	
-	// outFile_theta_phi<< '\t'<<  C_theta << '\t'<< C_phi <<std::endl;	// theta and phi
-
-	 hist_pol_azi[int (round( C_theta/bin_cos )) ][int (round( (C_phi+M_PI)/bin_tan )) ]+=1;
-
-	 hist_C_tau[int (round( (atan_C + M_PI_2)/bin_atan_C )) ][int (round( tau/bin_tau )) ]+=1;
-
-
-	int i = round(abs(atan_C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
-	// i = min( max(i,0), max_C_lim ) ;
-	hist_C[i]++; 
-	
-	// end of C binning 
-*/
-	
-/*
-// output stresslets
-if (step%(10*frame)==0) 
-	{ 
-	int i =0; 
-		Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'
-		<<cluster[i].Stresslet_Br.comp[0]<<'\t'<<cluster[i].Stresslet_Br.comp[1]<<'\t'<<cluster[i].Stresslet_Br.comp[2]<<'\t'<<cluster[i].Stresslet_Br.comp[3]<<'\t'<<cluster[i].Stresslet_Br.comp[4]<<std::endl;	
-	}
-//
-
-
-if (step%(frame)==0) 
-	{ 
-
-
-		// save position every 'frame' steps 
-		
-		for ( int i = 0 ; i < 1; i ++ )
-			{
-				if(cluster[i].Sub_Length>0)
-				{
-				Stresslet_data.precision(17);
-				Stresslet_data<<cluster[i].Stresslet.comp[0]<<'\t'<<cluster[i].Stresslet.comp[1]<<'\t'<<cluster[i].Stresslet.comp[2]<<'\t'<<cluster[i].Stresslet.comp[3]<<'\t'<<cluster[i].Stresslet.comp[4]<<'\t'<<std::endl;	
-	//			outFile_com<<cos_theta<<'\t'<<cos_theta<<'\t'<<cos_theta<<std::endl;
-	//			vctr3D director = cluster[0].rotmat*particle[cluster[0].sub[0]].pos_bdyfxd ; 
-				vctr3D director = {cluster[0].rotmat.comp[0][2],cluster[0].rotmat.comp[1][2],cluster[0].rotmat.comp[2][2]}; 
-	//			outFile_orient<<cluster[i].rotmat.comp[0][1]<<'\t'<<cluster[i].rotmat.comp[1][1]<<'\t'<<cluster[i].rotmat.comp[2][1]<<'\t'<<std::endl;
-
-					double t3 = 2.0 * (cluster[i].quat.comp[0] * cluster[i].quat.comp[3]+ cluster[i].quat.comp[1] * cluster[i].quat.comp[2]);
-					double t4 = 1.0 - 2.0 * (cluster[i].quat.comp[2] * cluster[i].quat.comp[2] + cluster[i].quat.comp[3] * cluster[i].quat.comp[3]);  
-					double yaw = std::atan2(t3, t4);	; // rotation about Z-axis
-
-
-		// update bin 
-		
-		mi[0] = int ( (director.comp[0]+havenvbox.comp[0]) * gridsScale[0] );
-		mi[1] = int ( (director.comp[1]+havenvbox.comp[1]) * gridsScale[1] );
-		mi[2] = int ( (director.comp[2]+havenvbox.comp[2]) * gridsScale[2] ); 
-          // particle j in same cell as i
-          maxtheta = 0;
-
-          for ( int jj =  1 ; jj <= binGrid[mi[0]][mi[1]][mi[2]][0] ; jj++ )
-          {
-			int j = binGrid[mi[0]][mi[1]][mi[2]][jj];
-			theta =  director.comp[0]*GeodesicPt[j][0] + director.comp[1]*GeodesicPt[j][1] + director.comp[2]*GeodesicPt[j][2]; 
-			if (theta > maxtheta)
-			{
-				gridUpdate = j ;
-				maxtheta = theta ; 
-			}
-			
-          } // jj
-
-          // particle j in neighbour cell to i
-          for ( m = 0 ; m < 26 ; m++ )
-          {
-            mj[0]      =  mi[0] + dm[m][0] ;
-            mj[1]      =  mi[1] + dm[m][1] ;
-            mj[2]      =  mi[2] + dm[m][2] ;
-            if ( mj[0] >= Nrbins[0] ||  mj[0] < 0 || mj[1] >= Nrbins[1] ||  mj[1] < 0 || mj[2] >= Nrbins[2] ||  mj[2] < 0 ) continue ; 	// going out of envbox bounds
-			
-            for ( jj = 1 ; jj <= binGrid[mj[0]][mj[1]][mj[2]][0] ; jj++ )
-            {
-				j = binGrid[mj[0]][mj[1]][mj[2]][jj];
-
-				theta =  director.comp[0]*GeodesicPt[j][0] + director.comp[1]*GeodesicPt[j][1] + director.comp[2]*GeodesicPt[j][2]; 
-
-				if (theta > maxtheta)
-				{
-					gridUpdate = j ; 
-					maxtheta = theta ; 
-				}				
-            } // jj
-          } // m
-
-		orientHist[gridUpdate]++ ;
-		
-
-
-			//	outFile_orient<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2]<<'\t'<< yaw << std::endl;
-				
-			//	outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
-
-				}
-			}
 
 	}
-*/	
+	
 
 if (step%frame==0) 
 	{ 
 
-    //  std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
-   	//	outFile5<<NrParticles<<std::endl;
-   	//	outFile5<<"X Y Z co-ordinates"<<std::endl;
+      std::ofstream outFile5(dataFileName+"/XYZ"+ std::to_string(step/frame) +".xyz");   
+   		outFile5<<NrParticles<<std::endl;
+   		outFile5<<"X Y Z co-ordinates"<<std::endl;
 		outFile11<<step<<'\t'<<Max_Cluster_N<<std::endl;
 		// save position, Kinetic energy, Potential energy, Forces every 'frame' steps and also store radii of gyration info
 		
@@ -2158,12 +1997,12 @@ if (step%frame==0)
 				{
 				outFile9<<cluster[i].radii_gyr<<'\t'<<cluster[i].Sub_Length<<std::endl;
 				}
-			 /*   for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+			    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 					{
 					
 					outFile5<<'H'<<'\t'<<particle[cluster[i].sub[j]].pos.comp[0]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[1]<<'\t'<<particle[cluster[i].sub[j]].pos.comp[2]<<'\t'<<i<<std::endl;
 					}
-		*/	}
+			}
 
 
 /*		for ( int i = 0 ; i < NrParticles; i ++ )
@@ -2175,9 +2014,9 @@ if (step%frame==0)
 			}
  */
  
-     //	outFile5<<'\n'<<std::endl;
+     	outFile5<<'\n'<<std::endl;
 		outFile1<<p_energy<<std::endl;
-	//	outFile5.close();
+		outFile5.close();
 		outFile9.close();
 		
 		// store info to restart file End_Position_Full.xyz
@@ -2226,46 +2065,7 @@ for ( int i = 0 ; i < Max_Cluster_N; i ++ )
 	simu_time+=dt;
 	step+=1;
 
-/*	
-if (step%(1000*1000*frame)==0) 
-	{ 
 
-outFile_orient << step << endl;
-
-for ( int i = 0 ; i < 100; i ++ )
-	{
-			outFile_orient<< hist_C[i] << endl;
-	}
-	
- // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 100; i ++ )
-	{
-		for ( int j = 0 ; j < 100; j ++ )
-		{
-			outFile_theta_phi_hist<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
-		}
-		outFile_theta_phi_hist << endl;
-	}
-	
- // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 100; i ++ )
-	{
-		for ( int j = 0 ; j < 100; j ++ )
-		{
-			outFile_atan_C_tau_hist<< std::setprecision(5) << hist_C_tau[i][j] <<'\t';
-		}
-		outFile_atan_C_tau_hist << endl;
-	}	
-	
-		Stresslet_data<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'
-					  <<Stresslet_sqr_mean.comp[0]<<'\t'<<Stresslet_sqr_mean.comp[1]<<'\t'<<Stresslet_sqr_mean.comp[2]<<'\t'<<Stresslet_sqr_mean.comp[3]<<'\t'<<Stresslet_sqr_mean.comp[4]<<'\t'	
-					  <<Stresslet_Br_mean.comp[0]<<'\t'<<Stresslet_Br_mean.comp[1]<<'\t'<<Stresslet_Br_mean.comp[2]<<'\t'<<Stresslet_Br_mean.comp[3]<<'\t'<<Stresslet_Br_mean.comp[4]<<'\t'	
-					  <<Stresslet_Br_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_sqr_mean.comp[4]<<'\t'	
-					  <<Stresslet_tot_mean.comp[0]<<'\t'<<Stresslet_tot_mean.comp[1]<<'\t'<<Stresslet_tot_mean.comp[2]<<'\t'<<Stresslet_tot_mean.comp[3]<<'\t'<<Stresslet_tot_mean.comp[4]<<'\t'	
-					  <<Stresslet_tot_sqr_mean.comp[0]<<'\t'<<Stresslet_tot_sqr_mean.comp[1]<<'\t'<<Stresslet_tot_sqr_mean.comp[2]<<'\t'<<Stresslet_tot_sqr_mean.comp[3]<<'\t'<<Stresslet_tot_sqr_mean.comp[4]<<'\t'	
-					  <<endl;
-}
-*/
 
 } while(xxnstep);
 cout << step << endl;

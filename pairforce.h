@@ -1,7 +1,13 @@
 //  Calculate the force between particles i and j
 if (particle[i].cluster!=particle[j].cluster)
 	{
-dr=particle[i].pos-(particle[j].pos+dR+shift*xxshift);
+
+
+// dr=particle[i].pos-(particle[j].pos+dR+shift*xxshift);
+
+dr=particle[i].pos-particle[j].pos;
+dr.comp[0] -= ( round( dr.comp[1] * rbox.comp[1] ) * (*DEL_BOX)  ) ;						
+dr.PBC(box,rbox);
 r2=dr.norm2();
 
 		if (r2<(r_cut2)) 
