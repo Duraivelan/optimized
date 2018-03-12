@@ -131,6 +131,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 		double com_shift = ( round( ( cluster[i].pos.comp[1] - cluster[j].pos.comp[1] ) * rbox.comp[1] ) * (*DEL_BOX) ) ;
 		
+		cout << "Collision start" << endl;
+		cluster[i].pos.echo();
+		cluster[j].pos.echo();
+		cout << "com shift" << com_shift<< endl;
+
 		cluster[j].pos.comp[0] -= com_shift ; 
 /*
 		if (cluster[j].pos.comp[0] > cluster[i].pos.comp[0])
@@ -167,7 +172,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 
 		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+		cout << "Cluster i" << endl;
+		particle[cluster[i].sub[k]].pos.echo();
+		particle[cluster[i].sub[k]].pos_bdyfxd.echo();
 		particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
+		particle[cluster[i].sub[k]].pos_bdyfxd.echo();		
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
 	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);				
 		outFile70<<cluster[i].sub[k]<<'\t'<<i<<endl;
@@ -179,7 +188,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 	//	cluster[i].sub[k]	=	cluster[j].sub[k-cluster[i].Sub_Length];
 			cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
 			particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
+					cout << "Cluster j" << endl;
+			particle[cluster[i].sub[k]].pos.echo();
+			particle[cluster[i].sub[k]].pos_bdyfxd.echo();			
 			particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
+			particle[cluster[i].sub[k]].pos_bdyfxd.echo();
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
 			outFile70<<cluster[i].sub[k]<<'\t'<<j<<endl;
@@ -189,6 +202,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		outFile70.close();
 		cluster[i].pos.PBC(box,rbox);	
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
+		cout << "Collision ends" << endl;
 
 		cluster[i].radii=0;
 		
@@ -622,7 +636,7 @@ const double Ly = Lx ; // assuming cubic
 const double Lz = Lx ; 
 const double Volume =Lx*Ly*Lz;
 const double Volume_inv = 1.0/ Volume;
-const double Particle_radius = 0.5 ; // sigma/2.0;
+const double Particle_radius = bead_radii ; // sigma/2.0;
 const double Particle_vol = 4.0*pi*(Particle_radius*Particle_radius*Particle_radius)/3.0;
 const double vol_frac = (double) NrParticles * Particle_vol * Volume_inv;
 const int cellx=(int) ceil(Lx/r_cut);
@@ -820,7 +834,7 @@ else {
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[1];
 					currentLine2 >> particle[cluster[i].sub[j]].pos_bdyfxd.comp[2];
 					particle[cluster[i].sub[j]].mass=1.0;
-					particle[cluster[i].sub[j]].radius=0.5;					
+					particle[cluster[i].sub[j]].radius=Particle_radius;					
 					particle[cluster[i].sub[j]].cluster=i;					
 				}
     }
@@ -877,8 +891,8 @@ for ( int i = 0 ; i < 1; i ++ )
 			cluster[i].sub[j]=j;
 			particle[cluster[i].sub[j]].cluster=0;
 			particle[cluster[i].sub[j]].mass=1.0;
-			particle[cluster[i].sub[j]].radius=0.5;
-			cluster[i].radii=0.56;
+			particle[cluster[i].sub[j]].radius=Particle_radius;
+			cluster[i].radii=Particle_radius;
 			// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
 			particle[cluster[i].sub[j]].vel=cluster[i].vel;
 			particle[cluster[i].sub[j]].pos_bdyfxd=particle[cluster[i].sub[j]].pos;//cluster[i].sub[j].pos;
@@ -1246,6 +1260,13 @@ else {
 					//		cout << temp_mu << '\n';
 					}
 			}	
+
+		for (int l=0; l<3; l++)
+			{						
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].ctr_diff.comp[l] = temp_mu;
+					// cout << temp_mu << '\t';
+			}
 			
 		for (int l=0; l<5; l++)
 			{
@@ -1367,8 +1388,8 @@ else {
 			cluster[i].sub[j]=i;
 			particle[cluster[i].sub[j]].cluster=i;
 			particle[cluster[i].sub[j]].mass=cluster[i].mass;
-			particle[cluster[i].sub[j]].radius=0.5;
-			cluster[i].radii=0.56;
+			particle[cluster[i].sub[j]].radius=Particle_radius;
+			cluster[i].radii=Particle_radius;
 			// particle[i].pos is the position of cluster, and particle[i].sub[i].pos is the spaced fixed position of particles in the cluster; initially all clusters have 1 paricle per cluster, and position of cluster is same as position of spaced fixed sub-particle 
 			particle[cluster[i].sub[j]].vel=cluster[i].vel;
 			particle[cluster[i].sub[j]].pos_bdyfxd={0.0,0.0,0.0};//cluster[i].sub[j].pos;
@@ -1856,7 +1877,26 @@ else {
 					//		cout << temp_mu << '\n';
 					}
 			}	
+
+		for (int l=0; l<3; l++)
+			{						
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].ctr_diff.comp[l] = temp_mu*Particle_radius;		// note correcting for Particle_radius to make it dimensionalized 
+					// cout << temp_mu << '\t';
+			}
 			
+/*						
+    for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
+        { 
+            particle[cluster[i].sub[j]].pos_bdyfxd=particle[cluster[i].sub[j]].pos-cluster[i].ctr_difu;//cluster[i].sub[j].pos;
+ 			particle[cluster[i].sub[j]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[j]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
+ 			particle[cluster[i].sub[j]].pos_bdyfxd.PBC(box,rbox);
+		}
+            cluster[i].pos=cluster[i].ctr_difu;
+			cluster[i].pos.PBC(box,rbox);
+*/
+
+
 		for (int l=0; l<5; l++)
 			{
 				for (int k=0; k<3; k++)

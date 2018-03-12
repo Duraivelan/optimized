@@ -164,7 +164,7 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
 
   for ( mi[x] = 0 ; mi[x] < NrCells[x] ; mi[x]++ )
   {
-    for ( mi[y] = 0 ; mi[y] < NrCells[y] ; mi[y]++ )
+    for ( mi[y] = 0 ; mi[y] < NrCells[y] -1 ; mi[y]++ )		// except top layer assuming shear gradient along Y-direction
     {
       for ( mi[z] = 0 ; mi[z] < NrCells[z] ; mi[z]++ )
       {
@@ -203,7 +203,14 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
           } // m
         } // ii
       } // miz
-/*      for ( mi[z] = NrCells[z]-1 ; mi[z] < NrCells[z] ; mi[z]++ )
+    } // miy
+  } // mix      
+
+  for ( mi[x] = 0 ; mi[x] < NrCells[x] ; mi[x]++ )
+  {
+    for ( mi[y] = NrCells[y] -1 ; mi[y] < NrCells[y] ; mi[y]++ )		// except top layer assuming shear gradient along Y-direction
+    {      
+      for ( mi[z] = 0 ; mi[z] < NrCells[z] ; mi[z]++ )
       {
         for ( ii = 1 ; ii <= grid[mi[x]][mi[y]][mi[z]][0] ; ii++ )
         {
@@ -220,15 +227,12 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
 			//	}
           } // jj
 
-          // particle j in neighbour cell to i
-          for ( m = 0 ; m < 16 ; m++ )
+          // particle j in neighbour cell to i but in same y height // 
+          for ( m = 0 ; m < 4 ; m++ )
           {
-            mj[x]      = periodN[ mi[x] + dm_top[m][x] + 1 ][x];
-            mj[y]      = periodN[ mi[y] + dm_top[m][y] + 1 ][y];
-            mj[z]      = periodN[ mi[z] + dm_top[m][z] + 1 ][z];
-            dR.comp[x] = periodR[ mi[x] + dm_top[m][x] + 1 ][x];
-            dR.comp[y] = periodR[ mi[y] + dm_top[m][y] + 1 ][y];
-            dR.comp[z] = periodR[ mi[z] + dm_top[m][z] + 1 ][z];
+            mj[x]      = periodN[ mi[x] + dm[m][x] + 1 ][x];
+            mj[y]      = periodN[ mi[y] + dm[m][y] + 1 ][y];
+            mj[z]      = periodN[ mi[z] + dm[m][z] + 1 ][z];
             for ( jj = 1 ; jj <= grid[mj[x]][mj[y]][mj[z]][0] ; jj++ )
             {
 				j = grid[mj[x]][mj[y]][mj[z]][jj];
@@ -238,9 +242,31 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
 			//	}
             } // jj
           } // m
+          
+          // particle j in neighbour cell to i but one layer above in y direction
+        for ( int mj_z = -1 ; mj_z < 2 ; mj_z++ )
+         {
+
+			int m_shift_x      = floor (  ((mi[x])/(scale[x]) - (*DEL_BOX) + 2.0*box.comp[x]) * scale[x] ) ;
+
+          for ( int mj_x = m_shift_x -1  ; mj_x < m_shift_x + 3 ; mj_x++ )
+          {
+            mj[x]      = mj_x %  NrCells[x] ;
+            mj[y]      = 0;		// bottom most y cell 
+            mj[z]      = periodN[ mi[z] + mj_z + 1 ][z];
+            for ( jj = 1 ; jj <= grid[mj[x]][mj[y]][mj[z]][0] ; jj++ )
+            {
+				j = grid[mj[x]][mj[y]][mj[z]][jj];
+		//	if (particle[i].cluster!=particle[j].cluster)
+			//	{
+					#include "pairforce.h"
+			//	}
+            } // jj
+          } // mj_x
+        } // mj_z
+          
         } // ii
       } // miz
-*/
     } // miy
   } // mix
 

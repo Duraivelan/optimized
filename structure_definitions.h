@@ -136,7 +136,6 @@ struct SubData
   int cluster;
   double charge;
 
-
 /*double sigma;
   double eps;
   double mass; */
@@ -181,6 +180,7 @@ struct ParticleData
   double radii;
   double radii_gyr;
   double mass;
+  vctr3D ctr_diff;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

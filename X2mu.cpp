@@ -278,7 +278,7 @@ for (int i=0; i<NrParticles; i++)
 								cout << bead[i].pos.comp[0] << "\t" << bead[i].pos.comp[1] << "\t" << bead[i].pos.comp[2] << "\t" <<  endl;
 								cout << bead[j].pos.comp[0] << "\t" << bead[j].pos.comp[1] << "\t" << bead[j].pos.comp[2] << "\t" <<  endl;
 
-								abort();
+						//		abort();
 							}	
 					}
 
@@ -599,7 +599,7 @@ for (int i=0; i<NrParticles; i++)
 						}						
 					
 					Xi_f_v	+=		Xi_f_v_ij ;  
-					Xi_f_w 	-= 	( 	Xi_f_w_ij		- 	(	Xi_f_v_ij*Aj	)	)	;
+					Xi_f_w 	+= 	( 	Xi_f_w_ij		- 	(	Xi_f_v_ij*Aj	)	)	;
 				//	Xi_t_v 	+= 	(	Ai*Xi_f_v_ij	+		Xi_t_v_ij    	)    	; 	// note minus sign not sure, but for i,j order of two particle mobilities or tr, rt confusion !!
 					Xi_t_w 	+= 	( 	Xi_t_w_ij    	-	(	Xi_t_v_ij*Aj 	) 	+ 			Ai*Xi_f_w_ij	-	Ai*Xi_f_v_ij*Aj	)	;
 				
@@ -651,10 +651,10 @@ for (int i=0; i<NrParticles; i++)
 				}
 		}
 
-				//	Xi_t_v = Xi_f_w;
-				//	Xi_f_w = ~Xi_t_v;
+					Xi_t_v = Xi_f_w;			// storing in the opposite way tr,rt as garcia gives right result don't know why !!
+					Xi_f_w = ~Xi_t_v;
 				
-					Xi_t_v = ~Xi_f_w;
+				//	Xi_t_v = ~Xi_f_w;
 
 	 			// 6x6 format					
 	 				// column major format
