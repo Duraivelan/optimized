@@ -83,7 +83,7 @@ else {
    	std::istringstream currentLine0(line0);  
    	currentLine0 >> eta_0;
    	eta_6pi = eta_0*6.0*M_PI ; 
-  	cout << eta_0 << endl;
+//  	cout << eta_0 << endl;
 	
 	currentLine0.str("");
 	currentLine0.clear(); // Clear state flags.
@@ -91,7 +91,7 @@ else {
 	currentLine0.str(line0); 
 
    	currentLine0 >> radius;
-   	cout << radius << endl;
+ //  	cout << radius << endl;
 
 	currentLine0.str("");
 	currentLine0.clear(); // Clear state flags.
@@ -99,7 +99,7 @@ else {
 	currentLine0.str(line0); 
 
 	currentLine0 >> NrParticles;
-  	cout << NrParticles << endl;
+//  	cout << NrParticles << endl;
 
 }
 
@@ -130,7 +130,7 @@ else {
         currentLine >> bead[i].pos.comp[1];
         currentLine >> bead[i].pos.comp[2];
         currentLine >> bead[i].radius;
-        bead[i].pos.echo();
+    //    bead[i].pos.echo();
 	//	bead[i].pos -=	{0.00005928340346402,	0.00080821531050206,	-0.00235868146021563};
 	//	bead[i].pos +=	{10.00005928340346402,	10.00080821531050206,	-10.00235868146021563};
 	//	bead[i].pos -=	{-0.00011388819248180,	0.00062502834907899,-0.00070102319815044};
@@ -783,7 +783,7 @@ ctr_diff.comp[2] = - ( temp_mat[2]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[5]*(
 
 // ctr_diff.echo();
  cout.precision(17);
- cout<<"center of diffusion"<<'\t'<<ctr_diff.comp[0]<<'\t'<<ctr_diff.comp[1]<<'\t'<<ctr_diff.comp[2]<<std::endl ;
+// cout<<"center of diffusion"<<'\t'<<ctr_diff.comp[0]<<'\t'<<ctr_diff.comp[1]<<'\t'<<ctr_diff.comp[2]<<std::endl ;
 
 mtrx3D D_tt, D_tr, D_rt , D_rr, U_OD;
 mtrx35D D_td;

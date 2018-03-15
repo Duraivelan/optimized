@@ -131,10 +131,10 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 
 		double com_shift = ( round( ( cluster[i].pos.comp[1] - cluster[j].pos.comp[1] ) * rbox.comp[1] ) * (*DEL_BOX) ) ;
 		
-		cout << "Collision start" << endl;
-		cluster[i].pos.echo();
-		cluster[j].pos.echo();
-		cout << "com shift" << com_shift<< endl;
+	//	cout << "Collision start" << endl;
+	//	cluster[i].pos.echo();
+	//	cluster[j].pos.echo();
+	//	cout << "com shift" << com_shift<< endl;
 
 		cluster[j].pos.comp[0] -= com_shift ; 
 /*
@@ -172,11 +172,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		for (int  k=0; k<cluster[i].Sub_Length; k++) {
 
 		particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
-		cout << "Cluster i" << endl;
-		particle[cluster[i].sub[k]].pos.echo();
-		particle[cluster[i].sub[k]].pos_bdyfxd.echo();
+	//	cout << "Cluster i" << endl;
+	//	particle[cluster[i].sub[k]].pos.echo();
+	//	particle[cluster[i].sub[k]].pos_bdyfxd.echo();
 		particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
-		particle[cluster[i].sub[k]].pos_bdyfxd.echo();		
+	//	particle[cluster[i].sub[k]].pos_bdyfxd.echo();		
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
 	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);				
 		outFile70<<cluster[i].sub[k]<<'\t'<<i<<endl;
@@ -188,11 +188,11 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 	//	cluster[i].sub[k]	=	cluster[j].sub[k-cluster[i].Sub_Length];
 			cluster[i].sub[k] = cluster[j].sub[k-cluster[i].Sub_Length];
 			particle[cluster[i].sub[k]].pos_bdyfxd	 =  particle[cluster[i].sub[k]].pos-cluster[i].pos;
-					cout << "Cluster j" << endl;
-			particle[cluster[i].sub[k]].pos.echo();
-			particle[cluster[i].sub[k]].pos_bdyfxd.echo();			
+	//				cout << "Cluster j" << endl;
+	//		particle[cluster[i].sub[k]].pos.echo();
+	//		particle[cluster[i].sub[k]].pos_bdyfxd.echo();			
 			particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
-			particle[cluster[i].sub[k]].pos_bdyfxd.echo();
+	//		particle[cluster[i].sub[k]].pos_bdyfxd.echo();
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
 			outFile70<<cluster[i].sub[k]<<'\t'<<j<<endl;
@@ -202,7 +202,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		outFile70.close();
 		cluster[i].pos.PBC(box,rbox);	
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
-		cout << "Collision ends" << endl;
+	//	cout << "Collision ends" << endl;
 
 		cluster[i].radii=0;
 		
@@ -227,8 +227,8 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 				cout <<"Cluster No:"<<'\t'<<i<<'\t'<<", Nr. of particles in the cluster"<<'\t'<<cluster[i].Sub_Length<< endl;
 				cout << "*** cluster reached maximum allowed size " << endl;
 				abort();
-			}	
-		
+			}
+				
 		cluster[i].radii_gyr=sqrt(cluster[i].radii_gyr + 0.15/cluster[i].Sub_Length);  	// volume correction term for single spheres from paper Improved Calculation of Rotational Diffusion and Intrinsic Viscosity of Bead Models for
 																						// Macromolecules and Nanoparticles , J. Garcı´a de la TorreJ. Phys. Chem. B 2007, 111, 955-961 955
 
@@ -401,7 +401,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 				cluster[i].pos+= (cluster[i].rotmat*cluster[i].mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt) 
 							//	+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
 								+ cluster[i].rotmat*cluster[i].mobility_tnsr_sqrt*(rand*stochas_norm)
-							//	+ cluster[i].rotmat*cluster[i].mobility_tnsr_tr_sqrt*(rand1*stochas_norm)
+								+ cluster[i].rotmat*cluster[i].mobility_tnsr_tr_sqrt*(rand1*stochas_norm)
 								+ u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt)*(1.0/pos_norm) ;
 								
 				cluster[i].pos.comp[0] -=  round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*box.comp[0]*step*dt ;				
@@ -472,7 +472,7 @@ cluster[i].Stresslet_Br =
 				
 				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*(~cluster[i].rotmat)*(cluster[i].trq*torque_norm*dt)
 								//		+cluster[i].rot_mobility_tnsr_rt*(~cluster[i].rotmat)*(cluster[i].frc*force_norm*dt)
-								//		+  cluster[i].rot_mobility_tnsr_rt_sqrt*(rand*stochas_norm)
+										+  cluster[i].rot_mobility_tnsr_rt_sqrt*(rand*stochas_norm)
 										+  cluster[i].rot_mobility_tnsr_sqrt*(rand1*stochas_norm)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
@@ -631,7 +631,7 @@ const double mu_sqrt=sqrt(mu);
 
 const int  cubic = 1 ; 	// cubic box 
 	
-const double Lx = pow(NrParticles*(4.0/3.0)*M_PI*(bead_radii*bead_radii*bead_radii)/(0.01),1.0/3.0 ); 
+const double Lx = pow(NrParticles*(4.0/3.0)*M_PI*(bead_radii*bead_radii*bead_radii)/(0.007),1.0/3.0 ); 
 const double Ly = Lx ; // assuming cubic 
 const double Lz = Lx ; 
 const double Volume =Lx*Ly*Lz;
@@ -660,7 +660,7 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-long long int step=0, nSteps=10000, frame=1000;
+long long int step=0, nSteps=10000, frame=25000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
@@ -1126,7 +1126,7 @@ else {
 	//	cluster[i].quat={0.9239  ,  0.3827   ,      0.0     ,    0.0};
 	//	cluster[i].quat={0.987688340595138,	0.156434465040231,	0.0,	0.0};	//   pi/10;
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
-		cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
+	//	cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
 	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 
@@ -1412,7 +1412,7 @@ step = restart_frame_offset*frame+1;
 
 double DEL_BOX	= ( shear_rate * box.comp[0] * step * dt ) -  floor (  shear_rate * step * dt  )*( box.comp[0] )	 ; // amount by which box shifts when sheared 
 
-forceUpdate( particle, &p_energy, &combine_now , combine, &DEL_BOX, NrParticles , Lx, Ly, Lz);
+forceUpdate( particle, &p_energy, &combine_now , combine, &DEL_BOX, NrParticles , Lx, Ly, Lz, shear_rate);
 
 
 // convert subforces into total generalized forces on particles 
@@ -1444,7 +1444,7 @@ particle[1].charge = -1.0;
         cluster[i].frc=null3D;
         cluster[i].trq=null3D;
         cluster[i].Iner_tnsr=null33D;
-		cluster[i].pos.echo();
+	//	cluster[i].pos.echo();
 
    for (int  j = 0 ; j < cluster[i].Sub_Length ; j ++ )
 		{
@@ -1673,7 +1673,7 @@ do {
 	double DEL_BOX	= ( shear_rate * box.comp[0] * step * dt ) -  floor (  shear_rate * step * dt  )*( box.comp[0] )	 ; // amount by which box shifts when sheared 
 
 
-	forceUpdate( particle, &p_energy, &combine_now , combine, &DEL_BOX , NrParticles, Lx, Ly, Lz);
+	forceUpdate( particle, &p_energy, &combine_now , combine, &DEL_BOX , NrParticles, Lx, Ly, Lz, shear_rate);
 
 if (xxclustering && combine_now>0) 
 		{	

@@ -20,7 +20,7 @@ using namespace std;
         }   
     } ;
 
-void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], double* DEL_BOX, const int NrParticles, const double Lx,  const double Ly,  const double Lz ) {
+void forceUpdate( vector<SubData>& particle,  double *p_energy, int* combine_now , int combine[][4], double* DEL_BOX, const int NrParticles, const double Lx,  const double Ly,  const double Lz , double shear_rate) {
 
 
 /*
@@ -160,6 +160,9 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
 	particle[i].frc=null3D;
 }
 
+if(shear_rate!=0.0) {
+	
+
 // calculate energy and forces
 
   for ( mi[x] = 0 ; mi[x] < NrCells[x] ; mi[x]++ )
@@ -204,8 +207,8 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
         } // ii
       } // miz
     } // miy
-  } // mix      
-
+  } // mix    
+    	
   for ( mi[x] = 0 ; mi[x] < NrCells[x] ; mi[x]++ )
   {
     for ( mi[y] = NrCells[y] -1 ; mi[y] < NrCells[y] ; mi[y]++ )		// except top layer assuming shear gradient along Y-direction
@@ -269,6 +272,56 @@ for ( int i = 0 ; i < NrParticles ; i ++ )
       } // miz
     } // miy
   } // mix
+}else{
+
+// calculate energy and forces
+
+  for ( mi[x] = 0 ; mi[x] < NrCells[x] ; mi[x]++ )
+  {
+    for ( mi[y] = 0 ; mi[y] < NrCells[y] ; mi[y]++ )		// except top layer assuming shear gradient along Y-direction
+    {
+      for ( mi[z] = 0 ; mi[z] < NrCells[z] ; mi[z]++ )
+      {
+        for ( ii = 1 ; ii <= grid[mi[x]][mi[y]][mi[z]][0] ; ii++ )
+        {
+          i = grid[mi[x]][mi[y]][mi[z]][ii];
+
+          // particle j in same cell as i
+          dR = null3D;
+          for ( jj = ii + 1 ; jj <= grid[mi[x]][mi[y]][mi[z]][0] ; jj++ )
+          {
+			j = grid[mi[x]][mi[y]][mi[z]][jj];
+		//	if (particle[i].cluster!=particle[j].cluster)
+			//	{
+					#include "pairforce.h"
+			//	}
+          } // jj
+
+          // particle j in neighbour cell to i
+          for ( m = 0 ; m < 13 ; m++ )
+          {
+            mj[x]      = periodN[ mi[x] + dm[m][x] + 1 ][x];
+            mj[y]      = periodN[ mi[y] + dm[m][y] + 1 ][y];
+            mj[z]      = periodN[ mi[z] + dm[m][z] + 1 ][z];
+            dR.comp[x] = periodR[ mi[x] + dm[m][x] + 1 ][x];
+            dR.comp[y] = periodR[ mi[y] + dm[m][y] + 1 ][y];
+            dR.comp[z] = periodR[ mi[z] + dm[m][z] + 1 ][z];
+            for ( jj = 1 ; jj <= grid[mj[x]][mj[y]][mj[z]][0] ; jj++ )
+            {
+				j = grid[mj[x]][mj[y]][mj[z]][jj];
+		//	if (particle[i].cluster!=particle[j].cluster)
+			//	{
+					#include "pairforce.h"
+			//	}
+            } // jj
+          } // m
+        } // ii
+      } // miz
+    } // miy
+  } // mix    
+    
+
+}
 
 }
 
