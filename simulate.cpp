@@ -660,7 +660,7 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-long long int step=0, nSteps=10000, frame=25000;
+long long int step=0, nSteps=10000, frame=5000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
@@ -1007,7 +1007,14 @@ else {
 					//		cout << temp_mu << '\n';
 					}
 			}	
-			
+
+		for (int l=0; l<3; l++)
+			{						
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].ctr_diff.comp[l] = temp_mu*Particle_radius;
+					// cout << temp_mu << '\t';
+			}
+						
 		for (int l=0; l<5; l++)
 			{
 				for (int k=0; k<3; k++)
@@ -1264,7 +1271,7 @@ else {
 		for (int l=0; l<3; l++)
 			{						
 							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
-							cluster[i].ctr_diff.comp[l] = temp_mu;
+							cluster[i].ctr_diff.comp[l] = temp_mu*Particle_radius;
 					// cout << temp_mu << '\t';
 			}
 			
@@ -1885,16 +1892,16 @@ else {
 					// cout << temp_mu << '\t';
 			}
 			
-/*						
+						
     for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
         { 
-            particle[cluster[i].sub[j]].pos_bdyfxd=particle[cluster[i].sub[j]].pos-cluster[i].ctr_difu;//cluster[i].sub[j].pos;
- 			particle[cluster[i].sub[j]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[j]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
+            particle[cluster[i].sub[j]].pos_bdyfxd=particle[cluster[i].sub[j]].pos-cluster[i].ctr_diff;//cluster[i].sub[j].pos;
+ 			particle[cluster[i].sub[j]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[j]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (DEL_BOX) ) ;
  			particle[cluster[i].sub[j]].pos_bdyfxd.PBC(box,rbox);
 		}
-            cluster[i].pos=cluster[i].ctr_difu;
+            cluster[i].pos=cluster[i].ctr_diff;
 			cluster[i].pos.PBC(box,rbox);
-*/
+
 
 
 		for (int l=0; l<5; l++)

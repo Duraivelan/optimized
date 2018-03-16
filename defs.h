@@ -4,7 +4,7 @@
 # include "structure_definitions.h"
 const double m =1.0;
 const double inv_mass =1.0/m;
-const double dt=0.000004;
+const double dt=0.00002;
 const double r_cut  = 1.0 ; //pow(2.0,(1.0/6.0));
 const double r_cut2 = (r_cut)*(r_cut);
 const double sigma =1.0, epsilon =1.0;
