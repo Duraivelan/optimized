@@ -32,8 +32,9 @@
 # include "defs.h"
 # include "rigid_force.h"
 
+#include</storage1/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
 //#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-#include<Eigen/Eigenvalues>
+//#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -660,7 +661,7 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-long long int step=0, nSteps=10000, frame=5000;
+long long int step=0, nSteps=10000, frame=100000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
@@ -1892,6 +1893,7 @@ else {
 					// cout << temp_mu << '\t';
 			}
 			
+            cluster[i].ctr_diff+=cluster[i].pos;
 						
     for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
         { 
