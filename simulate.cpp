@@ -154,6 +154,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		mtrx3D S_s ;
 		mtrx3D S_Br_b ;
 		mtrx3D S_Br_s ;
+		mtrx3D S_Br_diff_b ;
+		mtrx3D S_Br_diff_s ;
 		for(int j=0;j<5;j++) 
 			{		
 				E_inf_bt.comp[j] = 0.0;
@@ -221,11 +223,13 @@ cluster[i].Stresslet_Br =
 					
 					S_s = (cluster[i].rotmat)*S_b*(~cluster[i].rotmat);		
 					S_Br_s = (cluster[i].rotmat)*S_Br_b*(~cluster[i].rotmat);		
+					S_Br_diff_s = (cluster[i].rotmat)*(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) )*(~cluster[i].rotmat);		
 					
 					for(int m=0;m<5;m++) 
 						{		
 						cluster[i].Stresslet.comp[m]=0.0;			
 						cluster[i].Stresslet_Br.comp[m]=0.0;			
+						cluster[i].Stresslet_Br_diff.comp[m]=0.0;			
 							
 							for(int k=0;k<3;k++) 
 								{
@@ -233,6 +237,7 @@ cluster[i].Stresslet_Br =
 										{
 											cluster[i].Stresslet.comp[m]	+=	 e_S_a[m][k][l]*S_s.comp[k][l];
 											cluster[i].Stresslet_Br.comp[m]	+=	 e_S_a[m][k][l]*S_Br_s.comp[k][l];
+											cluster[i].Stresslet_Br_diff.comp[m]	+=	 e_S_a[m][k][l]*S_Br_diff_s.comp[k][l];
 										}
 								}
 						}										
@@ -274,7 +279,7 @@ cluster[i].Stresslet_Br =
 					}
 */							
 		
-		//		cluster[i].pos.PBC(box,rbox);
+				cluster[i].pos.PBC(box,rbox);
 //			} 
 /*			else 
 			{
@@ -292,6 +297,16 @@ cluster[i].Stresslet_Br =
 
 int main() {
 
+
+
+// Levi-Civita 
+
+	double Levi_Civi[3][3][3] = {
+							{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,-1.0,0.0}},
+							{{0.0,0.0,-1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
+							{{0.0,1.0,0.0},{-1.0,0.0,0.0},{0.0,0.0,0.0}}
+							};
+	
 
 if(xxcluster_restart) {
 	std::ifstream fin("random_device_state_new.txt");
@@ -435,10 +450,11 @@ int restart_frame_offset=0;
 
 vctr5D Stresslet_mean = null5D;
 vctr5D Stresslet_Br_mean = null5D;
+vctr5D Stresslet_Br_diff_mean = null5D;
 vctr5D Stresslet_sqr_mean = null5D;
 vctr5D Stresslet_Br_sqr_mean = null5D;
-vctr5D Stresslet_tot_mean = null5D;
-vctr5D Stresslet_tot_sqr_mean = null5D;
+vctr5D Stresslet_Br_diff_sqr_mean = null5D;
+
 
 double max_cos=0.0,min_cos=0.0,min_tan=0.0,max_tan=0.0, cos_val=0.0,tan_val=0.0;
 
@@ -740,6 +756,53 @@ else {
 							cluster[i].mobility_tnsr_dr.comp[l][k] = -cluster[i].mobility_tnsr_rd.comp[k][l];		// mu_dr=-mu_rd
 					}
 			}        
+			
+ double mu_S_tau[3][3][3]={};
+ 
+ 	for (int a=0; a<3; a++)
+		{
+		for (int b=0; b<3; b++)
+			{
+			for (int g=0; g<3; g++)
+				{
+					mu_S_tau[a][b][g] = 0.0;
+					
+				for (int p=0; p<5; p++)
+					{
+							mu_S_tau[a][b][g]	+=		e_g_S[p][a][b]*cluster[i].mobility_tnsr_dr.comp[p][g];		
+
+					}													
+				}
+			}
+		}			
+			
+		
+	for (int pi=0; pi<3; pi++)
+		{
+		for (int del=0; del<3; del++)
+			{
+			
+			cluster[i].grad_mobility_S_tau_kb_T.comp[pi][del] = 0.0 ;
+			
+			for (int rho=0; rho<3; rho++)
+				{
+				for (int sig=0; sig<3; sig++)
+					{
+
+						cluster[i].grad_mobility_S_tau_kb_T.comp[pi][del]		+=		Levi_Civi[pi][rho][sig]*mu_S_tau[sig][del][rho];	
+
+								
+					}
+				}				
+			}
+		}
+		
+		cluster[i].grad_mobility_S_tau_kb_T = cluster[i].grad_mobility_S_tau_kb_T * (kb*T0) ;
+		
+		(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) ).echo();
+		cluster[i].grad_mobility_S_tau_kb_T.echo();
+		
+ 		
  		for (int l=0; l<3; l++)
 			{
 							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
@@ -969,7 +1032,7 @@ for ( int i = 0 ; i < 1; i ++ )
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
 	//	cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -1369,11 +1432,11 @@ do {
 					  
 	Stresslet_mean += cluster[0].Stresslet;
 	Stresslet_Br_mean += cluster[0].Stresslet_Br;
-	Stresslet_tot_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br);
+	Stresslet_Br_diff_mean += cluster[0].Stresslet_Br_diff;
 	
 	Stresslet_sqr_mean += cluster[0].Stresslet.norm2();
 	Stresslet_Br_sqr_mean += cluster[0].Stresslet_Br.norm2();
-	Stresslet_tot_sqr_mean += (cluster[0].Stresslet+cluster[0].Stresslet_Br).norm2();
+	Stresslet_Br_diff_sqr_mean += cluster[0].Stresslet_Br_diff.norm2();
 	
 	// binning of orbital constant of ellipsoid , C
 	
@@ -1507,7 +1570,7 @@ if (step%(frame)==0)
 			}
 
 	}
-*/
+
 
 if (step%(frame)==0) 
 	{ 
@@ -1534,7 +1597,7 @@ if (step%(frame)==0)
      	outFile5<<'\n'<<std::endl;
 		outFile5.close();
 	}
-
+*/
 	simu_time+=dt;
 	step+=1;
 
@@ -1552,8 +1615,8 @@ for ( int i = 0 ; i < 100; i ++ )
 					  <<Stresslet_sqr_mean.comp[0]<<'\t'<<Stresslet_sqr_mean.comp[1]<<'\t'<<Stresslet_sqr_mean.comp[2]<<'\t'<<Stresslet_sqr_mean.comp[3]<<'\t'<<Stresslet_sqr_mean.comp[4]<<'\t'	
 					  <<Stresslet_Br_mean.comp[0]<<'\t'<<Stresslet_Br_mean.comp[1]<<'\t'<<Stresslet_Br_mean.comp[2]<<'\t'<<Stresslet_Br_mean.comp[3]<<'\t'<<Stresslet_Br_mean.comp[4]<<'\t'	
 					  <<Stresslet_Br_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_sqr_mean.comp[4]<<'\t'	
-					  <<Stresslet_tot_mean.comp[0]<<'\t'<<Stresslet_tot_mean.comp[1]<<'\t'<<Stresslet_tot_mean.comp[2]<<'\t'<<Stresslet_tot_mean.comp[3]<<'\t'<<Stresslet_tot_mean.comp[4]<<'\t'	
-					  <<Stresslet_tot_sqr_mean.comp[0]<<'\t'<<Stresslet_tot_sqr_mean.comp[1]<<'\t'<<Stresslet_tot_sqr_mean.comp[2]<<'\t'<<Stresslet_tot_sqr_mean.comp[3]<<'\t'<<Stresslet_tot_sqr_mean.comp[4]<<'\t'	
+					  <<Stresslet_Br_diff_mean.comp[0]<<'\t'<<Stresslet_Br_diff_mean.comp[1]<<'\t'<<Stresslet_Br_diff_mean.comp[2]<<'\t'<<Stresslet_Br_diff_mean.comp[3]<<'\t'<<Stresslet_Br_diff_mean.comp[4]<<'\t'	
+					  <<Stresslet_Br_diff_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[4]<<'\t'	
 					  <<endl;
     }
 if (step%(1000*1000*10*frame)==0) 

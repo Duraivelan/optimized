@@ -146,8 +146,6 @@ else {
 	mtrx3D mu_w_t;
 	mtrx35D mu_E_f;
 	mtrx35D mu_E_t;
-	mtrx35D mu_v_S;
-	mtrx35D mu_w_S;
 	mtrx55D mu_E_S;
 
 	mtrx3D Xi_f_v_ij;
@@ -196,7 +194,7 @@ else {
 	double H_IJK[3][3][3];
 	double M_IJKL[3][3][3][3];
 		
-
+/*
 // basis set for stress normal differences
 	double e_k_S[5][3][3]= {
 							{{1.0,0.0,0.0},{0.0,-1.0,0.0},{0.0,0.0,0.0}},
@@ -232,7 +230,44 @@ else {
 							{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
 							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
 						};
-						
+				*/		
+// the five base matrices for strain tensor // option 5 :  equation 419 wouter's tex version clusterdyn_110816_1556
+
+	double e_g_S[5][3][3]= {
+							{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
+							{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
+						};
+
+
+	double e_S_a[5][3][3]= {
+							{{ 2.0/3.0,0.0,0.0},{0.0,-1.0/3.0,0.0},{0.0,0.0,-1.0/3.0}},
+							{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.5},{0.0,0.0,0.0},{0.5,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
+							{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
+						};
+   
+
+	double e_E_a[5][3][3]= {
+							{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
+							{{0.0,1.0,0.0},{1.0,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,1.0},{0.0,0.0,0.0},{1.0,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,1.0},{0.0,1.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
+						};
+
+
+	double e_g_E[5][3][3]= {
+							{{ 2.0/3.0,0.0,0.0},{0.0,-1.0/3.0,0.0},{0.0,0.0,-1.0/3.0}},
+							{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.5},{0.0,0.0,0.0},{0.5,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.5},{0.0,0.5,0.0}},
+							{{-1.0/3.0,0.0,0.0},{0.0, 2.0/3.0,0.0},{0.0,0.0,-1.0/3.0}}
+						};
+   						
 						   
    double mu_11N[121*NrParticles*NrParticles] ;  		// grand mobility matrix
    double zeta_11N[121*NrParticles*NrParticles] ;  	// grand resistance matrix
@@ -252,7 +287,6 @@ else {
 // important all lengths have been normalized by particle radius as metioned in Page 46, Appendix A - Durlofsky, Louis, John F. Brady, and Georges Bossis. 
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
-#if 0
 				
 for (int i=0; i<NrParticles; i++)
 	{
@@ -424,7 +458,6 @@ for (int i=0; i<NrParticles; i++)
 	mu_E_S	= 		null55D ;	
 	mu_E_f	= 		null35D ;	
 	mu_E_t	= 		null35D ;	
-	mu_v_S	= 		null35D ;	
 
 	
 	for (int p=0; p<5; p++)
@@ -435,11 +468,8 @@ for (int i=0; i<NrParticles; i++)
 				{
 				for (int b=0; b<3; b++)
 					{
-						mu_E_f.comp[g][p]		+=		e_k_E[p][a][b]*mu_E_f_abg[a][b][g];	// 
-						mu_E_t.comp[g][p]		+=		e_k_E[p][a][b]*mu_E_t_abg[a][b][g];
-						mu_v_S.comp[g][p]		+=		mu_E_f_abg[a][b][g]*e_S_k[p][a][b];		// going from mu_E_f_abg matrix to mu_v_S matrix hence circulation of indices 
-																								// mu_E_f_[a][b][g] = mu_v_S_[g][a][b]
-																								// it gives mu_v_S(j,i) from mu_E_f(i,j)
+						mu_E_f.comp[g][p]		+=		mu_E_f_abg[a][b][g]*e_g_S[p][a][b];	// going from g_dt matrix to ~g_td matrix hence circulation of indices 
+						mu_E_t.comp[g][p]		+=		mu_E_t_abg[a][b][g]*e_g_S[p][a][b];
 								
 					}
 				}				
@@ -454,7 +484,7 @@ for (int i=0; i<NrParticles; i++)
 						{
 						for (int d=0; d<3; d++)
 							{							
-								mu_E_S.comp[p][s]		+=		e_k_E[p][a][b]*mu_E_S_abgd[a][b][g][d]*e_S_k[s][g][d];			
+								mu_E_S.comp[p][s]		+=		e_E_a[p][a][b]*mu_E_S_abgd[a][b][g][d]*e_g_S[s][g][d];			
 							}
 						}													
 					}
@@ -483,9 +513,9 @@ for (int i=0; i<NrParticles; i++)
 				for (int k=0; k<3; k++)
 					{				
 						// column major format
-						zeta_11N[k	+	11*NrParticles*l	+	3*i	+	55*NrParticles*j	+	66*NrParticles*NrParticles						] 	=	 -mu_v_S.comp[k][l];		// because mu_v_S(i,j) = -mu_v_S(j,i);
+						zeta_11N[k	+	11*NrParticles*l	+	3*i	+	55*NrParticles*j	+	66*NrParticles*NrParticles						] 	=	-mu_E_f.comp[k][l];		// because mu_v_S(i,j) = mu_E_f(j,i);
 						zeta_11N[k	+	11*NrParticles*l	+	3*i	+	55*NrParticles*j	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 mu_E_t.comp[k][l];		// because mu_w_S(i,j) = mu_E_t(j,i);
-						zeta_11N[k	+	11*NrParticles*l	+	3*j	+	55*NrParticles*i	+	66*NrParticles*NrParticles						] 	=	 mu_v_S.comp[k][l];		// because mu_v_S(j,i) = ~mu_E_f(i,j);
+						zeta_11N[k	+	11*NrParticles*l	+	3*j	+	55*NrParticles*i	+	66*NrParticles*NrParticles						] 	=	 mu_E_f.comp[k][l];		// because mu_v_S(j,i) = mu_E_t(i,j);
 						zeta_11N[k	+	11*NrParticles*l	+	3*j	+	55*NrParticles*i	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 mu_E_t.comp[k][l];		// because mu_w_S(j,i) = mu_E_t(i,j);
 						
 					}
@@ -557,8 +587,8 @@ for (int i=0; i<NrParticles; i++)
 								Deli.comp[k][a]	=	0.0	;
 								for (int b=0; b<3; b++)
 								{
-									Delj.comp[a][k]	+=	e_E_k[k][b][a]	*	bead[j].pos.comp[b]	;
-									Deli.comp[k][a]	+=	e_E_k[k][a][b]	*	bead[i].pos.comp[b]	;
+									Delj.comp[a][k]	+=	e_g_E[k][b][a]	*	bead[j].pos.comp[b]	;
+									Deli.comp[k][a]	+=	e_g_E[k][a][b]	*	bead[i].pos.comp[b]	;
 								}
 							}		
 						}
@@ -708,289 +738,6 @@ for (int i=0; i<NrParticles; i++)
 					xi_11x11[34] = Xi_t_w.comp[1][2] ; 
 					xi_11x11[35] = Xi_t_w.comp[2][2] ; 				
 
-#endif
-
-// Ellipsoid mobilities from Kim and Karrila book ; Page 64
-
-	mtrx3D Friction_Tnsr_tt(0.0,0.0,0.0);
-	mtrx3D Friction_Tnsr_tr(0.0,0.0,0.0);
-	mtrx3D Friction_Tnsr_rt(0.0,0.0,0.0);
-	mtrx3D Friction_Tnsr_rr(0.0,0.0,0.0);
- 	mtrx53D Friction_Tnsr_dt 	=	null53D;
-	mtrx53D Friction_Tnsr_dr	= 	null53D;
-	mtrx35D Friction_Tnsr_td	=	null35D;
-	mtrx35D Friction_Tnsr_rd	=	null35D;
-	mtrx55D Friction_Tnsr_dd	=	null55D;
-
-double c = 1.0;	// short axis
-
-double a = 100.0*c;	// long axis
-
-double a_bead = 100.0;	// long axis of bead ellipsoid
-
-double a_bead3 = a_bead*a_bead*a_bead;	
-
-double e = ( pow(( a*a - c*c ),0.5 )) / a ; 	// eccentricity
-
-double e2 = e*e ;
-
-double e3 = e*e*e ;
-
-double e5 = e2*e3 ;
-
-double L = log((1.0+e)/(1.0-e)); 
-
-double XA = (8.0/3.0)*(e3)/(-2.0*e + ( 1.0+e2 )*L) ;
-
-cout << "XA = " << XA << endl;
-cout << "aspect ratio = " << a << endl;
-
-double YA = (16.0/3.0)*(e3)/(2.0*e + ( 3.0*(e2) - 1.0 )*L) ;
-
-double YB = 0.0 ; 
-
-double XC = (4.0/3.0)*(e3)*(1.0-e2)/(2.0*e - ( 1.0-e2 )*L) ;
-
-double YC = (4.0/3.0)*(e3)*(2.0-e2)/(-2.0*e + ( 1.0+e2 )*L) ;
-
-double XG = 0.0 ;
-
-double YG = 0.0 ;
-
-double YH = (4.0/3.0)*(e5)/(-2.0*e + ( 1.0+e2 )*L) ;
-
-double XM =  (8.0/15.0)*(e5)/(( 3.0-e2 )*L -6.0*e) ;
-
-double YM_div1= 2.0*e*(2.0*(e2)-3.0) + 3.0*(1.0-e2)*L ; 
-
-double YM_div2 = -2.0*e + (1.0+e2)*L ;
-
-double YM = (4.0/5.0)*(e5)*(2.0*e*(1.0-2.0*(e2)) -(1.0-e2)*L)/(YM_div1*YM_div2) ;
-
-double ZM = (16.0/5.0)*(e5)*(1.0-e2)/( 3.0*((1.0-e2)*(1.0-e2))*L - 2.0*e*(3.0-5.0*(e2)) ) ; 
-
-mtrx3D Friction_Tnsr_tt_anl;
-mtrx3D Friction_Tnsr_tr_anl;
-mtrx3D Friction_Tnsr_rt_anl;
-mtrx3D Friction_Tnsr_rr_anl;
-double G_IJK_anl[3][3][3];
-double H_IJK_anl[3][3][3];
-double M_IJKL_anl[3][3][3][3];
-
-mtrx53D Friction_Tnsr_dt_anl 	=	null53D;
-mtrx53D Friction_Tnsr_dr_anl	= 	null53D;
-mtrx35D Friction_Tnsr_td_anl	=	null35D;
-mtrx35D Friction_Tnsr_rd_anl	=	null35D;
-mtrx55D Friction_Tnsr_dd_anl	=	null55D;
-
-vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take it to be along z-axis
- 
-				for (int i=0; i<3; i++)
-					{
-					for (int j=0; j<3; j++)
-						{
-							double ep_ijk_e_k = 0.0;
-							
-						for (int k=0; k<3; k++)
-							{	
-
-								double ep_jkl_e_l = 0.0;
-								double ep_ikl_e_l = 0.0;
-								
-								for (int l=0; l<3; l++)
-									{
-										ep_jkl_e_l	+=	Levi_Civi[j][k][l]*e_ab_unit.comp[l];
-										ep_ikl_e_l	+=	Levi_Civi[i][k][l]*e_ab_unit.comp[l];
-										
-										M_IJKL_anl[i][j][k][l]	=	 ((3.0/2.0)*XM*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 			-	(1.0/3.0)*kron_del[i][j])*(e_ab_unit.comp[k]*e_ab_unit.comp[l]	
-																-(1.0/3.0)*kron_del[k][l])
-																+(1.0/2.0)*YM*(e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	+	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
-																					+ e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	+ 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
-																					- 4.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]	)
-																			
-																+(1.0/2.0)*ZM*(kron_del[i][k]*kron_del[j][l]		+ 	kron_del[j][k]*kron_del[i][l]	- 	kron_del[i][j]*kron_del[k][l]
-																+ e_ab_unit.comp[i]*e_ab_unit.comp[j]*kron_del[k][l]	+	kron_del[i][j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]	
-																+ e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]*e_ab_unit.comp[l]
-																- e_ab_unit.comp[i]*kron_del[j][l]*e_ab_unit.comp[k]	- 	e_ab_unit.comp[j]*kron_del[i][l]*e_ab_unit.comp[k]
-																- e_ab_unit.comp[i]*kron_del[j][k]*e_ab_unit.comp[l]	- 	e_ab_unit.comp[j]*kron_del[i][k]*e_ab_unit.comp[l]
-																));
-																																							
-									}	// l
-									
-								ep_ijk_e_k					+=	Levi_Civi[i][j][k]*e_ab_unit.comp[k];
-								
-								G_IJK_anl[i][j][k]	=	(XG*(e_ab_unit.comp[i]*e_ab_unit.comp[j] 	-	(1.0/3.0)*kron_del[i][j])*e_ab_unit.comp[k]
-																+ 		YG*(e_ab_unit.comp[i]*kron_del[j][k]		+ 	e_ab_unit.comp[j]*kron_del[i][k]	-	2.0*e_ab_unit.comp[i]*e_ab_unit.comp[j]*e_ab_unit.comp[k]	)	);
-										
-								H_IJK_anl[i][j][k]	= 	(YH*(e_ab_unit.comp[i]*ep_jkl_e_l			+	e_ab_unit.comp[j]*ep_ikl_e_l										)	);
-							}	// k		
-
-							Friction_Tnsr_tt_anl.comp[i][j]		=	(XA*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	YA*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
-							
-							Friction_Tnsr_rt_anl.comp[i][j]		=	(													YB*ep_ijk_e_k													);
-						
-							Friction_Tnsr_rr_anl.comp[i][j]		=	(XC*e_ab_unit.comp[i]*e_ab_unit.comp[j]	+ 	YC*(kron_del[i][j]	- e_ab_unit.comp[i]*e_ab_unit.comp[j]	)	);
-									
-							Friction_Tnsr_tr_anl	= 	    Friction_Tnsr_rt_anl*(1.0);		
-	
-						}	// j
-					}	// i	
-
-
-	for (int p=0; p<5; p++)
-		{
-		for (int g=0; g<3; g++)
-			{
-			for (int a=0; a<3; a++)
-				{
-				for (int b=0; b<3; b++)
-					{
-
-						Friction_Tnsr_dt_anl.comp[p][g]		+=		e_k_S[p][a][b]*G_IJK_anl[a][b][g];	
-						Friction_Tnsr_dr_anl.comp[p][g]		+=		e_k_S[p][a][b]*H_IJK_anl[a][b][g]*a_bead3*(4.0/6.0) ;	// corection for ellipsoid size	
-						Friction_Tnsr_td_anl.comp[g][p]		+=		G_IJK_anl[a][b][g]*e_E_k[p][a][b];	// going from g_dt matrix to ~g_td matrix hence circulation of indices 
-						Friction_Tnsr_rd_anl.comp[g][p]		+=		H_IJK_anl[a][b][g]*e_E_k[p][a][b]*a_bead3*(4.0/6.0) ;	// corection for ellipsoid size
-								
-					}
-				}				
-			}
-		for (int s=0; s<5; s++)
-			{
-			for (int a=0; a<3; a++)
-				{
-				for (int b=0; b<3; b++)
-					{
-					for (int g=0; g<3; g++)
-						{
-						for (int d=0; d<3; d++)
-							{							
-								Friction_Tnsr_dd_anl.comp[p][s]		+=		e_k_S[p][a][b]*M_IJKL_anl[a][b][g][d]*e_E_k[s][g][d]*a_bead3*(20.0/18.0);	// corection for ellipsoid size		
-
-							}
-						}													
-					}
-				}
-			}
-		}			
-
-	cout << "Friction matrix bead-calc and analytical echos" << endl;
-	Friction_Tnsr_tt.echo();
-	Friction_Tnsr_tt_anl.echo();
-	Friction_Tnsr_tr.echo();
-	Friction_Tnsr_tr_anl.echo();
-	Friction_Tnsr_rt.echo();
-	Friction_Tnsr_rt_anl.echo();
-	Friction_Tnsr_rr.echo();
-	Friction_Tnsr_rr_anl.echo();
-
-	Friction_Tnsr_tt = Friction_Tnsr_tt_anl*a_bead ;		// corection for ellipsoid size
-	Friction_Tnsr_rt = Friction_Tnsr_rt_anl ;
-	Friction_Tnsr_tr = Friction_Tnsr_tr_anl ;
-	Friction_Tnsr_rr = Friction_Tnsr_rr_anl*a_bead3*(8.0/6.0) ;	// corection for ellipsoid size
-	Friction_Tnsr_dt = Friction_Tnsr_dt_anl ;
-	Friction_Tnsr_dr = Friction_Tnsr_dr_anl ;
-	Friction_Tnsr_td = Friction_Tnsr_td_anl ;
-	Friction_Tnsr_rd = Friction_Tnsr_rd_anl ;
-	Friction_Tnsr_dd = Friction_Tnsr_dd_anl ;
-
-	
-
-	for (int k=0; k<5; k++)
-		{				
-			// column major format
-			cout << Friction_Tnsr_dt.comp[k][0]<< '\t'<< Friction_Tnsr_dt.comp[k][1]<< '\t'<< Friction_Tnsr_dt.comp[k][2]<< endl;
-		}
-
-	for (int k=0; k<5; k++)
-		{				
-			// column major format
-				cout << Friction_Tnsr_dt_anl.comp[k][0]<< '\t'<< Friction_Tnsr_dt_anl.comp[k][1]<< '\t'<< Friction_Tnsr_dt_anl.comp[k][2]<< endl;
-		}
-
-	for (int k=0; k<5; k++)
-		{				
-			// column major format
-			cout << Friction_Tnsr_dr.comp[k][0]<< '\t'<< Friction_Tnsr_dr.comp[k][1]<< '\t'<< Friction_Tnsr_dr.comp[k][2]<< endl;
-		}
-
-	for (int k=0; k<5; k++)
-		{				
-			// column major format
-				cout << Friction_Tnsr_dr_anl.comp[k][0]<< '\t'<< Friction_Tnsr_dr_anl.comp[k][1]<< '\t'<< Friction_Tnsr_dr_anl.comp[k][2]<< endl;
-		}		
-
-	for (int k=0; k<5; k++)
-		{				
-			// column major format
-			cout << Friction_Tnsr_rd.comp[0][k]<< '\t'<< Friction_Tnsr_rd.comp[1][k]<< '\t'<< Friction_Tnsr_rd.comp[2][k]<< endl;
-		}
-
-	for (int k=0; k<5; k++)
-		{				
-			// column major format
-				cout << Friction_Tnsr_rd_anl.comp[0][k]<< '\t'<< Friction_Tnsr_rd_anl.comp[1][k]<< '\t'<< Friction_Tnsr_rd_anl.comp[2][k]<< endl;
-		}		
-	
-	for (int k=0; k<5; k++)
-		{				
-		for (int k=0; k<5; k++)
-			{			// column major format
-			cout << Friction_Tnsr_dd.comp[k][0]<< '\t' ;
-			}
-			cout<< endl;
-		}
-
-	for (int k=0; k<5; k++)
-		{				
-		for (int k=0; k<5; k++)
-			{			// column major format
-			cout << Friction_Tnsr_dd_anl.comp[k][0]<< '\t' ; 
-			}
-			cout<< endl;
-		}
-		
-	 			// 6x6 format					
-	 				// column major format
-
-					xi_11x11[0] = Friction_Tnsr_tt.comp[0][0] ;  
-					xi_11x11[1] = Friction_Tnsr_tt.comp[1][0] ;  
-					xi_11x11[2] = Friction_Tnsr_tt.comp[2][0] ; 
-					xi_11x11[6] = Friction_Tnsr_tt.comp[0][1] ; 
-					xi_11x11[7] = Friction_Tnsr_tt.comp[1][1] ;  
-					xi_11x11[8] = Friction_Tnsr_tt.comp[2][1] ;  
-					xi_11x11[12] = Friction_Tnsr_tt.comp[0][2] ;   
-					xi_11x11[13] = Friction_Tnsr_tt.comp[1][2] ; 
-					xi_11x11[14] = Friction_Tnsr_tt.comp[2][2] ; 				
-
-					xi_11x11[18] = Friction_Tnsr_rt.comp[0][0] ;  
-					xi_11x11[19] = Friction_Tnsr_rt.comp[1][0] ;  
-					xi_11x11[20] = Friction_Tnsr_rt.comp[2][0] ; 
-					xi_11x11[24] = Friction_Tnsr_rt.comp[0][1] ; 
-					xi_11x11[25] = Friction_Tnsr_rt.comp[1][1] ;  
-					xi_11x11[26] = Friction_Tnsr_rt.comp[2][1] ;  
-					xi_11x11[30] = Friction_Tnsr_rt.comp[0][2] ;   
-					xi_11x11[31] = Friction_Tnsr_rt.comp[1][2] ; 
-					xi_11x11[32] = Friction_Tnsr_rt.comp[2][2] ; 				
-										
-					xi_11x11[3] = Friction_Tnsr_tr.comp[0][0] ;  
-					xi_11x11[4] = Friction_Tnsr_tr.comp[1][0] ;  
-					xi_11x11[5] = Friction_Tnsr_tr.comp[2][0] ; 
-					xi_11x11[9] = Friction_Tnsr_tr.comp[0][1] ; 
-					xi_11x11[10] = Friction_Tnsr_tr.comp[1][1] ;  
-					xi_11x11[11] = Friction_Tnsr_tr.comp[2][1] ;  
-					xi_11x11[15] = Friction_Tnsr_tr.comp[0][2] ;   
-					xi_11x11[16] = Friction_Tnsr_tr.comp[1][2] ; 
-					xi_11x11[17] = Friction_Tnsr_tr.comp[2][2] ; 					
-										
-					xi_11x11[21] = Friction_Tnsr_rr.comp[0][0] ;  
-					xi_11x11[22] = Friction_Tnsr_rr.comp[1][0] ;  
-					xi_11x11[23] = Friction_Tnsr_rr.comp[2][0] ; 
-					xi_11x11[27] = Friction_Tnsr_rr.comp[0][1] ; 
-					xi_11x11[28] = Friction_Tnsr_rr.comp[1][1] ;  
-					xi_11x11[29] = Friction_Tnsr_rr.comp[2][1] ;  
-					xi_11x11[33] = Friction_Tnsr_rr.comp[0][2] ;   
-					xi_11x11[34] = Friction_Tnsr_rr.comp[1][2] ; 
-					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
 
 			inverse ( xi_11x11 , 6 )	 ; 			
 
@@ -1007,7 +754,7 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 // using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
 double mu_d[6][5];
 double mu_dd[5][5];
-/*
+
 			for (int l=0; l<6; l++)
 				{
 				for (int k=0; k<5; k++)
@@ -1036,38 +783,7 @@ double mu_dd[5][5];
 						}
 					}
 				}				
-*/
-
-			for (int l=0; l<6; l++)
-				{
-				for (int k=0; k<5; k++)
-					{	
-						mu_d[l][k] = 0.0;
-				//		mu_d[l+3][k] = 0.0;
-					for (int m=0; m<3; m++)
-						{				
-							// column major format
-							mu_d[l][k]	-=	xi_11x11[l	+	6*m]*Friction_Tnsr_td.comp[m][k];
-							mu_d[l][k]	-=	xi_11x11[l	+	6*(m+3)]*Friction_Tnsr_rd.comp[m][k];
-						}
-				//	mu_d[l][k] *= g_norm;
-					}
-				}
-			for (int l=0; l<5; l++)
-				{
-				for (int k=0; k<5; k++)
-					{	
-						mu_dd[l][k] = Friction_Tnsr_dd.comp[l][k];
-					for (int m=0; m<3; m++)
-						{				
-							// column major format
-							mu_dd[l][k]	+=	Friction_Tnsr_dt.comp[l][m]*mu_d[m][k];
-							mu_dd[l][k]	+=	Friction_Tnsr_dr.comp[l][m]*mu_d[m+3][k];
-						}
-					}
-				}	
-				
-						
+		
 		outFile1<<std::endl ;
 		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
 		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
@@ -1123,8 +839,8 @@ mtrx53D	Unit_tnsr_Redc;
 			Deli.comp[k][a]	=	0.0	;
 			for (int b=0; b<3; b++)
 			{
-				Delj.comp[a][k]	+=	e_E_k[k][b][a]	*	ctr_diff.comp[b]	;
-				Deli.comp[k][a]	+=	e_E_k[k][a][b]	*	ctr_diff.comp[b]	;
+				Delj.comp[a][k]	+=	e_g_E[k][b][a]	*	ctr_diff.comp[b]	;
+				Deli.comp[k][a]	+=	e_g_E[k][a][b]	*	ctr_diff.comp[b]	;
 			}
 		}		
 	}		

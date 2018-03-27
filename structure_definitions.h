@@ -166,6 +166,7 @@ struct ParticleData
   mtrx3D tr_mobility_tnsr_sqrt_inv;
   mtrx3D rt_mobility_tnsr_sqrt_inv;
   mtrx3D rr_mobility_tnsr_sqrt_inv;
+  mtrx3D grad_mobility_S_tau_kb_T;
   mtrx35D mobility_tnsr_td;
   mtrx35D mobility_tnsr_rd;
   mtrx53D mobility_tnsr_dt;
@@ -177,6 +178,7 @@ struct ParticleData
   vctr4D quat;
   vctr5D Stresslet;
   vctr5D Stresslet_Br;	// Brownian contribution to stresslet
+  vctr5D Stresslet_Br_diff;	// diffusive Brownian stress contribution to stresslet
   int Sub_Length;
   int clicked; 
   double radii;
