@@ -470,18 +470,19 @@ int hist_phi_y[50]={};
 int hist_z[50]={};
 int hist_phi_z[50]={};
 long long int hist_C[100]={}; // histogram of orbit constant of ellipsids
-long long int hist_C_tau[101][101]={};
+long long int hist_C_tau[1001][1001]={};
 
 // variables for polar , azimuthal angle histogram
-double nbins = 100.0;
+double nbins = 1000.0;
 double bin_cos = M_PI/nbins;
-double bin_tan = 2.0*M_PI/nbins;
+double bin_cos_theta = 2.0/nbins;
+double bin_phi = 2.0*M_PI/nbins;
 double bin_atan_C = M_PI/nbins;
 double bin_tau = 2.0*M_PI/nbins;
 cout << "pi" << '\t'<< M_PI_2 << endl;
-cout << bin_cos << '\t' << bin_tan << endl;
+cout << bin_cos << '\t' << bin_phi << endl;
 
-long long int hist_pol_azi[101][101]={};
+long long int hist_pol_azi[1001][1001]={};
 
 vctr3D dr_vec;
 vector<SubData>  particle(NrParticles);
@@ -1474,14 +1475,14 @@ do {
 
 	// outFile_com<<director.comp[0]<<'\t'<<director.comp[1]<<'\t'<<director.comp[2] << std::endl;
 
-	 hist_pol_azi[int (floor( (cos_theta+1.0)/(0.02) )) ][int (floor( (C_phi+M_PI)/bin_tan )) ]+=1;
+	 hist_pol_azi[int (floor( (cos_theta+1.0)/(bin_cos_theta) )) ][int (floor( (C_phi+M_PI)/bin_phi )) ]+=1;
 
 	 hist_C_tau[int (floor( (atan_C + M_PI_2)/bin_atan_C )) ][int (floor( (tau+M_PI)/bin_tau )) ]+=1;
-
+/*
 	int i = floor(abs(atan_C)/(max_C_lim/100.0)); // (10.0*M_PI/2.0)
 	// i = min( max(i,0), max_C_lim ) ;
 	hist_C[i]++;
-
+*/
 	// end of C binning 
 /*
 // output stresslets
@@ -1603,14 +1604,14 @@ if (step%(frame)==0)
 
 if (step%(1000*1000*frame)==0) 
 	{ 
-
+/*
 outFile_orient << step << endl;
 
 for ( int i = 0 ; i < 100; i ++ )
 	{
 			outFile_orient<< hist_C[i] << endl;
 	}
-
+*/
 		Stresslet_data<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'
 					  <<Stresslet_sqr_mean.comp[0]<<'\t'<<Stresslet_sqr_mean.comp[1]<<'\t'<<Stresslet_sqr_mean.comp[2]<<'\t'<<Stresslet_sqr_mean.comp[3]<<'\t'<<Stresslet_sqr_mean.comp[4]<<'\t'	
 					  <<Stresslet_Br_mean.comp[0]<<'\t'<<Stresslet_Br_mean.comp[1]<<'\t'<<Stresslet_Br_mean.comp[2]<<'\t'<<Stresslet_Br_mean.comp[3]<<'\t'<<Stresslet_Br_mean.comp[4]<<'\t'	
@@ -1623,9 +1624,9 @@ if (step%(1000*1000*10*frame)==0)
 	{ 
 
  // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 101; i ++ )
+for ( int i = 0 ; i < 1001; i ++ )
 	{
-		for ( int j = 0 ; j < 101; j ++ )
+		for ( int j = 0 ; j < 1001; j ++ )
 		{
 			outFile_theta_phi_hist<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
 		}
@@ -1633,9 +1634,9 @@ for ( int i = 0 ; i < 101; i ++ )
 	}
 	
  // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 101; i ++ )
+for ( int i = 0 ; i < 1001; i ++ )
 	{
-		for ( int j = 0 ; j < 101; j ++ )
+		for ( int j = 0 ; j < 1001; j ++ )
 		{
 			outFile_atan_C_tau_hist<< std::setprecision(5) << hist_C_tau[i][j] <<'\t';
 		}
@@ -1658,9 +1659,9 @@ for ( int i = 0 ; i < 50; i ++ )
 */
 
  // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 101; i ++ )
+for ( int i = 0 ; i < 1001; i ++ )
 	{
-		for ( int j = 0 ; j < 101; j ++ )
+		for ( int j = 0 ; j < 1001; j ++ )
 		{
 			outFile_theta_phi_hist<< std::setprecision(5) << hist_pol_azi[i][j] <<'\t';
 		}
@@ -1668,9 +1669,9 @@ for ( int i = 0 ; i < 101; i ++ )
 	}
 	
  // output the histogram of the polar and azimuthal angles
-for ( int i = 0 ; i < 101; i ++ )
+for ( int i = 0 ; i < 1001; i ++ )
 	{
-		for ( int j = 0 ; j < 101; j ++ )
+		for ( int j = 0 ; j < 1001; j ++ )
 		{
 			outFile_atan_C_tau_hist<< std::setprecision(5) << hist_C_tau[i][j] <<'\t';
 		}
@@ -1679,11 +1680,12 @@ for ( int i = 0 ; i < 101; i ++ )
 
  // output the histogram of the geodesic
  			cout<< "histogram of the geodesic" << endl;
-
+/*
 for ( int i = 0 ; i < 100; i ++ )
 	{
 			outFile_orient<< hist_C[i] << endl;
 	}
+*/	
 	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
 
 	cout<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'<<std::endl;	

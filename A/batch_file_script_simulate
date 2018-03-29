@@ -1,8 +1,8 @@
 #!/bin/csh -f
 alias clang++='clang++-3.5 -std=c++11'
-@ a = 459
+@ a = 460
 @ init = $a 
-while ( $a < 460 )
+while ( $a < 461 )
 	mkdir $a
 	cd $a
 	@ ifcreate = 0; 
@@ -24,10 +24,10 @@ while ( $a < 460 )
  g++ -std=c++11 X2mu.cpp -O2 -o X2mu.out -llapack	
  ./X2mu.out >>& log -a &
  
-# wait
+ wait
   
-# g++ -std=c++11 simulate.cpp rigid_force.cpp -O2 -o ${a}_simulate.out -llapack
-# ./${a}_simulate.out >>& log -a &
+ g++ -std=c++11 simulate.cpp rigid_force.cpp -O2 -o ${a}_simulate.out -llapack
+ ./${a}_simulate.out >>& log -a &
 
   cd ..
   @ a = $a + 1
