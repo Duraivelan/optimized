@@ -724,9 +724,9 @@ for (int i=0; i<NrParticles; i++)
 
 double c = 1.0;	// short axis
 
-double a = 100.0*c;	// long axis
+double a = 20.0*c;	// long axis
 
-double a_bead = 100.0;	// long axis of bead ellipsoid
+double a_bead = 20.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 
@@ -737,7 +737,9 @@ double e2 = e*e ;
 double e3 = e*e*e ;
 
 double e5 = e2*e3 ;
-
+/*
+ // prolate spheroid
+ 
 double L = log((1.0+e)/(1.0-e)); 
 
 double XA = (8.0/3.0)*(e3)/(-2.0*e + ( 1.0+e2 )*L) ;
@@ -768,6 +770,44 @@ double YM_div2 = -2.0*e + (1.0+e2)*L ;
 double YM = (4.0/5.0)*(e5)*(2.0*e*(1.0-2.0*(e2)) -(1.0-e2)*L)/(YM_div1*YM_div2) ;
 
 double ZM = (16.0/5.0)*(e5)*(1.0-e2)/( 3.0*((1.0-e2)*(1.0-e2))*L - 2.0*e*(3.0-5.0*(e2)) ) ; 
+*/
+
+ // Oblate spheroid
+
+double sqrt_1_min_e2 = sqrt(1.0-e2) ;
+
+// double C = acot(sqrt_1_min_e2/e); 
+
+double C = atan(e/sqrt_1_min_e2); 
+
+double XA = (4.0/3.0)*(e3)/(( 2.0*e2 - 1.0 )*C + e*sqrt_1_min_e2 ) ;
+
+double YA = (8.0/3.0)*(e3)/(( 2.0*e2 + 1.0 )*C - e*sqrt_1_min_e2 ) ;
+
+cout << "XA = " << XA << endl;
+cout << "aspect ratio = " << a << endl;
+
+double YB = 0.0 ; 
+
+double XC = (2.0/3.0)*(e3)/(C - e*sqrt_1_min_e2 ) ;
+
+double YC = (2.0/3.0)*(e3)*(2.0 - e2)/(e*sqrt_1_min_e2 - (1.0 - 2.0*e2)*C ) ;
+
+double XG = 0.0 ;
+
+double YG = 0.0 ;
+
+double YH = (-2.0/3.0)*(e5)/(e*sqrt_1_min_e2 - (1.0 - 2.0*e2)*C ) ;
+
+double XM = (4.0/15.0)*(e5)/((3.0 - 2.0*e2)*C - 3.0*e*sqrt_1_min_e2 ) ;
+
+double YM_div1= - 3.0*e - e3 - 3.0*sqrt_1_min_e2*C ; 
+
+double YM_div2 = e*sqrt_1_min_e2 - (1.0 - 2.0*e2)*C ;
+
+double YM = (2.0/5.0)*(e5)*(e*(1.0+e2) - sqrt_1_min_e2*C ) /(YM_div1*YM_div2) ;
+
+double ZM = (8.0/5.0)*(e5)/(3.0*C - (2.0*e3 + 3.0*e)*sqrt_1_min_e2 ) ;
 
 mtrx3D Friction_Tnsr_tt_anl;
 mtrx3D Friction_Tnsr_tr_anl;
