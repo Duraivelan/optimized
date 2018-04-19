@@ -1621,6 +1621,7 @@ for ( int i = 0 ; i < 100; i ++ )
 					  <<Stresslet_Br_diff_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[4]<<'\t'	
 					  <<endl;
     }
+    
 if (step%(1000*1000*10*frame)==0) 
 	{ 
 

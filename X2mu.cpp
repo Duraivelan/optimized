@@ -724,9 +724,9 @@ for (int i=0; i<NrParticles; i++)
 
 double c = 1.0;	// short axis
 
-double a = 20.0*c;	// long axis
+double a = 40.0*c;	// long axis
 
-double a_bead = 20.0;	// long axis of bead ellipsoid
+double a_bead = 40.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 
@@ -801,7 +801,7 @@ double YH = (-2.0/3.0)*(e5)/(e*sqrt_1_min_e2 - (1.0 - 2.0*e2)*C ) ;
 
 double XM = (4.0/15.0)*(e5)/((3.0 - 2.0*e2)*C - 3.0*e*sqrt_1_min_e2 ) ;
 
-double YM_div1= - 3.0*e - e3 - 3.0*sqrt_1_min_e2*C ; 
+double YM_div1= 3.0*e - e3 - 3.0*sqrt_1_min_e2*C ; 
 
 double YM_div2 = e*sqrt_1_min_e2 - (1.0 - 2.0*e2)*C ;
 
