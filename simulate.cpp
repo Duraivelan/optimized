@@ -82,6 +82,126 @@ double e_S_a[5][3][3]= {
 						};	
 */
 
+
+// on the fly correlation
+
+const int n_vars = 1 ; 									// number of different properties you want to autocorrelate
+int pcor = 64 ;
+int p2 = pcor/2 ; 								//  p2 = pcor/2
+const int Max_level = 22;
+double acor[n_vars][Max_level][64]={-2.0};
+double fcor[n_vars][Max_level][32]={0};
+double ncor[n_vars][Max_level][32]={0};
+int pointcor[n_vars][Max_level]={0};
+
+void zerocor() {
+
+	for (int  i=0; i < n_vars; i++ ) 
+		{       
+			for (int  j=0; j < Max_level ; j++ )
+				{
+					for (int  k=0; k < p2; k++ )
+						{
+							acor[i][j][k] = -2.0e9 ; 
+							fcor[i][j][k] =  0.0 ; 
+							ncor[i][j][k] =  0.0 ; 
+						}
+						
+					for (int  k=p2; k < pcor; k++ )
+						{
+							acor[i][j][k] = -2.0e9 ; 
+						}	
+										
+					pointcor[i][j] = 0 ; 	
+				}
+		}
+}		
+
+
+void addcor(double new_data, int nf, int k)		// nf is data_type identifer , k is the correlator_level
+{
+	int i, point, j;
+	
+// shift pointer and put in new_data
+	point 				= ( pointcor[nf][k] ) % pcor ;				// modulo 
+	pointcor[nf][k]		= point + 1 ;
+	acor[nf][k][point]	= new_data ;
+
+// do the correlation
+	for(i=0; i<p2; i++)
+		{
+			j = (pcor+point-i-p2)%pcor  ;
+			if(acor[nf][k][j]>-2.0e9) 				// array must be filled to do correlation
+				{
+					fcor[nf][k][i]=fcor[nf][k][i]+new_data*acor[nf][k][j] ;
+					ncor[nf][k][i]=ncor[nf][k][i]+1.0 ;
+				}
+		}
+      
+      
+// in 0 we put the first 7 values
+	if (k==1)
+		{
+			for(i=0; i<p2-1; i++)
+				{
+					j = (pcor+point-i-1)%pcor  ;
+					if(acor[nf][1][j]>-2.0e9)
+						{
+							fcor[nf][0][i]=fcor[nf][0][i]+acor[nf][1][point]*acor[nf][1][j] ;
+							ncor[nf][0][i]=ncor[nf][0][i]+1.0 ;
+						}
+				}		
+       }
+
+// if needed, push down to the next correlator
+	if ( ((point+1)%2) == 0 )
+		{
+			if ( k+1 < Max_level)						// max number of correlator levels 
+				{
+					addcor( (acor[nf][k][point] + acor[nf][k][point-1] ) / 2., nf, k+1 ) ;
+				}
+		}
+} 
+
+
+
+void writecor() {
+
+	std::ofstream outFile1;
+	
+	outFile1.open ("cor.dat", std::ofstream::out | std::ofstream::app);
+
+	outFile1 << '\n';
+	
+	int i,k ;
+
+	for ( i=0; i < p2-1; i++ )  			// first 7 dt=dt*1
+		{
+			if(ncor[0][0][i]>0) 
+				{
+					outFile1<<fcor[0][0][i]/ncor[0][0][i] << '\t';
+				}
+		}	
+
+	for ( k=1; k < Max_level; k++ ) 
+		{       
+			for ( i=0; i < p2; i++ )
+				{
+					if( ncor[0][k][i] > 0)
+						{
+							outFile1<<fcor[0][k][i]/ncor[0][k][i]  << '\t'; 
+						}
+				}
+		}
+		
+	outFile1.close();	
+}
+
+
+// end of on the fly correlation
+
+
+
 // basis set for stress normal differences
 
 	double e_S_a[5][3][3]= {
@@ -279,7 +399,7 @@ cluster[i].Stresslet_Br =
 					}
 */							
 		
-				cluster[i].pos.PBC(box,rbox);
+//				cluster[i].pos.PBC(box,rbox);
 //			} 
 /*			else 
 			{
@@ -458,6 +578,9 @@ vctr5D Stresslet_Br_diff_sqr_mean = null5D;
 
 double max_cos=0.0,min_cos=0.0,min_tan=0.0,max_tan=0.0, cos_val=0.0,tan_val=0.0;
 
+
+// variables for harmonic potential
+double omega = 0.001;
 
 // variables for Electric field 
 vctr3D dipole_b(0.0,0.0,1.0);
@@ -1341,6 +1464,9 @@ std::ofstream outFile_theta_phi_hist("theta_phi_hist.dat");
 std::ofstream outFile_atan_C_tau_hist("outFile_atan_C_tau_hist.dat");
 std::ofstream outFile_quat("outFile_quat.dat");
     
+				
+zerocor();										// intialize the array with zeros
+				
 					  
 simu_time =dt;
 do {
@@ -1410,15 +1536,15 @@ do {
    }
    
 */
-/*
+
   for ( int i = 0 ; i < 1; i ++ )
   {
-	cluster[i].frc=null3D;
+	cluster[i].frc= cluster[i].pos*(-omega);
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
   }
 
-
+/*
   // for rotational relaxation check
  
 			vec1 = cluster[0].rotmat*eig1;
@@ -1428,9 +1554,15 @@ do {
 		outFile12<<vec1.comp[0] <<'\t'<< vec1.comp[1] << '\t'<< vec1.comp[2] <<  endl;      
 		outFile13<<vec2.comp[0] <<'\t'<< vec2.comp[1] << '\t'<< vec2.comp[2] <<  endl;      
 		outFile14<<vec3.comp[0] <<'\t'<< vec3.comp[1] << '\t'<< vec3.comp[2] <<  endl;      
-						
-		outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
-*/
+*/						
+	//	outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
+		addcor(cluster[0].pos.comp[0],0,1);
+		
+		if (step%(1000*100*frame)==0) 
+			{ 		
+				writecor(); 
+			}
+
 					  
 	Stresslet_mean += cluster[0].Stresslet;
 	Stresslet_Br_mean += cluster[0].Stresslet_Br;
@@ -1602,17 +1734,17 @@ if (step%(frame)==0)
 */
 	simu_time+=dt;
 	step+=1;
-
+/*
 if (step%(1000*1000*frame)==0) 
 	{ 
-/*
+
 outFile_orient << step << endl;
 
 for ( int i = 0 ; i < 100; i ++ )
 	{
 			outFile_orient<< hist_C[i] << endl;
 	}
-*/
+
 		Stresslet_data<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'
 					  <<Stresslet_sqr_mean.comp[0]<<'\t'<<Stresslet_sqr_mean.comp[1]<<'\t'<<Stresslet_sqr_mean.comp[2]<<'\t'<<Stresslet_sqr_mean.comp[3]<<'\t'<<Stresslet_sqr_mean.comp[4]<<'\t'	
 					  <<Stresslet_Br_mean.comp[0]<<'\t'<<Stresslet_Br_mean.comp[1]<<'\t'<<Stresslet_Br_mean.comp[2]<<'\t'<<Stresslet_Br_mean.comp[3]<<'\t'<<Stresslet_Br_mean.comp[4]<<'\t'	
@@ -1621,7 +1753,8 @@ for ( int i = 0 ; i < 100; i ++ )
 					  <<Stresslet_Br_diff_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[4]<<'\t'	
 					  <<endl;
     }
-    
+ */   
+  /*  
 if (step%(1000*1000*10*frame)==0) 
 	{ 
 
@@ -1646,7 +1779,7 @@ for ( int i = 0 ; i < 1001; i ++ )
 	}	
 	
 }
-
+*/
 } while(xxnstep);
 cout << step << endl;
 outFile_quat.close();

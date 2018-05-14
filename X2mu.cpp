@@ -252,7 +252,6 @@ else {
 // important all lengths have been normalized by particle radius as metioned in Page 46, Appendix A - Durlofsky, Louis, John F. Brady, and Georges Bossis. 
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
-#if 0
 				
 for (int i=0; i<NrParticles; i++)
 	{
@@ -708,8 +707,7 @@ for (int i=0; i<NrParticles; i++)
 					xi_11x11[34] = Xi_t_w.comp[1][2] ; 
 					xi_11x11[35] = Xi_t_w.comp[2][2] ; 				
 
-#endif
-
+/*
 // Ellipsoid mobilities from Kim and Karrila book ; Page 64
 
 	mtrx3D Friction_Tnsr_tt(0.0,0.0,0.0);
@@ -724,9 +722,9 @@ for (int i=0; i<NrParticles; i++)
 
 double c = 1.0;	// short axis
 
-double a = 40.0*c;	// long axis
+double a = 1.0*c;	// long axis
 
-double a_bead = 40.0;	// long axis of bead ellipsoid
+double a_bead = 1.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 
@@ -737,7 +735,7 @@ double e2 = e*e ;
 double e3 = e*e*e ;
 
 double e5 = e2*e3 ;
-/*
+
  // prolate spheroid
  
 double L = log((1.0+e)/(1.0-e)); 
@@ -770,7 +768,7 @@ double YM_div2 = -2.0*e + (1.0+e2)*L ;
 double YM = (4.0/5.0)*(e5)*(2.0*e*(1.0-2.0*(e2)) -(1.0-e2)*L)/(YM_div1*YM_div2) ;
 
 double ZM = (16.0/5.0)*(e5)*(1.0-e2)/( 3.0*((1.0-e2)*(1.0-e2))*L - 2.0*e*(3.0-5.0*(e2)) ) ; 
-*/
+
 
  // Oblate spheroid
 
@@ -1031,7 +1029,7 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 					xi_11x11[33] = Friction_Tnsr_rr.comp[0][2] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[1][2] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
-
+*/
 			inverse ( xi_11x11 , 6 )	 ; 			
 
 		outFile1<<std::endl ;
@@ -1047,7 +1045,7 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 // using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
 double mu_d[6][5];
 double mu_dd[5][5];
-/*
+
 			for (int l=0; l<6; l++)
 				{
 				for (int k=0; k<5; k++)
@@ -1076,8 +1074,8 @@ double mu_dd[5][5];
 						}
 					}
 				}				
-*/
 
+/*
 			for (int l=0; l<6; l++)
 				{
 				for (int k=0; k<5; k++)
@@ -1107,7 +1105,7 @@ double mu_dd[5][5];
 					}
 				}	
 				
-						
+*/						
 		outFile1<<std::endl ;
 		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
 		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
