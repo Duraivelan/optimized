@@ -172,6 +172,7 @@ struct ParticleData
   mtrx53D mobility_tnsr_dt;
   mtrx53D mobility_tnsr_dr;
   mtrx55D mobility_tnsr_dd;
+  mtrx55D mobility_tnsr_dd_sqrt;
   vctr3D trq;           // lab-fixed = cartesian
   vctr3D theta;
   vctr3D angmom;        // lab-fixed

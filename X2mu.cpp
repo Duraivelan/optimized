@@ -198,6 +198,7 @@ else {
 		
 
 // basis set for stress normal differences
+
 	double e_k_S[5][3][3]= {
 							{{1.0,0.0,0.0},{0.0,-1.0,0.0},{0.0,0.0,0.0}},
 							{{0.0,0.5,0.0},{0.5,0.0,0.0},{0.0,0.0,0.0}},
@@ -233,7 +234,44 @@ else {
 							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
 						};
 						
-						   
+/*
+
+	double e_k_S[5][3][3]= {
+							{{0.0,0.7071,0.0},{0.7071,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.7071},{0.0,0.0,0.0},{0.7071,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.7071},{0.0,0.7071,0.0}},
+							{{0.7071,0.0,0.0},{0.0,-0.7071,0.0},{0.0,0.0,0.0}},
+							{{0.4082,0.0,0.0},{0.0,0.4082,0.0},{0.0,0.0,-0.8165}}
+						};
+
+
+	double e_S_k[5][3][3]= {
+							{{0.0,0.7071,0.0},{0.7071,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.7071},{0.0,0.0,0.0},{0.7071,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.7071},{0.0,0.7071,0.0}},
+							{{0.7071,0.0,0.0},{0.0,-0.7071,0.0},{0.0,0.0,0.0}},
+							{{0.4082,0.0,0.0},{0.0,0.4082,0.0},{0.0,0.0,-0.8165}}
+						};
+   
+
+	double e_k_E[5][3][3]= {
+							{{0.0,0.7071,0.0},{0.7071,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.7071},{0.0,0.0,0.0},{0.7071,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.7071},{0.0,0.7071,0.0}},
+							{{0.7071,0.0,0.0},{0.0,-0.7071,0.0},{0.0,0.0,0.0}},
+							{{0.4082,0.0,0.0},{0.0,0.4082,0.0},{0.0,0.0,-0.8165}}
+						};
+
+
+	double e_E_k[5][3][3]= {
+							{{0.0,0.7071,0.0},{0.7071,0.0,0.0},{0.0,0.0,0.0}},
+							{{0.0,0.0,0.7071},{0.0,0.0,0.0},{0.7071,0.0,0.0}},
+							{{0.0,0.0,0.0},{0.0,0.0,0.7071},{0.0,0.7071,0.0}},
+							{{0.7071,0.0,0.0},{0.0,-0.7071,0.0},{0.0,0.0,0.0}},
+							{{0.4082,0.0,0.0},{0.0,0.4082,0.0},{0.0,0.0,-0.8165}}
+						};
+						
+*/												   
    double mu_11N[121*NrParticles*NrParticles] ;  		// grand mobility matrix
    double zeta_11N[121*NrParticles*NrParticles] ;  	// grand resistance matrix
    double rho_11N[121*NrParticles*NrParticles] ;  	// grand resistance matrix
@@ -252,7 +290,8 @@ else {
 // important all lengths have been normalized by particle radius as metioned in Page 46, Appendix A - Durlofsky, Louis, John F. Brady, and Georges Bossis. 
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
-				
+
+#if 0				
 for (int i=0; i<NrParticles; i++)
 	{
 		for (int j=i; j<NrParticles; j++)
@@ -707,7 +746,8 @@ for (int i=0; i<NrParticles; i++)
 					xi_11x11[34] = Xi_t_w.comp[1][2] ; 
 					xi_11x11[35] = Xi_t_w.comp[2][2] ; 				
 
-/*
+#endif
+
 // Ellipsoid mobilities from Kim and Karrila book ; Page 64
 
 	mtrx3D Friction_Tnsr_tt(0.0,0.0,0.0);
@@ -722,9 +762,9 @@ for (int i=0; i<NrParticles; i++)
 
 double c = 1.0;	// short axis
 
-double a = 1.0*c;	// long axis
+double a = 20.0*c;	// long axis
 
-double a_bead = 1.0;	// long axis of bead ellipsoid
+double a_bead = 20.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 
@@ -769,7 +809,7 @@ double YM = (4.0/5.0)*(e5)*(2.0*e*(1.0-2.0*(e2)) -(1.0-e2)*L)/(YM_div1*YM_div2) 
 
 double ZM = (16.0/5.0)*(e5)*(1.0-e2)/( 3.0*((1.0-e2)*(1.0-e2))*L - 2.0*e*(3.0-5.0*(e2)) ) ; 
 
-
+/*
  // Oblate spheroid
 
 double sqrt_1_min_e2 = sqrt(1.0-e2) ;
@@ -806,7 +846,7 @@ double YM_div2 = e*sqrt_1_min_e2 - (1.0 - 2.0*e2)*C ;
 double YM = (2.0/5.0)*(e5)*(e*(1.0+e2) - sqrt_1_min_e2*C ) /(YM_div1*YM_div2) ;
 
 double ZM = (8.0/5.0)*(e5)/(3.0*C - (2.0*e3 + 3.0*e)*sqrt_1_min_e2 ) ;
-
+*/
 mtrx3D Friction_Tnsr_tt_anl;
 mtrx3D Friction_Tnsr_tr_anl;
 mtrx3D Friction_Tnsr_rt_anl;
@@ -1029,7 +1069,46 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 					xi_11x11[33] = Friction_Tnsr_rr.comp[0][2] ;   
 					xi_11x11[34] = Friction_Tnsr_rr.comp[1][2] ; 
 					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
+/*
+		outFile1<<std::endl ;
+		outFile1<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
+		outFile1<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
+		outFile1<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
+		outFile1<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
+		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<Xi_f_E.comp[0][0]<<'\t'<<Xi_f_E.comp[0][1]<<'\t'<<Xi_f_E.comp[0][2]<<'\t'<<Xi_f_E.comp[0][3]<<'\t'<<Xi_f_E.comp[0][4]<<std::endl ;
+		outFile1<<Xi_f_E.comp[1][0]<<'\t'<<Xi_f_E.comp[1][1]<<'\t'<<Xi_f_E.comp[1][2]<<'\t'<<Xi_f_E.comp[1][3]<<'\t'<<Xi_f_E.comp[1][4]<<std::endl ;
+		outFile1<<Xi_f_E.comp[2][0]<<'\t'<<Xi_f_E.comp[2][1]<<'\t'<<Xi_f_E.comp[2][2]<<'\t'<<Xi_f_E.comp[2][3]<<'\t'<<Xi_f_E.comp[2][4]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<Xi_t_E.comp[0][0]<<'\t'<<Xi_t_E.comp[0][1]<<'\t'<<Xi_t_E.comp[0][2]<<'\t'<<Xi_t_E.comp[0][3]<<'\t'<<Xi_t_E.comp[0][4]<<std::endl ;
+		outFile1<<Xi_t_E.comp[1][0]<<'\t'<<Xi_t_E.comp[1][1]<<'\t'<<Xi_t_E.comp[1][2]<<'\t'<<Xi_t_E.comp[1][3]<<'\t'<<Xi_t_E.comp[1][4]<<std::endl ;
+		outFile1<<Xi_t_E.comp[2][0]<<'\t'<<Xi_t_E.comp[2][1]<<'\t'<<Xi_t_E.comp[2][2]<<'\t'<<Xi_t_E.comp[2][3]<<'\t'<<Xi_t_E.comp[2][4]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<Xi_S_E.comp[0][0]<<'\t'<<Xi_S_E.comp[0][1]<<'\t'<<Xi_S_E.comp[0][2]<<'\t'<<Xi_S_E.comp[0][3]<<'\t'<<Xi_S_E.comp[0][4]<<std::endl ;
+		outFile1<<Xi_S_E.comp[1][0]<<'\t'<<Xi_S_E.comp[1][1]<<'\t'<<Xi_S_E.comp[1][2]<<'\t'<<Xi_S_E.comp[1][3]<<'\t'<<Xi_S_E.comp[1][4]<<std::endl ;
+		outFile1<<Xi_S_E.comp[2][0]<<'\t'<<Xi_S_E.comp[2][1]<<'\t'<<Xi_S_E.comp[2][2]<<'\t'<<Xi_S_E.comp[2][3]<<'\t'<<Xi_S_E.comp[2][4]<<std::endl ;
+		outFile1<<Xi_S_E.comp[3][0]<<'\t'<<Xi_S_E.comp[3][1]<<'\t'<<Xi_S_E.comp[3][2]<<'\t'<<Xi_S_E.comp[3][3]<<'\t'<<Xi_S_E.comp[3][4]<<std::endl ;
+		outFile1<<Xi_S_E.comp[4][0]<<'\t'<<Xi_S_E.comp[4][1]<<'\t'<<Xi_S_E.comp[4][2]<<'\t'<<Xi_S_E.comp[4][3]<<'\t'<<Xi_S_E.comp[4][4]<<std::endl ;
+
 */
+		outFile1<<std::endl ;
+		outFile1<<Friction_Tnsr_td.comp[0][0]<<'\t'<<Friction_Tnsr_td.comp[0][1]<<'\t'<<Friction_Tnsr_td.comp[0][2]<<'\t'<<Friction_Tnsr_td.comp[0][3]<<'\t'<<Friction_Tnsr_td.comp[0][4]<<std::endl ;
+		outFile1<<Friction_Tnsr_td.comp[1][0]<<'\t'<<Friction_Tnsr_td.comp[1][1]<<'\t'<<Friction_Tnsr_td.comp[1][2]<<'\t'<<Friction_Tnsr_td.comp[1][3]<<'\t'<<Friction_Tnsr_td.comp[1][4]<<std::endl ;
+		outFile1<<Friction_Tnsr_td.comp[2][0]<<'\t'<<Friction_Tnsr_td.comp[2][1]<<'\t'<<Friction_Tnsr_td.comp[2][2]<<'\t'<<Friction_Tnsr_td.comp[2][3]<<'\t'<<Friction_Tnsr_td.comp[2][4]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<Friction_Tnsr_rd.comp[0][0]<<'\t'<<Friction_Tnsr_rd.comp[0][1]<<'\t'<<Friction_Tnsr_rd.comp[0][2]<<'\t'<<Friction_Tnsr_rd.comp[0][3]<<'\t'<<Friction_Tnsr_rd.comp[0][4]<<std::endl ;
+		outFile1<<Friction_Tnsr_rd.comp[1][0]<<'\t'<<Friction_Tnsr_rd.comp[1][1]<<'\t'<<Friction_Tnsr_rd.comp[1][2]<<'\t'<<Friction_Tnsr_rd.comp[1][3]<<'\t'<<Friction_Tnsr_rd.comp[1][4]<<std::endl ;
+		outFile1<<Friction_Tnsr_rd.comp[2][0]<<'\t'<<Friction_Tnsr_rd.comp[2][1]<<'\t'<<Friction_Tnsr_rd.comp[2][2]<<'\t'<<Friction_Tnsr_rd.comp[2][3]<<'\t'<<Friction_Tnsr_rd.comp[2][4]<<std::endl ;
+		outFile1<<std::endl ;
+		outFile1<<Friction_Tnsr_dd.comp[0][0]<<'\t'<<Friction_Tnsr_dd.comp[0][1]<<'\t'<<Friction_Tnsr_dd.comp[0][2]<<'\t'<<Friction_Tnsr_dd.comp[0][3]<<'\t'<<Friction_Tnsr_dd.comp[0][4]<<std::endl ;
+		outFile1<<Friction_Tnsr_dd.comp[1][0]<<'\t'<<Friction_Tnsr_dd.comp[1][1]<<'\t'<<Friction_Tnsr_dd.comp[1][2]<<'\t'<<Friction_Tnsr_dd.comp[1][3]<<'\t'<<Friction_Tnsr_dd.comp[1][4]<<std::endl ;
+		outFile1<<Friction_Tnsr_dd.comp[2][0]<<'\t'<<Friction_Tnsr_dd.comp[2][1]<<'\t'<<Friction_Tnsr_dd.comp[2][2]<<'\t'<<Friction_Tnsr_dd.comp[2][3]<<'\t'<<Friction_Tnsr_dd.comp[2][4]<<std::endl ;
+		outFile1<<Friction_Tnsr_dd.comp[3][0]<<'\t'<<Friction_Tnsr_dd.comp[3][1]<<'\t'<<Friction_Tnsr_dd.comp[3][2]<<'\t'<<Friction_Tnsr_dd.comp[3][3]<<'\t'<<Friction_Tnsr_dd.comp[3][4]<<std::endl ;
+		outFile1<<Friction_Tnsr_dd.comp[4][0]<<'\t'<<Friction_Tnsr_dd.comp[4][1]<<'\t'<<Friction_Tnsr_dd.comp[4][2]<<'\t'<<Friction_Tnsr_dd.comp[4][3]<<'\t'<<Friction_Tnsr_dd.comp[4][4]<<std::endl ;
+
 			inverse ( xi_11x11 , 6 )	 ; 			
 
 		outFile1<<std::endl ;
@@ -1045,7 +1124,7 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 // using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
 double mu_d[6][5];
 double mu_dd[5][5];
-
+/*
 			for (int l=0; l<6; l++)
 				{
 				for (int k=0; k<5; k++)
@@ -1074,8 +1153,8 @@ double mu_dd[5][5];
 						}
 					}
 				}				
+*/
 
-/*
 			for (int l=0; l<6; l++)
 				{
 				for (int k=0; k<5; k++)
@@ -1105,7 +1184,7 @@ double mu_dd[5][5];
 					}
 				}	
 				
-*/						
+						
 		outFile1<<std::endl ;
 		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
 		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
@@ -1277,7 +1356,35 @@ xi_11x11[32]  = D_rt_CoD.comp[2][2];
 		mu_d[2][3] = mu_d[2][3] - ( - Delj.comp[2][3] +  U_OD.comp[2][0]*mu_d[3][3] + U_OD.comp[2][1]*mu_d[4][3] + U_OD.comp[2][2]*mu_d[5][3] ) ;
 		mu_d[2][4] = mu_d[2][4] - ( - Delj.comp[2][4] +  U_OD.comp[2][0]*mu_d[3][4] + U_OD.comp[2][1]*mu_d[4][4] + U_OD.comp[2][2]*mu_d[5][4] ) ;    
 
-		outFile1<<std::endl ;
+
+		double h_clst_ijk[3][3][3] = {{{0}}};
+
+	for (int a=0; a<3; a++)
+		{
+		for (int b=0; b<3; b++)
+			{
+			for (int g=0; g<3; g++)
+				{
+					h_clst_ijk[g][a][b] = 0.0;
+					
+				for (int p=0; p<5; p++)
+					{
+							h_clst_ijk[g][a][b]	+=		mu_d[g+3][p]*e_k_E[p][a][b];		
+
+					}													
+				}
+			}
+		}
+
+cout<<"h_clst_ijk"<<endl;
+for (int s=0; s<3; s++)
+	{							
+		cout << setw(10) << h_clst_ijk[s][0][0] << "  " << setw(10) << h_clst_ijk[s][0][1] << "  " << setw(10) << h_clst_ijk[s][0][2] << endl;
+		cout << setw(10) << h_clst_ijk[s][1][0] << "  " << setw(10) << h_clst_ijk[s][1][1] << "  " << setw(10) << h_clst_ijk[s][1][2] << endl;
+		cout << setw(10) << h_clst_ijk[s][2][0] << "  " << setw(10) << h_clst_ijk[s][2][1] << "  " << setw(10) << h_clst_ijk[s][2][2] << endl;
+    }	
+    
+    	outFile1<<std::endl ;
 		outFile1<<mu_d[0][0]<<'\t'<<mu_d[0][1]<<'\t'<<mu_d[0][2]<<'\t'<<mu_d[0][3]<<'\t'<<mu_d[0][4]<<std::endl ;
 		outFile1<<mu_d[1][0]<<'\t'<<mu_d[1][1]<<'\t'<<mu_d[1][2]<<'\t'<<mu_d[1][3]<<'\t'<<mu_d[1][4]<<std::endl ;
 		outFile1<<mu_d[2][0]<<'\t'<<mu_d[2][1]<<'\t'<<mu_d[2][2]<<'\t'<<mu_d[2][3]<<'\t'<<mu_d[2][4]<<std::endl ;

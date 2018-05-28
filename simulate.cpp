@@ -55,6 +55,7 @@ void createInitialPosition_N_particles(std::string fileName, int N, double Lx, d
 std::random_device seed;
 std::mt19937 gen{seed()};
 std::normal_distribution<> R1(0.0,1.0),R2(0.0,1.0),R3(0.0,1.0),R4(0.0,1.0),R5(0.0,1.0),R6(0.0,1.0);
+std::normal_distribution<> R1_dd(0.0,1.0),R2_dd(0.0,1.0),R3_dd(0.0,1.0),R4_dd(0.0,1.0),R5_dd(0.0,1.0);
 /*
 double e_g_S[5][3][3]= {
 						{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,-1.0}},
@@ -85,11 +86,12 @@ double e_S_a[5][3][3]= {
 
 // on the fly correlation
 
-const int n_vars = 1 ; 									// number of different properties you want to autocorrelate
+const int n_vars = 9 ; 									// number of different properties you want to autocorrelate
 int pcor = 64 ;
 int p2 = pcor/2 ; 								//  p2 = pcor/2
 const int Max_level = 22;
-double acor[n_vars][Max_level][64]={-2.0};
+double acor[n_vars][Max_level][64]={-2.0e200};
+double acor1[n_vars][Max_level][64]={-2.0e200};
 double fcor[n_vars][Max_level][32]={0};
 double ncor[n_vars][Max_level][32]={0};
 int pointcor[n_vars][Max_level]={0};
@@ -102,14 +104,16 @@ void zerocor() {
 				{
 					for (int  k=0; k < p2; k++ )
 						{
-							acor[i][j][k] = -2.0e9 ; 
+							acor[i][j][k] = -2.0e200 ; 
+							acor1[i][j][k] = -2.0e200 ; 
 							fcor[i][j][k] =  0.0 ; 
 							ncor[i][j][k] =  0.0 ; 
 						}
 						
 					for (int  k=p2; k < pcor; k++ )
 						{
-							acor[i][j][k] = -2.0e9 ; 
+							acor[i][j][k] = -2.0e200 ; 
+							acor1[i][j][k] = -2.0e200 ; 
 						}	
 										
 					pointcor[i][j] = 0 ; 	
@@ -131,7 +135,7 @@ void addcor(double new_data, int nf, int k)		// nf is data_type identifer , k is
 	for(i=0; i<p2; i++)
 		{
 			j = (pcor+point-i-p2)%pcor  ;
-			if(acor[nf][k][j]>-2.0e9) 				// array must be filled to do correlation
+			if(acor[nf][k][j]>-2.0e200) 				// array must be filled to do correlation
 				{
 					fcor[nf][k][i]=fcor[nf][k][i]+new_data*acor[nf][k][j] ;
 					ncor[nf][k][i]=ncor[nf][k][i]+1.0 ;
@@ -142,10 +146,10 @@ void addcor(double new_data, int nf, int k)		// nf is data_type identifer , k is
 // in 0 we put the first 7 values
 	if (k==1)
 		{
-			for(i=0; i<p2-1; i++)
+			for(i=0; i<p2; i++)
 				{
-					j = (pcor+point-i-1)%pcor  ;
-					if(acor[nf][1][j]>-2.0e9)
+					j = (pcor+point-i)%pcor  ;
+					if(acor[nf][1][j]>-2.0e200)
 						{
 							fcor[nf][0][i]=fcor[nf][0][i]+acor[nf][1][point]*acor[nf][1][j] ;
 							ncor[nf][0][i]=ncor[nf][0][i]+1.0 ;
@@ -163,7 +167,51 @@ void addcor(double new_data, int nf, int k)		// nf is data_type identifer , k is
 		}
 } 
 
+void crosscor(double new_data, double new_data1, int nf, int k)		// nf is data_type identifer , k is the correlator_level
+{
+	int i, point, j;
+	
+// shift pointer and put in new_data
+	point 				= ( pointcor[nf][k] ) % pcor ;				// modulo 
+	pointcor[nf][k]		= point + 1 ;
+	acor[nf][k][point]	= new_data ;
+	acor1[nf][k][point]	= new_data1 ;
 
+// do the correlation
+	for(i=0; i<p2; i++)
+		{
+			j = (pcor+point-i-p2)%pcor  ;
+			if(acor[nf][k][j]>-2.0e200) 				// array must be filled to do correlation
+				{
+					fcor[nf][k][i]=fcor[nf][k][i]+new_data*acor1[nf][k][j] ;
+					ncor[nf][k][i]=ncor[nf][k][i]+1.0 ;
+				}
+		}
+      
+      
+// in 0 we put the first 7 values
+	if (k==1)
+		{
+			for(i=0; i<p2; i++)
+				{
+					j = (pcor+point-i)%pcor  ;
+					if(acor[nf][1][j]>-2.0e200)
+						{
+							fcor[nf][0][i]=fcor[nf][0][i]+acor[nf][1][point]*acor1[nf][1][j] ;
+							ncor[nf][0][i]=ncor[nf][0][i]+1.0 ;
+						}
+				}		
+       }
+
+// if needed, push down to the next correlator
+	if ( ((point+1)%2) == 0 )
+		{
+			if ( k+1 < Max_level)						// max number of correlator levels 
+				{
+					crosscor( (acor[nf][k][point] + acor[nf][k][point-1] ) / 2., (acor1[nf][k][point] + acor1[nf][k][point-1] ) / 2., nf, k+1 ) ;
+				}
+		}
+} 
 
 void writecor() {
 
@@ -173,25 +221,29 @@ void writecor() {
 
 	outFile1 << '\n';
 	
-	int i,k ;
-
-	for ( i=0; i < p2-1; i++ )  			// first 7 dt=dt*1
+	int nf,i,k ;
+	
+ 	for ( nf=0; nf < n_vars; nf++ )  			// first 7 dt=dt*1
 		{
-			if(ncor[0][0][i]>0) 
+			for ( i=0; i < p2; i++ )  			// first 7 dt=dt*1
 				{
-					outFile1<<fcor[0][0][i]/ncor[0][0][i] << '\t';
-				}
-		}	
-
-	for ( k=1; k < Max_level; k++ ) 
-		{       
-			for ( i=0; i < p2; i++ )
-				{
-					if( ncor[0][k][i] > 0)
+					if(ncor[nf][0][i]>0) 
 						{
-							outFile1<<fcor[0][k][i]/ncor[0][k][i]  << '\t'; 
+							outFile1<<fcor[nf][0][i]/ncor[nf][0][i] << '\t';
+						}
+				}	
+		
+			for ( k=1; k < Max_level; k++ ) 
+				{       
+					for ( i=0; i < p2; i++ )
+						{
+							if( ncor[nf][k][i] > 0)
+								{
+									outFile1<<fcor[nf][k][i]/ncor[nf][k][i]  << '\t'; 
+								}
 						}
 				}
+			outFile1 << '\n';		
 		}
 		
 	outFile1.close();	
@@ -256,7 +308,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 	{
 		vctr3D rand(R1(gen), R2(gen), R3(gen));
 		vctr3D rand1(R4(gen), R5(gen), R6(gen));
-		
+		vctr5D rand2(R1_dd(gen), R2_dd(gen), R3_dd(gen), R4_dd(gen), R5_dd(gen));
+		vctr5D Stresslet_Br_2;
 		// simple shear flow;  flow in x-direction, gradient in y-direction, vorticity in z-direction
 
 		vctr3D u_inf(0.0,shear_rate*cluster[i].pos.comp[0],0.0); 		// shear flow gradient in y-direction
@@ -274,6 +327,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 		mtrx3D S_s ;
 		mtrx3D S_Br_b ;
 		mtrx3D S_Br_s ;
+		mtrx3D S_Br_2_b ;
+		mtrx3D S_Br_2_s ;
 		mtrx3D S_Br_diff_b ;
 		mtrx3D S_Br_diff_s ;
 		for(int j=0;j<5;j++) 
@@ -323,6 +378,8 @@ for(int i=0;i<*Max_Cluster_N;i++)
 cluster[i].Stresslet_Br = 
 				 cluster[i].mobility_tnsr_dt*(cluster[i].tt_mobility_tnsr_sqrt_inv*(rand*stochas_norm) + cluster[i].tr_mobility_tnsr_sqrt_inv*(rand1*stochas_norm*(1.0/dt)))
 				+cluster[i].mobility_tnsr_dr*(cluster[i].rt_mobility_tnsr_sqrt_inv*(rand*stochas_norm) + cluster[i].rr_mobility_tnsr_sqrt_inv*(rand1*stochas_norm*(1.0/dt))) ;
+				
+		Stresslet_Br_2	=	cluster[i].mobility_tnsr_dd_sqrt*(rand2*(sqrt_2kbTdt*sqrt_2kbTdt/(stochas_norm*dt))) ;
 
 // end of Brownian Stress calculation							
 				
@@ -332,18 +389,50 @@ cluster[i].Stresslet_Br =
 						{
 								S_b.comp[k][l] = 0.0; 
 								S_Br_b.comp[k][l] = 0.0; 
+								S_Br_2_b.comp[k][l] = 0.0; 
 								
 							for(int j=0;j<5;j++) 
 							{						
 								S_b.comp[k][l]	+=	 e_g_S[j][k][l]*cluster[i].Stresslet.comp[j];
 								S_Br_b.comp[k][l]	+=	 e_g_S[j][k][l]*cluster[i].Stresslet_Br.comp[j];
+								S_Br_2_b.comp[k][l]	+=	 e_g_S[j][k][l]*Stresslet_Br_2.comp[j];
 							}
 						}
 					}
+
+				
+		if (step%(1000*100*1000)==0) 
+			{ 		
+				writecor(); 
+			}
 					
 					S_s = (cluster[i].rotmat)*S_b*(~cluster[i].rotmat);		
 					S_Br_s = (cluster[i].rotmat)*S_Br_b*(~cluster[i].rotmat);		
+					S_Br_2_s = (cluster[i].rotmat)*S_Br_2_b*(~cluster[i].rotmat);		
 					S_Br_diff_s = (cluster[i].rotmat)*(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) )*(~cluster[i].rotmat);		
+
+	//	addcor(S_Br_s.comp[0][0] + S_Br_diff_s.comp[0][0],0,1);
+	//	addcor(S_Br_s.comp[0][1] + S_Br_diff_s.comp[0][1],1,1);
+	//	addcor(S_Br_s.comp[0][2] + S_Br_diff_s.comp[0][2],2,1);
+	//	addcor( S_Br_diff_s.comp[0][1],3,1);
+	//	addcor( S_Br_s.comp[0][0] + S_Br_diff_s.comp[0][0] ,0,1);
+	//	addcor( S_Br_s.comp[0][1] + S_Br_diff_s.comp[0][1] ,1,1);
+	//	addcor( S_Br_s.comp[0][2] + S_Br_diff_s.comp[0][2] ,2,1);
+	//	addcor( S_Br_s.comp[1][0] + S_Br_diff_s.comp[1][0] ,3,1);
+	//	addcor( S_Br_s.comp[1][1] + S_Br_diff_s.comp[1][1] ,4,1);
+	//	addcor( S_Br_s.comp[1][2] + S_Br_diff_s.comp[1][2] ,5,1);
+	//	addcor( S_Br_s.comp[2][0] + S_Br_diff_s.comp[2][0] ,6,1);
+	//	addcor( S_Br_s.comp[2][1] + S_Br_diff_s.comp[2][1] ,7,1);
+	//	addcor( S_Br_s.comp[2][2] + S_Br_diff_s.comp[2][2] ,8,1);
+		crosscor(S_Br_s.comp[0][0]		,	S_Br_s.comp[0][0],		0,	1);
+		crosscor(S_Br_s.comp[0][0]		,	S_Br_2_s.comp[0][0],	1,	1);
+		crosscor(S_Br_s.comp[0][0]		,	S_Br_diff_s.comp[0][0],	2,	1);
+		crosscor(S_Br_2_s.comp[0][0]	,	S_Br_s.comp[0][0],		3,	1);
+		crosscor(S_Br_2_s.comp[0][0]	,	S_Br_2_s.comp[0][0],	4,	1);		
+		crosscor(S_Br_2_s.comp[0][0]	,	S_Br_diff_s.comp[0][0],	5,	1);		
+		crosscor(S_Br_diff_s.comp[0][0]	,	S_Br_s.comp[0][0],		6,	1);		
+		crosscor(S_Br_diff_s.comp[0][0]	,	S_Br_2_s.comp[0][0],	7,	1);		
+		crosscor(S_Br_diff_s.comp[0][0]	,	S_Br_diff_s.comp[0][0],	8,	1);		
 					
 					for(int m=0;m<5;m++) 
 						{		
@@ -574,14 +663,14 @@ vctr5D Stresslet_Br_diff_mean = null5D;
 vctr5D Stresslet_sqr_mean = null5D;
 vctr5D Stresslet_Br_sqr_mean = null5D;
 vctr5D Stresslet_Br_diff_sqr_mean = null5D;
-
+double Corr_zero=0;
 
 double max_cos=0.0,min_cos=0.0,min_tan=0.0,max_tan=0.0, cos_val=0.0,tan_val=0.0;
 
-
+/*
 // variables for harmonic potential
 double omega = 0.001;
-
+*/
 // variables for Electric field 
 vctr3D dipole_b(0.0,0.0,1.0);
 vctr3D dipole_s(0.0,0.0,1.0);
@@ -1005,7 +1094,7 @@ else {
 }	 
 */
 		cluster[i].mobility_tnsr_sqrt=null33D;
-		MatrixXd temp(6,6), temp_sqrt(6,6), temp_sqrt_inv(6,6) ;
+		MatrixXd temp(6,6), temp_sqrt(6,6), temp_sqrt_inv(6,6),temp_dd(5,5), temp_sqrt_dd(5,5) ;
 		for (int k=0;k<3;k++) {
 			for (int l=0;l<3;l++) {
 				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
@@ -1031,10 +1120,20 @@ else {
 				cout<<cluster[i].rot_mobility_tnsr.comp[k-3][l-3]<<endl;
 			}
 		}
+		for (int k=0;k<5;k++) {
+			for (int l=0;l<5;l++) {
+				temp_dd(k,l)=cluster[i].mobility_tnsr_dd.comp[k][l];
+				cout<<cluster[i].mobility_tnsr_dd.comp[k][l]<<endl;
+
+			}
+		}		
 	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
 	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
 	temp_sqrt_inv = temp_sqrt.inverse();
 			
+	Eigen::SelfAdjointEigenSolver<MatrixXd> DD_MAT(temp_dd);
+	temp_sqrt_dd = DD_MAT.operatorSqrt();
+	
 		cout<<"mobility_tnsr_sqrt"<<endl;
 
 		for (int k=0;k<3;k++) {
@@ -1068,6 +1167,14 @@ else {
 			for (int l=3;l<6;l++) {
 				cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]=temp_sqrt(k,l);
 				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]<<endl;
+			}
+		}
+		cout<<"mobility_tnsr_dd_sqrt"<<endl;
+
+		for (int k=0;k<5;k++) {
+			for (int l=0;l<5;l++) {
+				cluster[i].mobility_tnsr_dd_sqrt.comp[k][l]=temp_sqrt_dd(k,l);
+				cout<<cluster[i].mobility_tnsr_dd_sqrt.comp[k][l]<<endl;
 			}
 		}
 // inverse mobility square root for brownian stresslet calculation
@@ -1539,7 +1646,8 @@ do {
 
   for ( int i = 0 ; i < 1; i ++ )
   {
-	cluster[i].frc= cluster[i].pos*(-omega);
+//	cluster[i].frc= cluster[i].pos*(-omega);
+	cluster[i].frc=null3D;
 	cluster[i].trq=null3D;
 	cluster[i].Iner_tnsr=null33D;
   }
@@ -1555,12 +1663,15 @@ do {
 		outFile13<<vec2.comp[0] <<'\t'<< vec2.comp[1] << '\t'<< vec2.comp[2] <<  endl;      
 		outFile14<<vec3.comp[0] <<'\t'<< vec3.comp[1] << '\t'<< vec3.comp[2] <<  endl;      
 */						
-	//	outFile_com<<cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2]<<'\t'<<std::endl;
-		addcor(cluster[0].pos.comp[0],0,1);
+//		outFile_com<<cluster[0].Stresslet_Br.comp[1]+cluster[0].Stresslet_Br_diff.comp[1]<<'\t'<<std::endl;
+	//	addcor(cluster[0].Stresslet_Br.comp[4],0,1);
 		
-		if (step%(1000*100*frame)==0) 
+		Corr_zero+= ( (cluster[0].Stresslet_Br.comp[0]+cluster[0].Stresslet_Br_diff.comp[0])*(cluster[0].Stresslet_Br.comp[0]+cluster[0].Stresslet_Br_diff.comp[0]) );
+		
+		if (step%(10000*100000*frame)==0) 
 			{ 		
-				writecor(); 
+		//		writecor(); 
+				cout << '\n' << Corr_zero << '\t' << endl;
 			}
 
 					  

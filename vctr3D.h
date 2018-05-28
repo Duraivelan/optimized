@@ -456,6 +456,25 @@ struct vctr5D
     return result;
   }
   
+//        scalar multiplication 1
+  vctr5D& operator *= ( const double inp )
+  {
+    comp[0] *= inp;
+    comp[1] *= inp;
+    comp[2] *= inp;
+    comp[3] *= inp;
+    comp[4] *= inp;
+    return (*this);
+  }
+
+//       scalar multiplication 2
+  vctr5D operator * ( const double inp ) const
+  {
+    vctr5D result = *this;
+    result *= inp;
+    return result;
+  }  
+  
 //       square // trailing 'const': value of receiving object remains unchanged
   vctr5D norm2 ( )
   {
@@ -643,6 +662,18 @@ struct mtrx55D
     comp[4][2] = inp2.comp[4];  
     comp[4][3] = inp3.comp[4];
     comp[4][4] = inp4.comp[4]; 
+  }
+
+//       matrix - vector multiplication
+  vctr5D operator * ( const vctr5D& inp ) const
+  {
+    vctr5D result;
+    result.comp[0] = comp[0][0] * inp.comp[0] + comp[0][1] * inp.comp[1] + comp[0][2] * inp.comp[2] + comp[0][3] * inp.comp[3] + comp[0][4] * inp.comp[4];
+    result.comp[1] = comp[1][0] * inp.comp[0] + comp[1][1] * inp.comp[1] + comp[1][2] * inp.comp[2] + comp[1][3] * inp.comp[3] + comp[1][4] * inp.comp[4];
+    result.comp[2] = comp[2][0] * inp.comp[0] + comp[2][1] * inp.comp[1] + comp[2][2] * inp.comp[2] + comp[2][3] * inp.comp[3] + comp[2][4] * inp.comp[4];  
+    result.comp[3] = comp[3][0] * inp.comp[0] + comp[3][1] * inp.comp[1] + comp[3][2] * inp.comp[2] + comp[3][3] * inp.comp[3] + comp[3][4] * inp.comp[4];  
+    result.comp[4] = comp[4][0] * inp.comp[0] + comp[4][1] * inp.comp[1] + comp[4][2] * inp.comp[2] + comp[4][3] * inp.comp[3] + comp[4][4] * inp.comp[4];  
+    return result;
   }
 
 };
