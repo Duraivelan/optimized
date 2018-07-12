@@ -32,9 +32,9 @@
 # include "defs.h"
 # include "rigid_force.h"
 
-#include</storage1/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
+//#include</storage1/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
 //#include</storage3/usr/people/duraivelan/Downloads/eigen-eigen-bdd17ee3b1b3/Eigen/Eigenvalues>
-//#include<Eigen/Eigenvalues>
+#include<Eigen/Eigenvalues>
 
 using namespace Eigen;
 
@@ -118,6 +118,19 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		vctr3D old_pos= cluster[i].pos;
 		vctr3D dr;
 		double temp_r, r;
+
+		double com_shift = ( round(  ( cluster[i].pos.comp[1] - cluster[j].pos.comp[1] ) * rbox.comp[1] ) * (*DEL_BOX) ) ;
+/*
+		if (cluster[j].pos.comp[0] > cluster[i].pos.comp[0])
+		{
+			cluster[j].pos.comp[0] -= com_shift ; 
+			com_shift = -com_shift;
+		}
+		else{
+			cluster[j].pos.comp[0] += com_shift ; 
+		}
+*/	
+		cluster[j].pos.comp[0] += com_shift ; 
 		
 		L_before= ((cluster[i].pos^cluster[i].vel)*cluster[i].mass + cluster[i].Iner_tnsr*cluster[i].omega +
 				   (cluster[j].pos.revPBC(old_pos,box,rbox)^cluster[j].vel)*cluster[j].mass + cluster[j].Iner_tnsr*cluster[j].omega );
@@ -130,26 +143,33 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		L[i][2] = (I[i][2][0]*Ang_Velocity[i][0]+I[i][2][1]*Ang_Velocity[i][1]+I[i][2][2]*Ang_Velocity[i][2] + I[j][2][0]*Ang_Velocity[j][0]+I[j][2][1]*Ang_Velocity[j][1]+I[j][2][2]*Ang_Velocity[j][2] );
 */			
 
-		double com_shift = ( round( ( cluster[i].pos.comp[1] - cluster[j].pos.comp[1] ) * rbox.comp[1] ) * (*DEL_BOX) ) ;
-		
+		double pos_shift;
 	//	cout << "Collision start" << endl;
 	//	cluster[i].pos.echo();
 	//	cluster[j].pos.echo();
 	//	cout << "com shift" << com_shift<< endl;
 
-		cluster[j].pos.comp[0] -= com_shift ; 
-/*
-		if (cluster[j].pos.comp[0] > cluster[i].pos.comp[0])
-		{
-			cluster[j].pos.comp[0] -= com_shift ; 
-		}
-		else{
-			cluster[j].pos.comp[0] += com_shift ; 
-		}
-	*/	
+//		cluster[j].pos.comp[0] -= com_shift ; 
+
+	
 		cluster[i].pos=(cluster[i].pos*cluster[i].mass + cluster[j].pos*cluster[j].mass ) * (1.0/(cluster[i].mass+cluster[j].mass));		
 
-
+		cluster[i].pos.PBC(box,rbox);	
+		
+		if (com_shift > 0)
+		{
+			if (cluster[i].pos.comp[1] < 0)
+			{
+				cluster[j].pos.comp[0] -= com_shift ;
+			}
+		}
+		if(com_shift < 0)
+		{
+			if (cluster[i].pos.comp[1] > 0)
+			{
+				cluster[j].pos.comp[0] += com_shift ;
+			}
+		}
 
 		cluster[i].mass=cluster[i].mass+cluster[j].mass;
 		
@@ -176,7 +196,18 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 	//	cout << "Cluster i" << endl;
 	//	particle[cluster[i].sub[k]].pos.echo();
 	//	particle[cluster[i].sub[k]].pos_bdyfxd.echo();
-		particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
+
+		pos_shift = ( round( (particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]) * rbox.comp[1] ) * (*DEL_BOX) ) ;
+	    particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= pos_shift ; 
+/*
+		if ( particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] > cluster[i].pos.comp[0])
+		{
+			 particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= pos_shift ; 
+		}
+		else{
+			 particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] += pos_shift ; 
+		}
+*/		
 	//	particle[cluster[i].sub[k]].pos_bdyfxd.echo();		
 		particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);
 	    cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);				
@@ -192,7 +223,17 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 	//				cout << "Cluster j" << endl;
 	//		particle[cluster[i].sub[k]].pos.echo();
 	//		particle[cluster[i].sub[k]].pos_bdyfxd.echo();			
-			particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[k]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;
+		pos_shift = ( round( (particle[cluster[i].sub[k]].pos_bdyfxd.comp[1]) * rbox.comp[1] ) * (*DEL_BOX) ) ;
+	    particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= pos_shift ; 
+/*		
+		if ( particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] > cluster[i].pos.comp[0])
+		{
+			 particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] -= pos_shift ; 
+		}
+		else{
+			 particle[cluster[i].sub[k]].pos_bdyfxd.comp[0] += pos_shift ; 
+		}
+*/		 
 	//		particle[cluster[i].sub[k]].pos_bdyfxd.echo();
 			particle[cluster[i].sub[k]].pos_bdyfxd.PBC(box,rbox);				
 			cluster[i].radii_gyr+=particle[cluster[i].sub[k]].pos_bdyfxd.norm2()/(cluster[i].Sub_Length+cluster[j].Sub_Length);		
@@ -201,7 +242,8 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 			
 		} 
 		outFile70.close();
-		cluster[i].pos.PBC(box,rbox);	
+//		cluster[i].pos.comp[0] -= ( round( cluster[i].pos.comp[1] * rbox.comp[1] ) * (*DEL_BOX) ) ;	
+//		cluster[i].pos.PBC(box,rbox);	
 		cluster[i].Sub_Length=cluster[i].Sub_Length+cluster[j].Sub_Length;
 	//	cout << "Collision ends" << endl;
 
@@ -1898,12 +1940,17 @@ else {
     for ( int j = 0 ; j < cluster[i].Sub_Length ; j ++ )
         { 
             particle[cluster[i].sub[j]].pos_bdyfxd=particle[cluster[i].sub[j]].pos-cluster[i].ctr_diff;//cluster[i].sub[j].pos;
- 			particle[cluster[i].sub[j]].pos_bdyfxd.comp[0] -= ( round( particle[cluster[i].sub[j]].pos_bdyfxd.comp[1] * rbox.comp[1] ) * (DEL_BOX) ) ;
+			
+			double pos_shift = ( round( (particle[cluster[i].sub[j]].pos_bdyfxd.comp[1]) * rbox.comp[1] ) * (DEL_BOX) ) ;
+		
+			particle[cluster[i].sub[j]].pos_bdyfxd.comp[0] -= pos_shift ; 
+
  			particle[cluster[i].sub[j]].pos_bdyfxd.PBC(box,rbox);
 		}
-            cluster[i].pos=cluster[i].ctr_diff;
-			cluster[i].pos.PBC(box,rbox);
-
+		
+	cluster[i].pos=cluster[i].ctr_diff;
+	cluster[i].pos.comp[0] -= ( round( cluster[i].pos.comp[1] * rbox.comp[1] ) * DEL_BOX ) ;	
+	cluster[i].pos.PBC(box,rbox);	
 
 
 		for (int l=0; l<5; l++)

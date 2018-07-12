@@ -148,6 +148,8 @@ else {
 	mtrx3D mu_w_t;
 	mtrx35D mu_E_f;
 	mtrx35D mu_E_t;
+	mtrx35D mu_v_S;
+	mtrx35D mu_w_S;
 	mtrx55D mu_E_S;
 
 	mtrx3D Xi_f_v_ij;
@@ -419,6 +421,7 @@ for (int i=0; i<NrParticles; i++)
 	mu_E_S	= 		null55D ;	
 	mu_E_f	= 		null35D ;	
 	mu_E_t	= 		null35D ;	
+	mu_v_S	= 		null35D ;	
 
 	
 	for (int p=0; p<5; p++)
@@ -429,9 +432,11 @@ for (int i=0; i<NrParticles; i++)
 				{
 				for (int b=0; b<3; b++)
 					{
-						mu_E_f.comp[g][p]		+=		mu_E_f_abg[a][b][g]*e_S_k[p][a][b];	// going from g_dt matrix to ~g_td matrix hence circulation of indices 
-						mu_E_t.comp[g][p]		+=		mu_E_t_abg[a][b][g]*e_S_k[p][a][b];
-								
+						mu_E_f.comp[g][p]		+=		e_k_E[p][a][b]*mu_E_f_abg[a][b][g];	// 
+						mu_E_t.comp[g][p]		+=		e_k_E[p][a][b]*mu_E_t_abg[a][b][g];
+						mu_v_S.comp[g][p]		+=		mu_E_f_abg[a][b][g]*e_S_k[p][a][b];		// going from mu_E_f_abg matrix to mu_v_S matrix hence circulation of indices 
+																								// mu_E_f_[a][b][g] = mu_v_S_[g][a][b]
+																								// it gives mu_v_S(j,i) from mu_E_f(i,j)		
 					}
 				}				
 			}
@@ -474,9 +479,9 @@ for (int i=0; i<NrParticles; i++)
 				for (int k=0; k<3; k++)
 					{				
 						// column major format
-						zeta_11N[k	+	11*NrParticles*l	+	3*i	+	55*NrParticles*j	+	66*NrParticles*NrParticles						] 	=	-mu_E_f.comp[k][l];		// because mu_v_S(i,j) = mu_E_f(j,i);
+						zeta_11N[k	+	11*NrParticles*l	+	3*i	+	55*NrParticles*j	+	66*NrParticles*NrParticles						] 	=	 -mu_v_S.comp[k][l];		// because mu_v_S(i,j) = -mu_v_S(j,i);
 						zeta_11N[k	+	11*NrParticles*l	+	3*i	+	55*NrParticles*j	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 mu_E_t.comp[k][l];		// because mu_w_S(i,j) = mu_E_t(j,i);
-						zeta_11N[k	+	11*NrParticles*l	+	3*j	+	55*NrParticles*i	+	66*NrParticles*NrParticles						] 	=	 mu_E_f.comp[k][l];		// because mu_v_S(j,i) = mu_E_t(i,j);
+						zeta_11N[k	+	11*NrParticles*l	+	3*j	+	55*NrParticles*i	+	66*NrParticles*NrParticles						] 	=	 mu_v_S.comp[k][l];		// because mu_v_S(j,i) = ~mu_E_f(i,j);
 						zeta_11N[k	+	11*NrParticles*l	+	3*j	+	55*NrParticles*i	+	66*NrParticles*NrParticles	+	3*NrParticles	] 	=	 mu_E_t.comp[k][l];		// because mu_w_S(j,i) = mu_E_t(i,j);
 						
 					}
@@ -651,52 +656,52 @@ for (int i=0; i<NrParticles; i++)
 				}
 		}
 
-					Xi_t_v = Xi_f_w;			// storing in the opposite way tr,rt as garcia gives right result don't know why !!
-					Xi_f_w = ~Xi_t_v;
+				//	Xi_t_v = Xi_f_w;
+				//	Xi_f_w = ~Xi_t_v;
 				
-				//	Xi_t_v = ~Xi_f_w;
+					Xi_t_v = ~Xi_f_w;
 
 	 			// 6x6 format					
 	 				// column major format
 
 					xi_11x11[0] = Xi_f_v.comp[0][0] ;  
-					xi_11x11[1] = Xi_f_v.comp[0][1] ;  
-					xi_11x11[2] = Xi_f_v.comp[0][2] ; 
-					xi_11x11[6] = Xi_f_v.comp[1][0] ; 
+					xi_11x11[1] = Xi_f_v.comp[1][0] ;  
+					xi_11x11[2] = Xi_f_v.comp[2][0] ; 
+					xi_11x11[6] = Xi_f_v.comp[0][1] ; 
 					xi_11x11[7] = Xi_f_v.comp[1][1] ;  
-					xi_11x11[8] = Xi_f_v.comp[1][2] ;  
-					xi_11x11[12] = Xi_f_v.comp[2][0] ;   
-					xi_11x11[13] = Xi_f_v.comp[2][1] ; 
+					xi_11x11[8] = Xi_f_v.comp[2][1] ;  
+					xi_11x11[12] = Xi_f_v.comp[0][2] ;   
+					xi_11x11[13] = Xi_f_v.comp[1][2] ; 
 					xi_11x11[14] = Xi_f_v.comp[2][2] ; 				
 
 					xi_11x11[18] = Xi_f_w.comp[0][0] ;  
-					xi_11x11[19] = Xi_f_w.comp[0][1] ;  
-					xi_11x11[20] = Xi_f_w.comp[0][2] ; 
-					xi_11x11[24] = Xi_f_w.comp[1][0] ; 
+					xi_11x11[19] = Xi_f_w.comp[1][0] ;  
+					xi_11x11[20] = Xi_f_w.comp[2][0] ; 
+					xi_11x11[24] = Xi_f_w.comp[0][1] ; 
 					xi_11x11[25] = Xi_f_w.comp[1][1] ;  
-					xi_11x11[26] = Xi_f_w.comp[1][2] ;  
-					xi_11x11[30] = Xi_f_w.comp[2][0] ;   
-					xi_11x11[31] = Xi_f_w.comp[2][1] ; 
+					xi_11x11[26] = Xi_f_w.comp[2][1] ;  
+					xi_11x11[30] = Xi_f_w.comp[0][2] ;   
+					xi_11x11[31] = Xi_f_w.comp[1][2] ; 
 					xi_11x11[32] = Xi_f_w.comp[2][2] ; 				
 										
 					xi_11x11[3] = Xi_t_v.comp[0][0] ;  
-					xi_11x11[4] = Xi_t_v.comp[0][1] ;  
-					xi_11x11[5] = Xi_t_v.comp[0][2] ; 
-					xi_11x11[9] = Xi_t_v.comp[1][0] ; 
+					xi_11x11[4] = Xi_t_v.comp[1][0] ;  
+					xi_11x11[5] = Xi_t_v.comp[2][0] ; 
+					xi_11x11[9] = Xi_t_v.comp[0][1] ; 
 					xi_11x11[10] = Xi_t_v.comp[1][1] ;  
-					xi_11x11[11] = Xi_t_v.comp[1][2] ;  
-					xi_11x11[15] = Xi_t_v.comp[2][0] ;   
-					xi_11x11[16] = Xi_t_v.comp[2][1] ; 
+					xi_11x11[11] = Xi_t_v.comp[2][1] ;  
+					xi_11x11[15] = Xi_t_v.comp[0][2] ;   
+					xi_11x11[16] = Xi_t_v.comp[1][2] ; 
 					xi_11x11[17] = Xi_t_v.comp[2][2] ; 					
 										
 					xi_11x11[21] = Xi_t_w.comp[0][0] ;  
-					xi_11x11[22] = Xi_t_w.comp[0][1] ;  
-					xi_11x11[23] = Xi_t_w.comp[0][2] ; 
-					xi_11x11[27] = Xi_t_w.comp[1][0] ; 
+					xi_11x11[22] = Xi_t_w.comp[1][0] ;  
+					xi_11x11[23] = Xi_t_w.comp[2][0] ; 
+					xi_11x11[27] = Xi_t_w.comp[0][1] ; 
 					xi_11x11[28] = Xi_t_w.comp[1][1] ;  
-					xi_11x11[29] = Xi_t_w.comp[1][2] ;  
-					xi_11x11[33] = Xi_t_w.comp[2][0] ;   
-					xi_11x11[34] = Xi_t_w.comp[2][1] ; 
+					xi_11x11[29] = Xi_t_w.comp[2][1] ;  
+					xi_11x11[33] = Xi_t_w.comp[0][2] ;   
+					xi_11x11[34] = Xi_t_w.comp[1][2] ; 
 					xi_11x11[35] = Xi_t_w.comp[2][2] ; 				
 
 

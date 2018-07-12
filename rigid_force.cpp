@@ -278,7 +278,7 @@ if(shear_rate!=0.0) {
 
   for ( mi[x] = 0 ; mi[x] < NrCells[x] ; mi[x]++ )
   {
-    for ( mi[y] = 0 ; mi[y] < NrCells[y] ; mi[y]++ )		// except top layer assuming shear gradient along Y-direction
+    for ( mi[y] = 0 ; mi[y] < NrCells[y] ; mi[y]++ )		
     {
       for ( mi[z] = 0 ; mi[z] < NrCells[z] ; mi[z]++ )
       {
