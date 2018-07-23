@@ -447,7 +447,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 								+ cluster[i].rotmat*cluster[i].mobility_tnsr_tr_sqrt*(rand1*stochas_norm)
 								+ u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt)*(1.0/pos_norm) ;
 								
-				cluster[i].pos.comp[0] -=  round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*box.comp[0]*step*dt ;				
+			//	cluster[i].pos.comp[0] -=  round(cluster[i].pos.comp[1]/box.comp[1])*shear_rate*box.comp[0]*step*dt ;				
 				for(int m=0;m<5;m++) 
 					{
 						cluster[i].Stresslet.comp[m]=0.0;			
