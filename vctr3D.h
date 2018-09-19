@@ -159,7 +159,63 @@ vctr3D& revPBC(const vctr3D& inp,const vctr3D& box, const vctr3D& rbox)
 
 }; // vctr3D
 
+struct vctr11D
+{
 
+// data
+
+  double comp[11];
+
+// constructors
+
+  vctr11D() {}; 
+
+  vctr11D( const double inp0, const double inp1, const double inp2, const double inp3, const double inp4, const double inp5, const double inp6, const double inp7, const double inp8, const double inp9, const double inp10 )
+  {
+    comp[0] = inp0;
+    comp[1] = inp1;
+    comp[2] = inp2;
+    comp[3] = inp3;
+    comp[4] = inp4;
+    comp[5] = inp5;
+    comp[6] = inp6;
+    comp[7] = inp7;
+    comp[8] = inp8;
+    comp[9] = inp9;
+    comp[10] = inp10;        
+  }
+
+
+// member functions
+
+// operators
+
+//        scalar multiplication 1
+  vctr11D& operator *= ( const double inp )
+  {
+    comp[0] *= inp;
+    comp[1] *= inp;
+    comp[2] *= inp;
+    comp[3] *= inp;
+    comp[4] *= inp;
+    comp[5] *= inp;
+    comp[6] *= inp;
+    comp[7] *= inp;
+    comp[8] *= inp;
+    comp[9] *= inp;
+    comp[10] *= inp;
+  
+    return (*this);
+  }
+  
+//       scalar multiplication 2
+  vctr11D operator * ( const double inp ) const
+  {
+    vctr11D result = *this;
+    result *= inp;
+    return result;
+  }
+}; // vctr11D
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 struct mtrx3D
@@ -678,3 +734,156 @@ struct mtrx55D
 
 };
 
+struct mtrx1111D
+{
+  double comp[11][11];
+
+// constructors
+
+  mtrx1111D() {};
+  
+  //         full definition, vectors = columns
+  mtrx1111D ( const vctr11D& inp0, const vctr11D& inp1, const vctr11D& inp2, const vctr11D& inp3, const vctr11D& inp4, const vctr11D& inp5, const vctr11D& inp6, const vctr11D& inp7, const vctr11D& inp8, const vctr11D& inp9, const vctr11D& inp10 )
+  {
+    comp[0][0] = inp0.comp[0];
+    comp[0][1] = inp1.comp[0];
+    comp[0][2] = inp2.comp[0];
+    comp[0][3] = inp3.comp[0];
+    comp[0][4] = inp4.comp[0];
+    comp[0][5] = inp5.comp[0];
+    comp[0][6] = inp6.comp[0];
+    comp[0][7] = inp7.comp[0];
+    comp[0][8] = inp8.comp[0];
+    comp[0][9] = inp9.comp[0];
+    comp[0][10] = inp10.comp[0];
+    comp[1][0] = inp0.comp[1];
+    comp[1][1] = inp1.comp[1];
+    comp[1][2] = inp2.comp[1];
+    comp[1][3] = inp3.comp[1];
+    comp[1][4] = inp4.comp[1];
+    comp[1][5] = inp5.comp[1];
+    comp[1][6] = inp6.comp[1];
+    comp[1][7] = inp7.comp[1];
+    comp[1][8] = inp8.comp[1];
+    comp[1][9] = inp9.comp[1];
+    comp[1][10] = inp10.comp[1];
+    comp[2][0] = inp0.comp[2];
+    comp[2][1] = inp1.comp[2];
+    comp[2][2] = inp2.comp[2];
+    comp[2][3] = inp3.comp[2];
+    comp[2][4] = inp4.comp[2];
+    comp[2][5] = inp5.comp[2];
+    comp[2][6] = inp6.comp[2];
+    comp[2][7] = inp7.comp[2];
+    comp[2][8] = inp8.comp[2];
+    comp[2][9] = inp9.comp[2];
+    comp[2][10] = inp10.comp[2];    
+    comp[3][0] = inp0.comp[3];
+    comp[3][1] = inp1.comp[3];
+    comp[3][2] = inp2.comp[3];
+    comp[3][3] = inp3.comp[3];
+    comp[3][4] = inp4.comp[3];
+    comp[3][5] = inp5.comp[3];
+    comp[3][6] = inp6.comp[3];
+    comp[3][7] = inp7.comp[3];
+    comp[3][8] = inp8.comp[3];
+    comp[3][9] = inp9.comp[3];
+    comp[3][10] = inp10.comp[3];  
+    comp[4][0] = inp0.comp[4];
+    comp[4][1] = inp1.comp[4];
+    comp[4][2] = inp2.comp[4];
+    comp[4][3] = inp3.comp[4];
+    comp[4][4] = inp4.comp[4];
+    comp[4][5] = inp5.comp[4];
+    comp[4][6] = inp6.comp[4];
+    comp[4][7] = inp7.comp[4];
+    comp[4][8] = inp8.comp[4];
+    comp[4][9] = inp9.comp[4];
+    comp[4][10] = inp10.comp[4];  
+    comp[5][0] = inp0.comp[5];
+    comp[5][1] = inp1.comp[5];
+    comp[5][2] = inp2.comp[5];
+    comp[5][3] = inp3.comp[5];
+    comp[5][4] = inp4.comp[5];
+    comp[5][5] = inp5.comp[5];
+    comp[5][6] = inp6.comp[5];
+    comp[5][7] = inp7.comp[5];
+    comp[5][8] = inp8.comp[5];
+    comp[5][9] = inp9.comp[5];
+    comp[5][10] = inp10.comp[5];  
+    comp[6][0] = inp0.comp[6];
+    comp[6][1] = inp1.comp[6];
+    comp[6][2] = inp2.comp[6];
+    comp[6][3] = inp3.comp[6];
+    comp[6][4] = inp4.comp[6];
+    comp[6][5] = inp5.comp[6];
+    comp[6][6] = inp6.comp[6];
+    comp[6][7] = inp7.comp[6];
+    comp[6][8] = inp8.comp[6];
+    comp[6][9] = inp9.comp[6];
+    comp[6][10] = inp10.comp[6];  
+    comp[7][0] = inp0.comp[7];
+    comp[7][1] = inp1.comp[7];
+    comp[7][2] = inp2.comp[7];
+    comp[7][3] = inp3.comp[7];
+    comp[7][4] = inp4.comp[7];
+    comp[7][5] = inp5.comp[7];
+    comp[7][6] = inp6.comp[7];
+    comp[7][7] = inp7.comp[7];
+    comp[7][8] = inp8.comp[7];
+    comp[7][9] = inp9.comp[7];
+    comp[7][10] = inp10.comp[7];  
+    comp[8][0] = inp0.comp[8];
+    comp[8][1] = inp1.comp[8];
+    comp[8][2] = inp2.comp[8];
+    comp[8][3] = inp3.comp[8];
+    comp[8][4] = inp4.comp[8];
+    comp[8][5] = inp5.comp[8];
+    comp[8][6] = inp6.comp[8];
+    comp[8][7] = inp7.comp[8];
+    comp[8][8] = inp8.comp[8];
+    comp[8][9] = inp9.comp[8];
+    comp[8][10] = inp10.comp[8];  
+    comp[9][0] = inp0.comp[9];
+    comp[9][1] = inp1.comp[9];
+    comp[9][2] = inp2.comp[9];
+    comp[9][3] = inp3.comp[9];
+    comp[9][4] = inp4.comp[9];
+    comp[9][5] = inp5.comp[9];
+    comp[9][6] = inp6.comp[9];
+    comp[9][7] = inp7.comp[9];
+    comp[9][8] = inp8.comp[9];
+    comp[9][9] = inp9.comp[9];
+    comp[9][10] = inp10.comp[9];  
+    comp[10][0] = inp0.comp[10];
+    comp[10][1] = inp1.comp[10];
+    comp[10][2] = inp2.comp[10];
+    comp[10][3] = inp3.comp[10];
+    comp[10][4] = inp4.comp[10];
+    comp[10][5] = inp5.comp[10];
+    comp[10][6] = inp6.comp[10];
+    comp[10][7] = inp7.comp[10];
+    comp[10][8] = inp8.comp[10];
+    comp[10][9] = inp9.comp[10];
+    comp[10][10] = inp10.comp[10];                          
+  }
+
+//       matrix - vector multiplication
+  vctr11D operator * ( const vctr11D& inp ) const
+  {
+    vctr11D result;
+    result.comp[0] = comp[0][0] * inp.comp[0] + comp[0][1] * inp.comp[1] + comp[0][2] * inp.comp[2] + comp[0][3] * inp.comp[3] + comp[0][4] * inp.comp[4] +  comp[0][5] * inp.comp[5] + comp[0][6] * inp.comp[6] + comp[0][7] * inp.comp[7] + comp[0][8] * inp.comp[8] + comp[0][9] * inp.comp[9] + comp[0][10] * inp.comp[10] ;
+    result.comp[1] = comp[1][0] * inp.comp[0] + comp[1][1] * inp.comp[1] + comp[1][2] * inp.comp[2] + comp[1][3] * inp.comp[3] + comp[1][4] * inp.comp[4] +  comp[1][5] * inp.comp[5] + comp[1][6] * inp.comp[6] + comp[1][7] * inp.comp[7] + comp[1][8] * inp.comp[8] + comp[1][9] * inp.comp[9] + comp[1][10] * inp.comp[10] ;
+    result.comp[2] = comp[2][0] * inp.comp[0] + comp[2][1] * inp.comp[1] + comp[2][2] * inp.comp[2] + comp[2][3] * inp.comp[3] + comp[2][4] * inp.comp[4] +  comp[2][5] * inp.comp[5] + comp[2][6] * inp.comp[6] + comp[2][7] * inp.comp[7] + comp[2][8] * inp.comp[8] + comp[2][9] * inp.comp[9] + comp[2][10] * inp.comp[10] ;
+    result.comp[3] = comp[3][0] * inp.comp[0] + comp[3][1] * inp.comp[1] + comp[3][2] * inp.comp[2] + comp[3][3] * inp.comp[3] + comp[3][4] * inp.comp[4] +  comp[3][5] * inp.comp[5] + comp[3][6] * inp.comp[6] + comp[3][7] * inp.comp[7] + comp[3][8] * inp.comp[8] + comp[3][9] * inp.comp[9] + comp[3][10] * inp.comp[10] ;
+    result.comp[4] = comp[4][0] * inp.comp[0] + comp[4][1] * inp.comp[1] + comp[4][2] * inp.comp[2] + comp[4][3] * inp.comp[3] + comp[4][4] * inp.comp[4] +  comp[4][5] * inp.comp[5] + comp[4][6] * inp.comp[6] + comp[4][7] * inp.comp[7] + comp[4][8] * inp.comp[8] + comp[4][9] * inp.comp[9] + comp[4][10] * inp.comp[10] ;
+    result.comp[5] = comp[5][0] * inp.comp[0] + comp[5][1] * inp.comp[1] + comp[5][2] * inp.comp[2] + comp[5][3] * inp.comp[3] + comp[5][4] * inp.comp[4] +  comp[5][5] * inp.comp[5] + comp[5][6] * inp.comp[6] + comp[5][7] * inp.comp[7] + comp[5][8] * inp.comp[8] + comp[5][9] * inp.comp[9] + comp[5][10] * inp.comp[10] ;
+    result.comp[6] = comp[6][0] * inp.comp[0] + comp[6][1] * inp.comp[1] + comp[6][2] * inp.comp[2] + comp[6][3] * inp.comp[3] + comp[6][4] * inp.comp[4] +  comp[6][5] * inp.comp[5] + comp[6][6] * inp.comp[6] + comp[6][7] * inp.comp[7] + comp[6][8] * inp.comp[8] + comp[6][9] * inp.comp[9] + comp[6][10] * inp.comp[10] ;
+    result.comp[7] = comp[7][0] * inp.comp[0] + comp[7][1] * inp.comp[1] + comp[7][2] * inp.comp[2] + comp[7][3] * inp.comp[3] + comp[7][4] * inp.comp[4] +  comp[7][5] * inp.comp[5] + comp[7][6] * inp.comp[6] + comp[7][7] * inp.comp[7] + comp[7][8] * inp.comp[8] + comp[7][9] * inp.comp[9] + comp[7][10] * inp.comp[10] ;
+    result.comp[8] = comp[8][0] * inp.comp[0] + comp[8][1] * inp.comp[1] + comp[8][2] * inp.comp[2] + comp[8][3] * inp.comp[3] + comp[8][4] * inp.comp[4] +  comp[8][5] * inp.comp[5] + comp[8][6] * inp.comp[6] + comp[8][7] * inp.comp[7] + comp[8][8] * inp.comp[8] + comp[8][9] * inp.comp[9] + comp[8][10] * inp.comp[10] ;
+    result.comp[9] = comp[9][0] * inp.comp[0] + comp[9][1] * inp.comp[1] + comp[9][2] * inp.comp[2] + comp[9][3] * inp.comp[3] + comp[9][4] * inp.comp[4] +  comp[9][5] * inp.comp[5] + comp[9][6] * inp.comp[6] + comp[9][7] * inp.comp[7] + comp[9][8] * inp.comp[8] + comp[9][9] * inp.comp[9] + comp[9][10] * inp.comp[10] ;
+    result.comp[10] = comp[10][0] * inp.comp[0] + comp[10][1] * inp.comp[1] + comp[10][2] * inp.comp[2] + comp[10][3] * inp.comp[3] + comp[10][4] * inp.comp[4] +  comp[01][5] * inp.comp[5] + comp[10][6] * inp.comp[6] + comp[10][7] * inp.comp[7] + comp[10][8] * inp.comp[8] + comp[10][9] * inp.comp[9] + comp[10][10] * inp.comp[10] ; 
+    return result;
+  }
+
+};

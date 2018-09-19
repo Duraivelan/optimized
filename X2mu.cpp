@@ -275,11 +275,13 @@ else {
    double mu_11N[121*NrParticles*NrParticles] ;  		// grand mobility matrix
    double zeta_11N[121*NrParticles*NrParticles] ;  	// grand resistance matrix
    double rho_11N[121*NrParticles*NrParticles] ;  	// grand resistance matrix
+   double xi_11x11_66part[11*11] ; 							// generalized friction matrix
    double xi_11x11[11*11] ; 							// generalized friction matrix
    	
    
    for (int i=0; i<121; i++)
 		{
+			xi_11x11_66part[i] = 0.0; 
 			xi_11x11[i] = 0.0; 
 		}        
 
@@ -706,45 +708,45 @@ for (int i=0; i<NrParticles; i++)
 	 			// 6x6 format					
 	 				// column major format
 
-					xi_11x11[0] = Xi_f_v.comp[0][0] ;  
-					xi_11x11[1] = Xi_f_v.comp[1][0] ;  
-					xi_11x11[2] = Xi_f_v.comp[2][0] ; 
-					xi_11x11[6] = Xi_f_v.comp[0][1] ; 
-					xi_11x11[7] = Xi_f_v.comp[1][1] ;  
-					xi_11x11[8] = Xi_f_v.comp[2][1] ;  
-					xi_11x11[12] = Xi_f_v.comp[0][2] ;   
-					xi_11x11[13] = Xi_f_v.comp[1][2] ; 
-					xi_11x11[14] = Xi_f_v.comp[2][2] ; 				
+					xi_11x11_66part[0] = Xi_f_v.comp[0][0] ;  
+					xi_11x11_66part[1] = Xi_f_v.comp[1][0] ;  
+					xi_11x11_66part[2] = Xi_f_v.comp[2][0] ; 
+					xi_11x11_66part[6] = Xi_f_v.comp[0][1] ; 
+					xi_11x11_66part[7] = Xi_f_v.comp[1][1] ;  
+					xi_11x11_66part[8] = Xi_f_v.comp[2][1] ;  
+					xi_11x11_66part[12] = Xi_f_v.comp[0][2] ;   
+					xi_11x11_66part[13] = Xi_f_v.comp[1][2] ; 
+					xi_11x11_66part[14] = Xi_f_v.comp[2][2] ; 				
 
-					xi_11x11[18] = Xi_f_w.comp[0][0] ;  
-					xi_11x11[19] = Xi_f_w.comp[1][0] ;  
-					xi_11x11[20] = Xi_f_w.comp[2][0] ; 
-					xi_11x11[24] = Xi_f_w.comp[0][1] ; 
-					xi_11x11[25] = Xi_f_w.comp[1][1] ;  
-					xi_11x11[26] = Xi_f_w.comp[2][1] ;  
-					xi_11x11[30] = Xi_f_w.comp[0][2] ;   
-					xi_11x11[31] = Xi_f_w.comp[1][2] ; 
-					xi_11x11[32] = Xi_f_w.comp[2][2] ; 				
+					xi_11x11_66part[18] = Xi_f_w.comp[0][0] ;  
+					xi_11x11_66part[19] = Xi_f_w.comp[1][0] ;  
+					xi_11x11_66part[20] = Xi_f_w.comp[2][0] ; 
+					xi_11x11_66part[24] = Xi_f_w.comp[0][1] ; 
+					xi_11x11_66part[25] = Xi_f_w.comp[1][1] ;  
+					xi_11x11_66part[26] = Xi_f_w.comp[2][1] ;  
+					xi_11x11_66part[30] = Xi_f_w.comp[0][2] ;   
+					xi_11x11_66part[31] = Xi_f_w.comp[1][2] ; 
+					xi_11x11_66part[32] = Xi_f_w.comp[2][2] ; 				
 										
-					xi_11x11[3] = Xi_t_v.comp[0][0] ;  
-					xi_11x11[4] = Xi_t_v.comp[1][0] ;  
-					xi_11x11[5] = Xi_t_v.comp[2][0] ; 
-					xi_11x11[9] = Xi_t_v.comp[0][1] ; 
-					xi_11x11[10] = Xi_t_v.comp[1][1] ;  
-					xi_11x11[11] = Xi_t_v.comp[2][1] ;  
-					xi_11x11[15] = Xi_t_v.comp[0][2] ;   
-					xi_11x11[16] = Xi_t_v.comp[1][2] ; 
-					xi_11x11[17] = Xi_t_v.comp[2][2] ; 					
+					xi_11x11_66part[3] = Xi_t_v.comp[0][0] ;  
+					xi_11x11_66part[4] = Xi_t_v.comp[1][0] ;  
+					xi_11x11_66part[5] = Xi_t_v.comp[2][0] ; 
+					xi_11x11_66part[9] = Xi_t_v.comp[0][1] ; 
+					xi_11x11_66part[10] = Xi_t_v.comp[1][1] ;  
+					xi_11x11_66part[11] = Xi_t_v.comp[2][1] ;  
+					xi_11x11_66part[15] = Xi_t_v.comp[0][2] ;   
+					xi_11x11_66part[16] = Xi_t_v.comp[1][2] ; 
+					xi_11x11_66part[17] = Xi_t_v.comp[2][2] ; 					
 										
-					xi_11x11[21] = Xi_t_w.comp[0][0] ;  
-					xi_11x11[22] = Xi_t_w.comp[1][0] ;  
-					xi_11x11[23] = Xi_t_w.comp[2][0] ; 
-					xi_11x11[27] = Xi_t_w.comp[0][1] ; 
-					xi_11x11[28] = Xi_t_w.comp[1][1] ;  
-					xi_11x11[29] = Xi_t_w.comp[2][1] ;  
-					xi_11x11[33] = Xi_t_w.comp[0][2] ;   
-					xi_11x11[34] = Xi_t_w.comp[1][2] ; 
-					xi_11x11[35] = Xi_t_w.comp[2][2] ; 				
+					xi_11x11_66part[21] = Xi_t_w.comp[0][0] ;  
+					xi_11x11_66part[22] = Xi_t_w.comp[1][0] ;  
+					xi_11x11_66part[23] = Xi_t_w.comp[2][0] ; 
+					xi_11x11_66part[27] = Xi_t_w.comp[0][1] ; 
+					xi_11x11_66part[28] = Xi_t_w.comp[1][1] ;  
+					xi_11x11_66part[29] = Xi_t_w.comp[2][1] ;  
+					xi_11x11_66part[33] = Xi_t_w.comp[0][2] ;   
+					xi_11x11_66part[34] = Xi_t_w.comp[1][2] ; 
+					xi_11x11_66part[35] = Xi_t_w.comp[2][2] ; 				
 
 #endif
 
@@ -762,9 +764,9 @@ for (int i=0; i<NrParticles; i++)
 
 double c = 1.0;	// short axis
 
-double a = 20.0*c;	// long axis
+double a = 5.0*c;	// long axis
 
-double a_bead = 20.0;	// long axis of bead ellipsoid
+double a_bead = 5.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 
@@ -1027,58 +1029,113 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 			cout<< endl;
 		}
 		
-	 			// 6x6 format					
+		
+	 			// 11x11 format					
+	 				// column major format
+			
+			for (int l=0; l<3; l++)
+				{
+				for (int k=0; k<3; k++)
+					{		
+						// 11N column major format
+						xi_11x11[k	+	11*l					] 	=	 Friction_Tnsr_tt.comp[k][l];
+						xi_11x11[k	+	11*l	+	33			] 	=	 Friction_Tnsr_tr.comp[k][l];
+						xi_11x11[k	+	11*l	+	3			] 	=	 Friction_Tnsr_rt.comp[k][l];
+						xi_11x11[k	+	11*l	+	33	+	3	] 	=	 Friction_Tnsr_rr.comp[k][l];							
+					}
+				}
+				
+			for (int l=0; l<5; l++)
+				{
+				for (int k=0; k<3; k++)
+					{				
+						// column major format
+						xi_11x11[k	+	11*l	+	66			] 	=	 Friction_Tnsr_td.comp[k][l];		// because mu_v_S(i,j) = -mu_v_S(j,i);
+						xi_11x11[k	+	11*l	+	66	+	3	] 	=	 Friction_Tnsr_rd.comp[k][l];		// because mu_w_S(i,j) = mu_E_t(j,i);
+					}
+				}					
+			for (int l=0; l<3; l++)
+				{
+				for (int k=0; k<5; k++)
+					{				
+						// column major format
+						xi_11x11[k	+	11*l	+	6			] 	=	 Friction_Tnsr_td.comp[l][k];
+						xi_11x11[k	+	11*l	+	33	+	6	] 	=	 Friction_Tnsr_rd.comp[l][k];					
+					}
+				}
+			for (int l=0; l<5; l++)
+				{
+				for (int k=0; k<5; k++)
+					{				
+						// column major format
+						xi_11x11[k	+	11*l	+	66	+	6	] 	=	 Friction_Tnsr_dd.comp[k][l];
+					}
+				}
+
+				cout << '\n' << "Xi_11_11 " <<'\n';
+
+			for (int l=0; l<11; l++)
+				{
+				for (int k=0; k<11; k++)
+					{
+						cout << xi_11x11[k*11 + l ] << '\t';
+					}
+				cout << '\n';
+				}		
+					
+
+	 			// 6x6 part of 11x11 format					
 	 				// column major format
 
-					xi_11x11[0] = Friction_Tnsr_tt.comp[0][0] ;  
-					xi_11x11[1] = Friction_Tnsr_tt.comp[1][0] ;  
-					xi_11x11[2] = Friction_Tnsr_tt.comp[2][0] ; 
-					xi_11x11[6] = Friction_Tnsr_tt.comp[0][1] ; 
-					xi_11x11[7] = Friction_Tnsr_tt.comp[1][1] ;  
-					xi_11x11[8] = Friction_Tnsr_tt.comp[2][1] ;  
-					xi_11x11[12] = Friction_Tnsr_tt.comp[0][2] ;   
-					xi_11x11[13] = Friction_Tnsr_tt.comp[1][2] ; 
-					xi_11x11[14] = Friction_Tnsr_tt.comp[2][2] ; 				
+					xi_11x11_66part[0] = Friction_Tnsr_tt.comp[0][0] ;  
+					xi_11x11_66part[1] = Friction_Tnsr_tt.comp[1][0] ;  
+					xi_11x11_66part[2] = Friction_Tnsr_tt.comp[2][0] ; 
+					xi_11x11_66part[6] = Friction_Tnsr_tt.comp[0][1] ; 
+					xi_11x11_66part[7] = Friction_Tnsr_tt.comp[1][1] ;  
+					xi_11x11_66part[8] = Friction_Tnsr_tt.comp[2][1] ;  
+					xi_11x11_66part[12] = Friction_Tnsr_tt.comp[0][2] ;   
+					xi_11x11_66part[13] = Friction_Tnsr_tt.comp[1][2] ; 
+					xi_11x11_66part[14] = Friction_Tnsr_tt.comp[2][2] ; 				
 
-					xi_11x11[18] = Friction_Tnsr_rt.comp[0][0] ;  
-					xi_11x11[19] = Friction_Tnsr_rt.comp[1][0] ;  
-					xi_11x11[20] = Friction_Tnsr_rt.comp[2][0] ; 
-					xi_11x11[24] = Friction_Tnsr_rt.comp[0][1] ; 
-					xi_11x11[25] = Friction_Tnsr_rt.comp[1][1] ;  
-					xi_11x11[26] = Friction_Tnsr_rt.comp[2][1] ;  
-					xi_11x11[30] = Friction_Tnsr_rt.comp[0][2] ;   
-					xi_11x11[31] = Friction_Tnsr_rt.comp[1][2] ; 
-					xi_11x11[32] = Friction_Tnsr_rt.comp[2][2] ; 				
+					xi_11x11_66part[18] = Friction_Tnsr_rt.comp[0][0] ;  
+					xi_11x11_66part[19] = Friction_Tnsr_rt.comp[1][0] ;  
+					xi_11x11_66part[20] = Friction_Tnsr_rt.comp[2][0] ; 
+					xi_11x11_66part[24] = Friction_Tnsr_rt.comp[0][1] ; 
+					xi_11x11_66part[25] = Friction_Tnsr_rt.comp[1][1] ;  
+					xi_11x11_66part[26] = Friction_Tnsr_rt.comp[2][1] ;  
+					xi_11x11_66part[30] = Friction_Tnsr_rt.comp[0][2] ;   
+					xi_11x11_66part[31] = Friction_Tnsr_rt.comp[1][2] ; 
+					xi_11x11_66part[32] = Friction_Tnsr_rt.comp[2][2] ; 				
 										
-					xi_11x11[3] = Friction_Tnsr_tr.comp[0][0] ;  
-					xi_11x11[4] = Friction_Tnsr_tr.comp[1][0] ;  
-					xi_11x11[5] = Friction_Tnsr_tr.comp[2][0] ; 
-					xi_11x11[9] = Friction_Tnsr_tr.comp[0][1] ; 
-					xi_11x11[10] = Friction_Tnsr_tr.comp[1][1] ;  
-					xi_11x11[11] = Friction_Tnsr_tr.comp[2][1] ;  
-					xi_11x11[15] = Friction_Tnsr_tr.comp[0][2] ;   
-					xi_11x11[16] = Friction_Tnsr_tr.comp[1][2] ; 
-					xi_11x11[17] = Friction_Tnsr_tr.comp[2][2] ; 					
+					xi_11x11_66part[3] = Friction_Tnsr_tr.comp[0][0] ;  
+					xi_11x11_66part[4] = Friction_Tnsr_tr.comp[1][0] ;  
+					xi_11x11_66part[5] = Friction_Tnsr_tr.comp[2][0] ; 
+					xi_11x11_66part[9] = Friction_Tnsr_tr.comp[0][1] ; 
+					xi_11x11_66part[10] = Friction_Tnsr_tr.comp[1][1] ;  
+					xi_11x11_66part[11] = Friction_Tnsr_tr.comp[2][1] ;  
+					xi_11x11_66part[15] = Friction_Tnsr_tr.comp[0][2] ;   
+					xi_11x11_66part[16] = Friction_Tnsr_tr.comp[1][2] ; 
+					xi_11x11_66part[17] = Friction_Tnsr_tr.comp[2][2] ; 					
 										
-					xi_11x11[21] = Friction_Tnsr_rr.comp[0][0] ;  
-					xi_11x11[22] = Friction_Tnsr_rr.comp[1][0] ;  
-					xi_11x11[23] = Friction_Tnsr_rr.comp[2][0] ; 
-					xi_11x11[27] = Friction_Tnsr_rr.comp[0][1] ; 
-					xi_11x11[28] = Friction_Tnsr_rr.comp[1][1] ;  
-					xi_11x11[29] = Friction_Tnsr_rr.comp[2][1] ;  
-					xi_11x11[33] = Friction_Tnsr_rr.comp[0][2] ;   
-					xi_11x11[34] = Friction_Tnsr_rr.comp[1][2] ; 
-					xi_11x11[35] = Friction_Tnsr_rr.comp[2][2] ; 				
-/*
+					xi_11x11_66part[21] = Friction_Tnsr_rr.comp[0][0] ;  
+					xi_11x11_66part[22] = Friction_Tnsr_rr.comp[1][0] ;  
+					xi_11x11_66part[23] = Friction_Tnsr_rr.comp[2][0] ; 
+					xi_11x11_66part[27] = Friction_Tnsr_rr.comp[0][1] ; 
+					xi_11x11_66part[28] = Friction_Tnsr_rr.comp[1][1] ;  
+					xi_11x11_66part[29] = Friction_Tnsr_rr.comp[2][1] ;  
+					xi_11x11_66part[33] = Friction_Tnsr_rr.comp[0][2] ;   
+					xi_11x11_66part[34] = Friction_Tnsr_rr.comp[1][2] ; 
+					xi_11x11_66part[35] = Friction_Tnsr_rr.comp[2][2] ; 				
+
 		outFile1<<std::endl ;
-		outFile1<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
-		outFile1<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
-		outFile1<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
+		outFile1<<xi_11x11_66part[0]<<'\t'<<xi_11x11_66part[6]<<'\t'<<xi_11x11_66part[12]<<'\t'<<xi_11x11_66part[18]<<'\t'<<xi_11x11_66part[24]<<'\t'<<xi_11x11_66part[30]<<std::endl ;
+		outFile1<<xi_11x11_66part[1]<<'\t'<<xi_11x11_66part[7]<<'\t'<<xi_11x11_66part[13]<<'\t'<<xi_11x11_66part[19]<<'\t'<<xi_11x11_66part[25]<<'\t'<<xi_11x11_66part[31]<<std::endl ;
+		outFile1<<xi_11x11_66part[2]<<'\t'<<xi_11x11_66part[8]<<'\t'<<xi_11x11_66part[14]<<'\t'<<xi_11x11_66part[20]<<'\t'<<xi_11x11_66part[26]<<'\t'<<xi_11x11_66part[32]<<std::endl ;
 		outFile1<<std::endl ;
-		outFile1<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
-		outFile1<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
-		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
-		outFile1<<std::endl ;
+		outFile1<<xi_11x11_66part[3]<<'\t'<<xi_11x11_66part[9]<<'\t'<<xi_11x11_66part[15]<<'\t'<<xi_11x11_66part[21]<<'\t'<<xi_11x11_66part[27]<<'\t'<<xi_11x11_66part[33]<<std::endl ;
+		outFile1<<xi_11x11_66part[4]<<'\t'<<xi_11x11_66part[10]<<'\t'<<xi_11x11_66part[16]<<'\t'<<xi_11x11_66part[22]<<'\t'<<xi_11x11_66part[28]<<'\t'<<xi_11x11_66part[34]<<std::endl ;
+		outFile1<<xi_11x11_66part[5]<<'\t'<<xi_11x11_66part[11]<<'\t'<<xi_11x11_66part[17]<<'\t'<<xi_11x11_66part[23]<<'\t'<<xi_11x11_66part[29]<<'\t'<<xi_11x11_66part[35]<<std::endl ;
+/*		outFile1<<std::endl ;
 		outFile1<<Xi_f_E.comp[0][0]<<'\t'<<Xi_f_E.comp[0][1]<<'\t'<<Xi_f_E.comp[0][2]<<'\t'<<Xi_f_E.comp[0][3]<<'\t'<<Xi_f_E.comp[0][4]<<std::endl ;
 		outFile1<<Xi_f_E.comp[1][0]<<'\t'<<Xi_f_E.comp[1][1]<<'\t'<<Xi_f_E.comp[1][2]<<'\t'<<Xi_f_E.comp[1][3]<<'\t'<<Xi_f_E.comp[1][4]<<std::endl ;
 		outFile1<<Xi_f_E.comp[2][0]<<'\t'<<Xi_f_E.comp[2][1]<<'\t'<<Xi_f_E.comp[2][2]<<'\t'<<Xi_f_E.comp[2][3]<<'\t'<<Xi_f_E.comp[2][4]<<std::endl ;
@@ -1092,8 +1149,8 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 		outFile1<<Xi_S_E.comp[2][0]<<'\t'<<Xi_S_E.comp[2][1]<<'\t'<<Xi_S_E.comp[2][2]<<'\t'<<Xi_S_E.comp[2][3]<<'\t'<<Xi_S_E.comp[2][4]<<std::endl ;
 		outFile1<<Xi_S_E.comp[3][0]<<'\t'<<Xi_S_E.comp[3][1]<<'\t'<<Xi_S_E.comp[3][2]<<'\t'<<Xi_S_E.comp[3][3]<<'\t'<<Xi_S_E.comp[3][4]<<std::endl ;
 		outFile1<<Xi_S_E.comp[4][0]<<'\t'<<Xi_S_E.comp[4][1]<<'\t'<<Xi_S_E.comp[4][2]<<'\t'<<Xi_S_E.comp[4][3]<<'\t'<<Xi_S_E.comp[4][4]<<std::endl ;
-
 */
+
 		outFile1<<std::endl ;
 		outFile1<<Friction_Tnsr_td.comp[0][0]<<'\t'<<Friction_Tnsr_td.comp[0][1]<<'\t'<<Friction_Tnsr_td.comp[0][2]<<'\t'<<Friction_Tnsr_td.comp[0][3]<<'\t'<<Friction_Tnsr_td.comp[0][4]<<std::endl ;
 		outFile1<<Friction_Tnsr_td.comp[1][0]<<'\t'<<Friction_Tnsr_td.comp[1][1]<<'\t'<<Friction_Tnsr_td.comp[1][2]<<'\t'<<Friction_Tnsr_td.comp[1][3]<<'\t'<<Friction_Tnsr_td.comp[1][4]<<std::endl ;
@@ -1109,16 +1166,17 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 		outFile1<<Friction_Tnsr_dd.comp[3][0]<<'\t'<<Friction_Tnsr_dd.comp[3][1]<<'\t'<<Friction_Tnsr_dd.comp[3][2]<<'\t'<<Friction_Tnsr_dd.comp[3][3]<<'\t'<<Friction_Tnsr_dd.comp[3][4]<<std::endl ;
 		outFile1<<Friction_Tnsr_dd.comp[4][0]<<'\t'<<Friction_Tnsr_dd.comp[4][1]<<'\t'<<Friction_Tnsr_dd.comp[4][2]<<'\t'<<Friction_Tnsr_dd.comp[4][3]<<'\t'<<Friction_Tnsr_dd.comp[4][4]<<std::endl ;
 
-			inverse ( xi_11x11 , 6 )	 ; 			
+
+			inverse ( xi_11x11_66part , 6 )	 ; 			
 
 		outFile1<<std::endl ;
-		outFile1<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
-		outFile1<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
-		outFile1<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
+		outFile1<<xi_11x11_66part[0]<<'\t'<<xi_11x11_66part[6]<<'\t'<<xi_11x11_66part[12]<<'\t'<<xi_11x11_66part[18]<<'\t'<<xi_11x11_66part[24]<<'\t'<<xi_11x11_66part[30]<<std::endl ;
+		outFile1<<xi_11x11_66part[1]<<'\t'<<xi_11x11_66part[7]<<'\t'<<xi_11x11_66part[13]<<'\t'<<xi_11x11_66part[19]<<'\t'<<xi_11x11_66part[25]<<'\t'<<xi_11x11_66part[31]<<std::endl ;
+		outFile1<<xi_11x11_66part[2]<<'\t'<<xi_11x11_66part[8]<<'\t'<<xi_11x11_66part[14]<<'\t'<<xi_11x11_66part[20]<<'\t'<<xi_11x11_66part[26]<<'\t'<<xi_11x11_66part[32]<<std::endl ;
 		outFile1<<std::endl ;
-		outFile1<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
-		outFile1<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
-		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
+		outFile1<<xi_11x11_66part[3]<<'\t'<<xi_11x11_66part[9]<<'\t'<<xi_11x11_66part[15]<<'\t'<<xi_11x11_66part[21]<<'\t'<<xi_11x11_66part[27]<<'\t'<<xi_11x11_66part[33]<<std::endl ;
+		outFile1<<xi_11x11_66part[4]<<'\t'<<xi_11x11_66part[10]<<'\t'<<xi_11x11_66part[16]<<'\t'<<xi_11x11_66part[22]<<'\t'<<xi_11x11_66part[28]<<'\t'<<xi_11x11_66part[34]<<std::endl ;
+		outFile1<<xi_11x11_66part[5]<<'\t'<<xi_11x11_66part[11]<<'\t'<<xi_11x11_66part[17]<<'\t'<<xi_11x11_66part[23]<<'\t'<<xi_11x11_66part[29]<<'\t'<<xi_11x11_66part[35]<<std::endl ;
 
 
 // using the trick of matrix inversion by parts, since the Stresslet and flow-field switch going from FTS to FTE when doing dynamics of the aggregates
@@ -1134,8 +1192,8 @@ double mu_dd[5][5];
 					for (int m=0; m<3; m++)
 						{				
 							// column major format
-							mu_d[l][k]	-=	xi_11x11[l	+	6*m]*Xi_f_E.comp[m][k];
-							mu_d[l][k]	-=	xi_11x11[l	+	6*(m+3)]*Xi_t_E.comp[m][k];
+							mu_d[l][k]	-=	xi_11x11_66part[l	+	6*m]*Xi_f_E.comp[m][k];
+							mu_d[l][k]	-=	xi_11x11_66part[l	+	6*(m+3)]*Xi_t_E.comp[m][k];
 						}
 				//	mu_d[l][k] *= g_norm;
 					}
@@ -1164,8 +1222,8 @@ double mu_dd[5][5];
 					for (int m=0; m<3; m++)
 						{				
 							// column major format
-							mu_d[l][k]	-=	xi_11x11[l	+	6*m]*Friction_Tnsr_td.comp[m][k];
-							mu_d[l][k]	-=	xi_11x11[l	+	6*(m+3)]*Friction_Tnsr_rd.comp[m][k];
+							mu_d[l][k]	-=	xi_11x11_66part[l	+	6*m]*Friction_Tnsr_td.comp[m][k];
+							mu_d[l][k]	-=	xi_11x11_66part[l	+	6*(m+3)]*Friction_Tnsr_rd.comp[m][k];
 						}
 				//	mu_d[l][k] *= g_norm;
 					}
@@ -1205,21 +1263,21 @@ double mu_dd[5][5];
 
 vctr3D ctr_diff ; 
 double temp_mat[3*3];
-temp_mat[0] = -xi_11x11[28] - xi_11x11[35]	;
-temp_mat[1] =  xi_11x11[22] 				; 
-temp_mat[2] =  xi_11x11[23]				; 
-temp_mat[3] =  xi_11x11[27]				;
-temp_mat[4] = -xi_11x11[21] - xi_11x11[35]	;
-temp_mat[5] =  xi_11x11[29]				;
-temp_mat[6] =  xi_11x11[33]				;
-temp_mat[7] =  xi_11x11[34]				;
-temp_mat[8] = -xi_11x11[28] - xi_11x11[21]	;
+temp_mat[0] = -xi_11x11_66part[28] - xi_11x11_66part[35]	;
+temp_mat[1] =  xi_11x11_66part[22] 				; 
+temp_mat[2] =  xi_11x11_66part[23]				; 
+temp_mat[3] =  xi_11x11_66part[27]				;
+temp_mat[4] = -xi_11x11_66part[21] - xi_11x11_66part[35]	;
+temp_mat[5] =  xi_11x11_66part[29]				;
+temp_mat[6] =  xi_11x11_66part[33]				;
+temp_mat[7] =  xi_11x11_66part[34]				;
+temp_mat[8] = -xi_11x11_66part[28] - xi_11x11_66part[21]	;
 
 inverse ( temp_mat , 3 )	 ; 	
 
-ctr_diff.comp[0] = - ( temp_mat[0]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[3]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[6]*(xi_11x11[9] - xi_11x11[4]) ) ;
-ctr_diff.comp[1] = - ( temp_mat[1]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[4]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[7]*(xi_11x11[9] - xi_11x11[4]) ) ;
-ctr_diff.comp[2] = - ( temp_mat[2]*(xi_11x11[16] - xi_11x11[11]) + temp_mat[5]*(xi_11x11[5] - xi_11x11[15]) + temp_mat[8]*(xi_11x11[9] - xi_11x11[4]) ) ;
+ctr_diff.comp[0] = - ( temp_mat[0]*(xi_11x11_66part[16] - xi_11x11_66part[11]) + temp_mat[3]*(xi_11x11_66part[5] - xi_11x11_66part[15]) + temp_mat[6]*(xi_11x11_66part[9] - xi_11x11_66part[4]) ) ;
+ctr_diff.comp[1] = - ( temp_mat[1]*(xi_11x11_66part[16] - xi_11x11_66part[11]) + temp_mat[4]*(xi_11x11_66part[5] - xi_11x11_66part[15]) + temp_mat[7]*(xi_11x11_66part[9] - xi_11x11_66part[4]) ) ;
+ctr_diff.comp[2] = - ( temp_mat[2]*(xi_11x11_66part[16] - xi_11x11_66part[11]) + temp_mat[5]*(xi_11x11_66part[5] - xi_11x11_66part[15]) + temp_mat[8]*(xi_11x11_66part[9] - xi_11x11_66part[4]) ) ;
 
 // ctr_diff.echo();
  cout.precision(17);
@@ -1246,45 +1304,45 @@ mtrx53D	Unit_tnsr_Redc;
 		}		
 	}		
 	
-D_tt.comp[0][0] = xi_11x11[0];
-D_tt.comp[1][0] = xi_11x11[1];
-D_tt.comp[2][0] = xi_11x11[2];
-D_tt.comp[0][1] = xi_11x11[6];
-D_tt.comp[1][1] = xi_11x11[7];
-D_tt.comp[2][1] = xi_11x11[8];
-D_tt.comp[0][2] = xi_11x11[12];
-D_tt.comp[1][2] = xi_11x11[13];
-D_tt.comp[2][2] = xi_11x11[14];
+D_tt.comp[0][0] = xi_11x11_66part[0];
+D_tt.comp[1][0] = xi_11x11_66part[1];
+D_tt.comp[2][0] = xi_11x11_66part[2];
+D_tt.comp[0][1] = xi_11x11_66part[6];
+D_tt.comp[1][1] = xi_11x11_66part[7];
+D_tt.comp[2][1] = xi_11x11_66part[8];
+D_tt.comp[0][2] = xi_11x11_66part[12];
+D_tt.comp[1][2] = xi_11x11_66part[13];
+D_tt.comp[2][2] = xi_11x11_66part[14];
 
-D_rt.comp[0][0] = xi_11x11[3];
-D_rt.comp[1][0] = xi_11x11[4];
-D_rt.comp[2][0] = xi_11x11[5];
-D_rt.comp[0][1] = xi_11x11[9];
-D_rt.comp[1][1] = xi_11x11[10];
-D_rt.comp[2][1] = xi_11x11[11];
-D_rt.comp[0][2] = xi_11x11[15];
-D_rt.comp[1][2] = xi_11x11[16];
-D_rt.comp[2][2] = xi_11x11[17];
+D_rt.comp[0][0] = xi_11x11_66part[3];
+D_rt.comp[1][0] = xi_11x11_66part[4];
+D_rt.comp[2][0] = xi_11x11_66part[5];
+D_rt.comp[0][1] = xi_11x11_66part[9];
+D_rt.comp[1][1] = xi_11x11_66part[10];
+D_rt.comp[2][1] = xi_11x11_66part[11];
+D_rt.comp[0][2] = xi_11x11_66part[15];
+D_rt.comp[1][2] = xi_11x11_66part[16];
+D_rt.comp[2][2] = xi_11x11_66part[17];
 
-D_tr.comp[0][0] = xi_11x11[18];
-D_tr.comp[1][0] = xi_11x11[19];
-D_tr.comp[2][0] = xi_11x11[20];
-D_tr.comp[0][1] = xi_11x11[24];
-D_tr.comp[1][1] = xi_11x11[25];
-D_tr.comp[2][1] = xi_11x11[26];
-D_tr.comp[0][2] = xi_11x11[30];
-D_tr.comp[1][2] = xi_11x11[31];
-D_tr.comp[2][2] = xi_11x11[32];
+D_tr.comp[0][0] = xi_11x11_66part[18];
+D_tr.comp[1][0] = xi_11x11_66part[19];
+D_tr.comp[2][0] = xi_11x11_66part[20];
+D_tr.comp[0][1] = xi_11x11_66part[24];
+D_tr.comp[1][1] = xi_11x11_66part[25];
+D_tr.comp[2][1] = xi_11x11_66part[26];
+D_tr.comp[0][2] = xi_11x11_66part[30];
+D_tr.comp[1][2] = xi_11x11_66part[31];
+D_tr.comp[2][2] = xi_11x11_66part[32];
 
-D_rr.comp[0][0] = xi_11x11[21];
-D_rr.comp[1][0] = xi_11x11[22];
-D_rr.comp[2][0] = xi_11x11[23];
-D_rr.comp[0][1] = xi_11x11[27];
-D_rr.comp[1][1] = xi_11x11[28];
-D_rr.comp[2][1] = xi_11x11[29];
-D_rr.comp[0][2] = xi_11x11[33];
-D_rr.comp[1][2] = xi_11x11[34];
-D_rr.comp[2][2] = xi_11x11[35];		
+D_rr.comp[0][0] = xi_11x11_66part[21];
+D_rr.comp[1][0] = xi_11x11_66part[22];
+D_rr.comp[2][0] = xi_11x11_66part[23];
+D_rr.comp[0][1] = xi_11x11_66part[27];
+D_rr.comp[1][1] = xi_11x11_66part[28];
+D_rr.comp[2][1] = xi_11x11_66part[29];
+D_rr.comp[0][2] = xi_11x11_66part[33];
+D_rr.comp[1][2] = xi_11x11_66part[34];
+D_rr.comp[2][2] = xi_11x11_66part[35];		
 
 U_OD.comp[0][0] =  0.0;
 U_OD.comp[1][0] =  ctr_diff.comp[2];
@@ -1300,45 +1358,45 @@ mtrx3D D_tt_CoD = D_tt -  U_OD*D_rr*U_OD + D_tr*U_OD - U_OD*D_rt ;
 mtrx3D D_rt_CoD = D_rt +  D_rr*U_OD ;  // based on equations 42 from Wouter's notes "clusterdyn"
 mtrx3D D_tr_CoD = D_tr -  U_OD*D_rr ;  // based on equations 43 from Wouter's notes "clusterdyn"
 
-xi_11x11[0]  = D_tt_CoD.comp[0][0];
-xi_11x11[1]  = D_tt_CoD.comp[1][0];
-xi_11x11[2]  = D_tt_CoD.comp[2][0];
-xi_11x11[6]  = D_tt_CoD.comp[0][1];
-xi_11x11[7]  = D_tt_CoD.comp[1][1];
-xi_11x11[8]  = D_tt_CoD.comp[2][1];
-xi_11x11[12] = D_tt_CoD.comp[0][2];
-xi_11x11[13] = D_tt_CoD.comp[1][2];
-xi_11x11[14] = D_tt_CoD.comp[2][2];
+xi_11x11_66part[0]  = D_tt_CoD.comp[0][0];
+xi_11x11_66part[1]  = D_tt_CoD.comp[1][0];
+xi_11x11_66part[2]  = D_tt_CoD.comp[2][0];
+xi_11x11_66part[6]  = D_tt_CoD.comp[0][1];
+xi_11x11_66part[7]  = D_tt_CoD.comp[1][1];
+xi_11x11_66part[8]  = D_tt_CoD.comp[2][1];
+xi_11x11_66part[12] = D_tt_CoD.comp[0][2];
+xi_11x11_66part[13] = D_tt_CoD.comp[1][2];
+xi_11x11_66part[14] = D_tt_CoD.comp[2][2];
 
-xi_11x11[3]  = D_tr_CoD.comp[0][0];
-xi_11x11[4]  = D_tr_CoD.comp[1][0];
-xi_11x11[5]  = D_tr_CoD.comp[2][0];
-xi_11x11[9]  = D_tr_CoD.comp[0][1];
-xi_11x11[10] = D_tr_CoD.comp[1][1];
-xi_11x11[11] = D_tr_CoD.comp[2][1];
-xi_11x11[15] = D_tr_CoD.comp[0][2];
-xi_11x11[16] = D_tr_CoD.comp[1][2];
-xi_11x11[17] = D_tr_CoD.comp[2][2];
+xi_11x11_66part[3]  = D_tr_CoD.comp[0][0];
+xi_11x11_66part[4]  = D_tr_CoD.comp[1][0];
+xi_11x11_66part[5]  = D_tr_CoD.comp[2][0];
+xi_11x11_66part[9]  = D_tr_CoD.comp[0][1];
+xi_11x11_66part[10] = D_tr_CoD.comp[1][1];
+xi_11x11_66part[11] = D_tr_CoD.comp[2][1];
+xi_11x11_66part[15] = D_tr_CoD.comp[0][2];
+xi_11x11_66part[16] = D_tr_CoD.comp[1][2];
+xi_11x11_66part[17] = D_tr_CoD.comp[2][2];
 
-xi_11x11[18]  = D_rt_CoD.comp[0][0];
-xi_11x11[19]  = D_rt_CoD.comp[1][0];
-xi_11x11[20]  = D_rt_CoD.comp[2][0];
-xi_11x11[24]  = D_rt_CoD.comp[0][1];
-xi_11x11[25]  = D_rt_CoD.comp[1][1];
-xi_11x11[26]  = D_rt_CoD.comp[2][1];
-xi_11x11[30]  = D_rt_CoD.comp[0][2];
-xi_11x11[31]  = D_rt_CoD.comp[1][2];
-xi_11x11[32]  = D_rt_CoD.comp[2][2];
+xi_11x11_66part[18]  = D_rt_CoD.comp[0][0];
+xi_11x11_66part[19]  = D_rt_CoD.comp[1][0];
+xi_11x11_66part[20]  = D_rt_CoD.comp[2][0];
+xi_11x11_66part[24]  = D_rt_CoD.comp[0][1];
+xi_11x11_66part[25]  = D_rt_CoD.comp[1][1];
+xi_11x11_66part[26]  = D_rt_CoD.comp[2][1];
+xi_11x11_66part[30]  = D_rt_CoD.comp[0][2];
+xi_11x11_66part[31]  = D_rt_CoD.comp[1][2];
+xi_11x11_66part[32]  = D_rt_CoD.comp[2][2];
 
 	
 		outFile1<<std::endl ;
-		outFile1<<xi_11x11[0]<<'\t'<<xi_11x11[6]<<'\t'<<xi_11x11[12]<<'\t'<<xi_11x11[18]<<'\t'<<xi_11x11[24]<<'\t'<<xi_11x11[30]<<std::endl ;
-		outFile1<<xi_11x11[1]<<'\t'<<xi_11x11[7]<<'\t'<<xi_11x11[13]<<'\t'<<xi_11x11[19]<<'\t'<<xi_11x11[25]<<'\t'<<xi_11x11[31]<<std::endl ;
-		outFile1<<xi_11x11[2]<<'\t'<<xi_11x11[8]<<'\t'<<xi_11x11[14]<<'\t'<<xi_11x11[20]<<'\t'<<xi_11x11[26]<<'\t'<<xi_11x11[32]<<std::endl ;
+		outFile1<<xi_11x11_66part[0]<<'\t'<<xi_11x11_66part[6]<<'\t'<<xi_11x11_66part[12]<<'\t'<<xi_11x11_66part[18]<<'\t'<<xi_11x11_66part[24]<<'\t'<<xi_11x11_66part[30]<<std::endl ;
+		outFile1<<xi_11x11_66part[1]<<'\t'<<xi_11x11_66part[7]<<'\t'<<xi_11x11_66part[13]<<'\t'<<xi_11x11_66part[19]<<'\t'<<xi_11x11_66part[25]<<'\t'<<xi_11x11_66part[31]<<std::endl ;
+		outFile1<<xi_11x11_66part[2]<<'\t'<<xi_11x11_66part[8]<<'\t'<<xi_11x11_66part[14]<<'\t'<<xi_11x11_66part[20]<<'\t'<<xi_11x11_66part[26]<<'\t'<<xi_11x11_66part[32]<<std::endl ;
 		outFile1<<std::endl ;
-		outFile1<<xi_11x11[3]<<'\t'<<xi_11x11[9]<<'\t'<<xi_11x11[15]<<'\t'<<xi_11x11[21]<<'\t'<<xi_11x11[27]<<'\t'<<xi_11x11[33]<<std::endl ;
-		outFile1<<xi_11x11[4]<<'\t'<<xi_11x11[10]<<'\t'<<xi_11x11[16]<<'\t'<<xi_11x11[22]<<'\t'<<xi_11x11[28]<<'\t'<<xi_11x11[34]<<std::endl ;
-		outFile1<<xi_11x11[5]<<'\t'<<xi_11x11[11]<<'\t'<<xi_11x11[17]<<'\t'<<xi_11x11[23]<<'\t'<<xi_11x11[29]<<'\t'<<xi_11x11[35]<<std::endl ;
+		outFile1<<xi_11x11_66part[3]<<'\t'<<xi_11x11_66part[9]<<'\t'<<xi_11x11_66part[15]<<'\t'<<xi_11x11_66part[21]<<'\t'<<xi_11x11_66part[27]<<'\t'<<xi_11x11_66part[33]<<std::endl ;
+		outFile1<<xi_11x11_66part[4]<<'\t'<<xi_11x11_66part[10]<<'\t'<<xi_11x11_66part[16]<<'\t'<<xi_11x11_66part[22]<<'\t'<<xi_11x11_66part[28]<<'\t'<<xi_11x11_66part[34]<<std::endl ;
+		outFile1<<xi_11x11_66part[5]<<'\t'<<xi_11x11_66part[11]<<'\t'<<xi_11x11_66part[17]<<'\t'<<xi_11x11_66part[23]<<'\t'<<xi_11x11_66part[29]<<'\t'<<xi_11x11_66part[35]<<std::endl ;
 		
 		mu_d[0][0] = mu_d[0][0] - ( - Delj.comp[0][0] +  U_OD.comp[0][0]*mu_d[3][0] + U_OD.comp[0][1]*mu_d[4][0] + U_OD.comp[0][2]*mu_d[5][0] ) ;
 		mu_d[0][1] = mu_d[0][1] - ( - Delj.comp[0][1] +  U_OD.comp[0][0]*mu_d[3][1] + U_OD.comp[0][1]*mu_d[4][1] + U_OD.comp[0][2]*mu_d[5][1] ) ;
@@ -1401,13 +1459,19 @@ for (int s=0; s<3; s++)
 			
 std::ofstream ofile("data_binary.bin", ios::out | ios::binary);
 
- // cout << "temp_mu" << '\t';
+ // cout << "temp_mu" << '\t';			
 
 double temp_mu;
 
-		for (int l=0; l<36; l++)
+		for (int l=0; l<121; l++)
 				{
 					ofile.write((char*) &xi_11x11[l], sizeof(xi_11x11[l]));
+
+				}
+
+		for (int l=0; l<36; l++)
+				{
+					ofile.write((char*) &xi_11x11_66part[l], sizeof(xi_11x11_66part[l]));
 
 				}
 				
