@@ -155,7 +155,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 		cluster[i].pos=(cluster[i].pos*cluster[i].mass + cluster[j].pos*cluster[j].mass ) * (1.0/(cluster[i].mass+cluster[j].mass));		
 
 		cluster[i].pos.PBC(box,rbox);	
-		
+/*		
 		if (com_shift > 0)
 		{
 			if (cluster[i].pos.comp[1] < 0)
@@ -170,7 +170,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 				cluster[j].pos.comp[0] += com_shift ;
 			}
 		}
-
+*/
 		cluster[i].mass=cluster[i].mass+cluster[j].mass;
 		
 		L_after = ((cluster[i].pos^cluster[i].vel)*cluster[i].mass) ;
@@ -254,6 +254,7 @@ void Collision(vector<SubData>& particle, vector<ParticleData>& cluster, int i, 
 				for ( int k = l+1 ; k < cluster[i].Sub_Length ; k ++ )
 					{
 						dr=(particle[cluster[i].sub[l]].pos_bdyfxd -particle[cluster[i].sub[k]].pos_bdyfxd );
+						dr.comp[0] -= ( round( dr.comp[1] * rbox.comp[1] ) * (*DEL_BOX)  ) ;						
 					//	dr.PBC(box,rbox);
 						temp_r= dr.norm2();
 						r	=	 0.56	+	sqrt(temp_r);
@@ -674,7 +675,7 @@ const double mu_sqrt=sqrt(mu);
 
 const int  cubic = 1 ; 	// cubic box 
 	
-const double Lx = pow(NrParticles*(4.0/3.0)*M_PI*(bead_radii*bead_radii*bead_radii)/(0.007),1.0/3.0 ); 
+const double Lx = pow(NrParticles*(4.0/3.0)*M_PI*(bead_radii*bead_radii*bead_radii)/(0.001),1.0/3.0 ); 
 const double Ly = Lx ; // assuming cubic 
 const double Lz = Lx ; 
 const double Volume =Lx*Ly*Lz;
@@ -703,7 +704,7 @@ double Temp=T0;
 int ifshear = 0;// set equal to 1 for shear
 std::string dataFileName="../xxx",dataFileName_new="../xxxnew" ;
 double simu_time=dt;
-long long int step=0, nSteps=10000, frame=100000;
+long long int step=0, nSteps=10000, frame=10000;
 double vel_scale;
 int if_Periodic =1;
 int Max_Cluster_N=NrParticles;
