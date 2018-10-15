@@ -1006,8 +1006,123 @@ else {
 							cluster[i].mobility_tnsr_dr.comp[l][k] = -cluster[i].mobility_tnsr_rd.comp[k][l];		// mu_dr=-mu_rd
 					}
 			}        
+					
+
+ double w_fv[3][3]={};				
+ double w_tv[3][3]={};				
+ double w_fw[3][3]={};				
+ double w_tw[3][3]={};	
+ double w_fE_vec[3][5]={};				
+ double w_tE_vec[3][5]={};				
+ double w_SE_vec_vec[5][5]={};	
+ double w_vec_Sv[5][3]={};				
+ double w_vec_Sw[5][3]={};				
+ double w_fE_mat[3][3][3]={};				
+ double w_tE_mat[3][3][3]={};				
+ double w_SE_mat_mat[3][3][3][3]={};
+ double w_mat_Sv[3][3][3]={};				
+ double w_mat_Sw[3][3][3]={};	
+ 
+ double W_wv[3][3]={};				
+ double W_ww[3][3]={};				
+ double W_wE_vec[3][5]={};				
+ double W_wE_mat[3][3][3]={};
+ 
+ 			for (int l=0; l<3; l++)
+				{
+				for (int k=0; k<3; k++)
+					{		
+						// 11N column major format
+						w_fv[k][l]	=	xi_11x11_sqrt[k	+	11*l					];
+						w_fw[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	33			];
+						w_tv[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	3			];
+						w_tw[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	33	+	3	];							
+					}
+				}
+				
+			for (int l=0; l<5; l++)
+				{
+				for (int k=0; k<3; k++)
+					{				
+						// column major format
+						w_fE_vec[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	66			];		// because mu_v_S(i,j) = -mu_v_S(j,i);
+						w_tE_vec[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	66	+	3	];		// because mu_w_S(i,j) = mu_E_t(j,i);
+					}
+				}					 
+  
+			for (int l=0; l<3; l++)
+				{
+					for (int k=0; k<5; k++)
+						{				
+							// column major format
+							w_vec_Sv[k][l] =	xi_11x11_sqrt[k	+	11*l	+	6			];
+							w_vec_Sw[k][l] =	xi_11x11_sqrt[k	+	11*l	+	33	+	6	];
+						}
+				}
 			
+			for (int l=0; l<5; l++)
+				{
+					for (int k=0; k<5; k++)
+						{				
+							// column major format
+							w_fE_vec_vec[k][l] =	xi_11x11_sqrt[k	+	11*l	+	66	+	6	];
+						}
+				}		
+			
+ 			for (int a=0; a<3; a++)
+				{
+				for (int b=0; b<3; b++)
+					{		
+					for (int g=0; g<3; g++)
+						{
+							// 11N column major format
+							W_wv[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fv[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tv[g][b] );
+							W_ww[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fw[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tw[g][b] );							
+						}
+					}
+				}
+
+ 			for (int a=0; a<3; a++)
+				{
+				for (int b=0; b<5; b++)
+					{		
+					for (int g=0; g<3; g++)
+						{
+							// 11N column major format							
+							W_wE_vec[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fE_vec[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tE_vec[g][b] );
+						}
+					}
+				}
+				
+		for (int l=3; l<6; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_rd.comp[l-3][k] = temp_mu;
+							cout << temp_mu << '\t';
+					}
+			}
+			
+		for (int l=0; l<5; l++)
+			{
+				for (int k=0; k<5; k++)
+					{
+							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
+							cluster[i].mobility_tnsr_dd.comp[l][k] = temp_mu;
+							cout << temp_mu << '\n';
+					}
+			}		
+						
  double mu_S_tau[3][3][3]={};
+ 
+ double H_v[3][3][3]={};
+ double H_v_1[3][3][3]={};
+ double H_w[3][3][3]={};
+ double H_w_1[3][3][3]={};
+ 
+ double H_E[3][3][3][3]={};
+ double H_E_1[3][3][3]={};
  
  	for (int a=0; a<3; a++)
 		{
@@ -1016,10 +1131,14 @@ else {
 			for (int g=0; g<3; g++)
 				{
 					mu_S_tau[a][b][g] = 0.0;
+					w_Sv[a][b][g] = 0.0;
+					w_Sw[a][b][g] = 0.0;
 					
 				for (int p=0; p<5; p++)
 					{
-							mu_S_tau[a][b][g]	+=		e_g_S[p][a][b]*cluster[i].mobility_tnsr_dr.comp[p][g];		
+							mu_S_tau[a][b][g]		+=		e_g_S[p][a][b]*cluster[i].mobility_tnsr_dr.comp[p][g];		
+							w_mat_Sv[a][b][g]		+=		e_g_S[p][a][b]*w_vec_Sv[p][g];		
+							w_mat_Sw[a][b][g]		+=		e_g_S[p][a][b]*w_vec_Sw[p][g];		
 
 					}													
 				}
