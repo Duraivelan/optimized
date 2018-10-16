@@ -429,7 +429,7 @@ cluster[i].Stresslet_Br =
 					S_Br_s = (cluster[i].rotmat)*S_Br_b*(~cluster[i].rotmat);		
 					S_Br_2_s = (cluster[i].rotmat)*S_Br_2_b*(~cluster[i].rotmat);		
 					S_Br_11x11_s = (cluster[i].rotmat)*S_Br_11x11_b*(~cluster[i].rotmat);		
-					S_Br_diff_s = (cluster[i].rotmat)*(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) )*(~cluster[i].rotmat);		
+					S_Br_diff_s = (cluster[i].rotmat)*(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) +  cluster[i].grad_xi_sqrt_kb_T )*(~cluster[i].rotmat);		
 /*
 		addcor(S_Br_2_s.comp[0][0],0,1);
 		addcor(S_Br_2_s.comp[0][1],1,1);
@@ -1023,10 +1023,10 @@ else {
  double w_mat_Sv[3][3][3]={};				
  double w_mat_Sw[3][3][3]={};	
  
- double W_wv[3][3]={};				
- double W_ww[3][3]={};				
- double W_wE_vec[3][5]={};				
- double W_wE_mat[3][3][3]={};
+ double W_cap_wv[3][3]={};		// cap for capital W , notation used in wouter's equations  		
+ double W_cap_ww[3][3]={};				
+ double W_cap_wE_vec[3][5]={};				
+ double W_cap_wE_mat[3][3][3]={};
  
  			for (int l=0; l<3; l++)
 				{
@@ -1065,7 +1065,7 @@ else {
 					for (int k=0; k<5; k++)
 						{				
 							// column major format
-							w_fE_vec_vec[k][l] =	xi_11x11_sqrt[k	+	11*l	+	66	+	6	];
+							w_SE_vec_vec[k][l] =	xi_11x11_sqrt[k	+	11*l	+	66	+	6	];
 						}
 				}		
 			
@@ -1073,11 +1073,14 @@ else {
 				{
 				for (int b=0; b<3; b++)
 					{		
+						W_cap_wv[a][b]=0.0;
+						W_cap_ww[a][b]=0.0;
+						
 					for (int g=0; g<3; g++)
 						{
 							// 11N column major format
-							W_wv[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fv[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tv[g][b] );
-							W_ww[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fw[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tw[g][b] );							
+							W_cap_wv[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fv[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tv[g][b] );
+							W_cap_ww[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fw[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tw[g][b] );							
 						}
 					}
 				}
@@ -1086,10 +1089,12 @@ else {
 				{
 				for (int b=0; b<5; b++)
 					{		
+						W_cap_wE_vec[a][b]=0.0;
+						
 					for (int g=0; g<3; g++)
 						{
 							// 11N column major format							
-							W_wE_vec[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fE_vec[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tE_vec[g][b] );
+							W_cap_wE_vec[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fE_vec[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tE_vec[g][b] );
 						}
 					}
 				}
@@ -1116,13 +1121,11 @@ else {
 						
  double mu_S_tau[3][3][3]={};
  
- double H_v[3][3][3]={};
- double H_v_1[3][3][3]={};
- double H_w[3][3][3]={};
- double H_w_1[3][3][3]={};
+ mtrx3D H_v;
+ mtrx3D H_w;
+ mtrx3D H_E;
  
- double H_E[3][3][3][3]={};
- double H_E_1[3][3][3]={};
+ double H_E_1[3][3]={};
  
  	for (int a=0; a<3; a++)
 		{
@@ -1131,16 +1134,32 @@ else {
 			for (int g=0; g<3; g++)
 				{
 					mu_S_tau[a][b][g] = 0.0;
-					w_Sv[a][b][g] = 0.0;
-					w_Sw[a][b][g] = 0.0;
+					w_mat_Sv[a][b][g] = 0.0;
+					w_mat_Sw[a][b][g] = 0.0;
+					W_cap_wE_mat[a][b][g] = 0.0;
 					
 				for (int p=0; p<5; p++)
 					{
 							mu_S_tau[a][b][g]		+=		e_g_S[p][a][b]*cluster[i].mobility_tnsr_dr.comp[p][g];		
 							w_mat_Sv[a][b][g]		+=		e_g_S[p][a][b]*w_vec_Sv[p][g];		
 							w_mat_Sw[a][b][g]		+=		e_g_S[p][a][b]*w_vec_Sw[p][g];		
-
-					}													
+							W_cap_wE_mat[a][b][g]		+=		W_cap_wE_vec[a][p]*e_E_a[p][b][g];
+					}
+								
+				for (int d=0; d<3; d++)
+					{
+						w_SE_mat_mat[a][b][g][d] = 0.0;
+						
+					for (int p=0; p<5; p++)
+						{
+							for (int k=0; k<5; k++)
+								{
+									
+									w_SE_mat_mat[a][b][g][d]		+=		e_g_S[p][a][b]*w_SE_vec_vec[p][k]*e_E_a[p][b][g];
+							
+								}
+						}
+					}
 				}
 			}
 		}			
@@ -1148,28 +1167,62 @@ else {
 		
 	for (int pi=0; pi<3; pi++)
 		{
-		for (int del=0; del<3; del++)
+		for (int rho=0; rho<3; rho++)
 			{
 			
-			cluster[i].grad_mobility_S_tau_kb_T.comp[pi][del] = 0.0 ;
+			cluster[i].grad_mobility_S_tau_kb_T.comp[pi][rho] = 0.0 ;
+			H_v.comp[pi][rho] = 0.0 ;
+			H_w.comp[pi][rho] = 0.0 ;
+			H_E.comp[pi][rho] = 0.0 ;
 			
-			for (int rho=0; rho<3; rho++)
+			for (int a=0; a<3; a++)
 				{
-				for (int sig=0; sig<3; sig++)
+				for (int b=0; b<3; b++)
 					{
 
-						cluster[i].grad_mobility_S_tau_kb_T.comp[pi][del]		+=		Levi_Civi[pi][rho][sig]*mu_S_tau[sig][del][rho];	
-
-								
+						cluster[i].grad_mobility_S_tau_kb_T.comp[pi][rho]		+=		Levi_Civi[pi][a][b]*mu_S_tau[b][rho][a];
+						
+					for (int k=0; k<3; k++)
+						{
+						for (int s=0; s<3; s++)
+							{							
+								H_v.comp[pi][rho]		+=	(		Levi_Civi[pi][k][a]*w_mat_Sv[a][rho][s]
+																			+	Levi_Civi[rho][k][a]*w_mat_Sv[pi][a][s]
+																			+	Levi_Civi[s][k][a]*w_mat_Sv[pi][rho][a]
+																		) *W_cap_wv[k][s] ;	
+																		
+								H_w.comp[pi][rho]		+=	(		Levi_Civi[pi][k][a]*w_mat_Sv[a][rho][s]
+																			+	Levi_Civi[rho][k][a]*w_mat_Sv[pi][a][s]
+																			+	Levi_Civi[s][k][a]*w_mat_Sv[pi][rho][a]
+																		) *W_cap_ww[k][s] ;
+							for (int t=0; t<3; t++)
+								{							
+																										
+									H_E.comp[pi][rho]		+=	(	Levi_Civi[pi][k][a]*w_SE_mat_mat[a][rho][s][t]
+																			+	Levi_Civi[rho][k][a]*w_SE_mat_mat[pi][a][s][t]
+																			+	Levi_Civi[s][k][a]*w_SE_mat_mat[pi][rho][a][t]
+																			+	Levi_Civi[t][k][a]*w_SE_mat_mat[pi][rho][s][a]
+																		) *W_cap_wE_mat[k][s][t] ;	
+								}
+							}
+						}
 					}
 				}				
 			}
 		}
 		
-		cluster[i].grad_mobility_S_tau_kb_T = cluster[i].grad_mobility_S_tau_kb_T * (kb*T0) ;
-		
+		cluster[i].grad_mobility_S_tau_kb_T = cluster[i].grad_mobility_S_tau_kb_T * ( kb * T0 ) ;
+		cluster[i].grad_xi_sqrt_kb_T = ( H_v + H_w + H_E ) * ( kb * T0 ) ;
+
+		cout << "grad_mobility_S_tau_kb_T" << '\n';
+
 		(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) ).echo();
+
 		cluster[i].grad_mobility_S_tau_kb_T.echo();
+
+		cout << "grad_xi_sqrt_kb_T" << '\n';
+
+		cluster[i].grad_xi_sqrt_kb_T.echo();
 		
  		
  		for (int l=0; l<3; l++)

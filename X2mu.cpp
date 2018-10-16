@@ -292,8 +292,8 @@ else {
 // important all lengths have been normalized by particle radius as metioned in Page 46, Appendix A - Durlofsky, Louis, John F. Brady, and Georges Bossis. 
 				// "Dynamic simulation of hydrodynamically interacting particles." Journal of fluid mechanics 180 (1987): 21-49.
 				// for ease of programming. 
-
 #if 0				
+
 for (int i=0; i<NrParticles; i++)
 	{
 		for (int j=i; j<NrParticles; j++)
@@ -748,6 +748,59 @@ for (int i=0; i<NrParticles; i++)
 					xi_11x11_66part[34] = Xi_t_w.comp[1][2] ; 
 					xi_11x11_66part[35] = Xi_t_w.comp[2][2] ; 				
 
+	 			// 11x11 format					
+	 				// column major format
+			
+			for (int l=0; l<3; l++)
+				{
+				for (int k=0; k<3; k++)
+					{		
+						// 11N column major format
+						xi_11x11[k	+	11*l					] 	=	 Xi_f_v.comp[k][l];
+						xi_11x11[k	+	11*l	+	33			] 	=	 Xi_f_w.comp[k][l];
+						xi_11x11[k	+	11*l	+	3			] 	=	 Xi_t_v.comp[k][l];
+						xi_11x11[k	+	11*l	+	33	+	3	] 	=	 Xi_t_w.comp[k][l];							
+					}
+				}
+				
+			for (int l=0; l<5; l++)
+				{
+				for (int k=0; k<3; k++)
+					{				
+						// column major format
+						xi_11x11[k	+	11*l	+	66			] 	=	 Xi_f_E.comp[k][l];		// because mu_v_S(i,j) = -mu_v_S(j,i);
+						xi_11x11[k	+	11*l	+	66	+	3	] 	=	 Xi_t_E.comp[k][l];		// because mu_w_S(i,j) = mu_E_t(j,i);
+					}
+				}					
+			for (int l=0; l<3; l++)
+				{
+				for (int k=0; k<5; k++)
+					{				
+						// column major format
+						xi_11x11[k	+	11*l	+	6			] 	=	 Xi_f_E.comp[l][k];
+						xi_11x11[k	+	11*l	+	33	+	6	] 	=	 Xi_t_E.comp[l][k];					
+					}
+				}
+			for (int l=0; l<5; l++)
+				{
+				for (int k=0; k<5; k++)
+					{				
+						// column major format
+						xi_11x11[k	+	11*l	+	66	+	6	] 	=	 Xi_S_E.comp[k][l];
+					}
+				}
+
+				cout << '\n' << "Xi_11_11 " <<'\n';
+
+			for (int l=0; l<11; l++)
+				{
+				for (int k=0; k<11; k++)
+					{
+						cout << xi_11x11[k*11 + l ] << '\t';
+					}
+				cout << '\n';
+				}		
+					
 #endif
 
 // Ellipsoid mobilities from Kim and Karrila book ; Page 64
@@ -764,9 +817,9 @@ for (int i=0; i<NrParticles; i++)
 
 double c = 1.0;	// short axis
 
-double a = 5.0*c;	// long axis
+double a = 100.0*c;	// long axis
 
-double a_bead = 5.0;	// long axis of bead ellipsoid
+double a_bead = 100.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 
@@ -1166,7 +1219,6 @@ vctr3D e_ab_unit = {0.0,0.0,1.0}; 		// symmetry axis of ellipsoid; here we take 
 		outFile1<<Friction_Tnsr_dd.comp[3][0]<<'\t'<<Friction_Tnsr_dd.comp[3][1]<<'\t'<<Friction_Tnsr_dd.comp[3][2]<<'\t'<<Friction_Tnsr_dd.comp[3][3]<<'\t'<<Friction_Tnsr_dd.comp[3][4]<<std::endl ;
 		outFile1<<Friction_Tnsr_dd.comp[4][0]<<'\t'<<Friction_Tnsr_dd.comp[4][1]<<'\t'<<Friction_Tnsr_dd.comp[4][2]<<'\t'<<Friction_Tnsr_dd.comp[4][3]<<'\t'<<Friction_Tnsr_dd.comp[4][4]<<std::endl ;
 
-
 			inverse ( xi_11x11_66part , 6 )	 ; 			
 
 		outFile1<<std::endl ;
@@ -1211,8 +1263,8 @@ double mu_dd[5][5];
 						}
 					}
 				}				
-*/
 
+*/
 			for (int l=0; l<6; l++)
 				{
 				for (int k=0; k<5; k++)

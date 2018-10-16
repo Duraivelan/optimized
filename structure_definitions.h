@@ -167,6 +167,7 @@ struct ParticleData
   mtrx3D rt_mobility_tnsr_sqrt_inv;
   mtrx3D rr_mobility_tnsr_sqrt_inv;
   mtrx3D grad_mobility_S_tau_kb_T;
+  mtrx3D grad_xi_sqrt_kb_T;
   mtrx35D mobility_tnsr_td;
   mtrx35D mobility_tnsr_rd;
   mtrx53D mobility_tnsr_dt;
