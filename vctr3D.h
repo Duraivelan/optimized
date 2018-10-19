@@ -882,7 +882,7 @@ struct mtrx1111D
     result.comp[7] = comp[7][0] * inp.comp[0] + comp[7][1] * inp.comp[1] + comp[7][2] * inp.comp[2] + comp[7][3] * inp.comp[3] + comp[7][4] * inp.comp[4] +  comp[7][5] * inp.comp[5] + comp[7][6] * inp.comp[6] + comp[7][7] * inp.comp[7] + comp[7][8] * inp.comp[8] + comp[7][9] * inp.comp[9] + comp[7][10] * inp.comp[10] ;
     result.comp[8] = comp[8][0] * inp.comp[0] + comp[8][1] * inp.comp[1] + comp[8][2] * inp.comp[2] + comp[8][3] * inp.comp[3] + comp[8][4] * inp.comp[4] +  comp[8][5] * inp.comp[5] + comp[8][6] * inp.comp[6] + comp[8][7] * inp.comp[7] + comp[8][8] * inp.comp[8] + comp[8][9] * inp.comp[9] + comp[8][10] * inp.comp[10] ;
     result.comp[9] = comp[9][0] * inp.comp[0] + comp[9][1] * inp.comp[1] + comp[9][2] * inp.comp[2] + comp[9][3] * inp.comp[3] + comp[9][4] * inp.comp[4] +  comp[9][5] * inp.comp[5] + comp[9][6] * inp.comp[6] + comp[9][7] * inp.comp[7] + comp[9][8] * inp.comp[8] + comp[9][9] * inp.comp[9] + comp[9][10] * inp.comp[10] ;
-    result.comp[10] = comp[10][0] * inp.comp[0] + comp[10][1] * inp.comp[1] + comp[10][2] * inp.comp[2] + comp[10][3] * inp.comp[3] + comp[10][4] * inp.comp[4] +  comp[01][5] * inp.comp[5] + comp[10][6] * inp.comp[6] + comp[10][7] * inp.comp[7] + comp[10][8] * inp.comp[8] + comp[10][9] * inp.comp[9] + comp[10][10] * inp.comp[10] ; 
+    result.comp[10] = comp[10][0] * inp.comp[0] + comp[10][1] * inp.comp[1] + comp[10][2] * inp.comp[2] + comp[10][3] * inp.comp[3] + comp[10][4] * inp.comp[4] +  comp[10][5] * inp.comp[5] + comp[10][6] * inp.comp[6] + comp[10][7] * inp.comp[7] + comp[10][8] * inp.comp[8] + comp[10][9] * inp.comp[9] + comp[10][10] * inp.comp[10] ; 
     return result;
   }
 

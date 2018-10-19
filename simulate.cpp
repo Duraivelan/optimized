@@ -229,7 +229,7 @@ void writecor() {
 				{
 					if(ncor[nf][0][i]>0) 
 						{
-							outFile1<<fcor[nf][0][i]/ncor[nf][0][i] << '\t';
+							outFile1<<setprecision(17) <<fcor[nf][0][i]/ncor[nf][0][i] << '\t';
 						}
 				}	
 		
@@ -239,7 +239,7 @@ void writecor() {
 						{
 							if( ncor[nf][k][i] > 0)
 								{
-									outFile1<<fcor[nf][k][i]/ncor[nf][k][i]  << '\t'; 
+									outFile1<<setprecision(17) <<fcor[nf][k][i]/ncor[nf][k][i]  << '\t'; 
 								}
 						}
 				}
@@ -378,7 +378,7 @@ for(int i=0;i<*Max_Cluster_N;i++)
 						cluster[i].Stresslet.comp[m]+=	( -cluster[i].mobility_tnsr_dd.comp[m][n]*E_inf_bt.comp[n]	)	;
 						cout.precision(17);
 					//	cout<< cluster[i].mobility_tnsr_dd.comp[m][n]<<'\t';
-					//	cout<< cluster[i].Stresslet.comp[m]<<'\n';
+					//	cout<<"stresslet"<<'\t' <<cluster[i].Stresslet.comp[m]<<'\n';
 						}	
 					//	cout.precision(17);
 					//	cout<< cluster[i].Stresslet.comp[m]<<'\t';
@@ -394,9 +394,12 @@ cluster[i].Stresslet_Br =
  // 11xx11 sqrt versioin - alternative 2 
 cluster[i].Stresslet_Br = 
 				 cluster[i].mobility_tnsr_dt*(f_stochas*(stochas_norm/sqrt_2kbTdt) )
-				+cluster[i].mobility_tnsr_dr*(t_stochas*(stochas_norm/sqrt_2kbTdt) ) ;				
+				+cluster[i].mobility_tnsr_dr*(t_stochas*(stochas_norm/sqrt_2kbTdt) ) ;
+//				+cluster[i].mobility_tnsr_dd_sqrt*(rand2*(sqrt_2kbTdt*sqrt_2kbTdt/(stochas_norm*dt))) ;				
 	
 		Stresslet_Br_2	=	cluster[i].mobility_tnsr_dd_sqrt*(rand2*(sqrt_2kbTdt*sqrt_2kbTdt/(stochas_norm*dt))) ;
+		
+cluster[i].Stresslet_Br += (s_stochas*(1.0*sqrt_2kbTdt/stochas_norm) ); 
 		
 // end of Brownian Stress calculation							
 				
@@ -419,17 +422,20 @@ cluster[i].Stresslet_Br =
 						}
 					}
 
-				
-		if (step%(1000*100*100)==0) 
+	/*			
+		if (step%(1000*100*1000)==0) 
 			{ 		
 				writecor(); 
-			}
-					
+			}				
+	*/	
 					S_s = (cluster[i].rotmat)*S_b*(~cluster[i].rotmat);		
 					S_Br_s = (cluster[i].rotmat)*S_Br_b*(~cluster[i].rotmat);		
 					S_Br_2_s = (cluster[i].rotmat)*S_Br_2_b*(~cluster[i].rotmat);		
 					S_Br_11x11_s = (cluster[i].rotmat)*S_Br_11x11_b*(~cluster[i].rotmat);		
+		//			S_Br_11x11_s = (cluster[i].rotmat)*(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) )*(~cluster[i].rotmat);		
 					S_Br_diff_s = (cluster[i].rotmat)*(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) +  cluster[i].grad_xi_sqrt_kb_T )*(~cluster[i].rotmat);		
+		//			S_Br_diff_s = (cluster[i].rotmat)*(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) )*(~cluster[i].rotmat);		
+
 /*
 		addcor(S_Br_2_s.comp[0][0],0,1);
 		addcor(S_Br_2_s.comp[0][1],1,1);
@@ -448,8 +454,11 @@ cluster[i].Stresslet_Br =
 	//	addcor( S_Br_s.comp[2][1] + S_Br_diff_s.comp[2][1] ,7,1);
 	//	addcor( S_Br_s.comp[2][2] + S_Br_diff_s.comp[2][2] ,8,1);
 */
-
+/*
 		crosscor(S_Br_s.comp[0][0]		,	S_Br_s.comp[0][0],			0,	1);
+//		crosscor(S_Br_s.comp[0][1]		,	S_Br_s.comp[0][1],			1,	1);
+//		crosscor(S_Br_s.comp[1][1]		,	S_Br_s.comp[1][1],			2,	1);
+//		crosscor(S_Br_s.comp[2][1]		,	S_Br_s.comp[2][1],			3,	1);
 		crosscor(S_Br_s.comp[0][0]		,	S_Br_diff_s.comp[0][0],		1,	1);
 		crosscor(S_Br_s.comp[0][0]		,	S_Br_11x11_s.comp[0][0],	2,	1);
 		crosscor(S_Br_diff_s.comp[0][0]	,	S_Br_s.comp[0][0],			3,	1);
@@ -458,7 +467,7 @@ cluster[i].Stresslet_Br =
 		crosscor(S_Br_11x11_s.comp[0][0]	,	S_Br_s.comp[0][0],		6,	1);		
 		crosscor(S_Br_11x11_s.comp[0][0]	,	S_Br_diff_s.comp[0][0],	7,	1);		
 		crosscor(S_Br_11x11_s.comp[0][0]	,	S_Br_11x11_s.comp[0][0],	8,	1);		
-				
+	*/			
 					for(int m=0;m<5;m++) 
 						{		
 						cluster[i].Stresslet.comp[m]=0.0;			
@@ -990,7 +999,7 @@ else {
 							cout << temp_mu << '\n';
 					}
 			}	
-			
+							
 		for (int l=0; l<5; l++)
 			{
 				for (int k=0; k<3; k++)
@@ -1007,7 +1016,9 @@ else {
 					}
 			}        
 					
-
+				
+	
+					
  double w_fv[3][3]={};				
  double w_tv[3][3]={};				
  double w_fw[3][3]={};				
@@ -1098,27 +1109,7 @@ else {
 						}
 					}
 				}
-				
-		for (int l=3; l<6; l++)
-			{
-				for (int k=0; k<5; k++)
-					{
-							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
-							cluster[i].mobility_tnsr_rd.comp[l-3][k] = temp_mu;
-							cout << temp_mu << '\t';
-					}
-			}
-			
-		for (int l=0; l<5; l++)
-			{
-				for (int k=0; k<5; k++)
-					{
-							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
-							cluster[i].mobility_tnsr_dd.comp[l][k] = temp_mu;
-							cout << temp_mu << '\n';
-					}
-			}		
-						
+	
  double mu_S_tau[3][3][3]={};
  
  mtrx3D H_v;
@@ -1155,7 +1146,7 @@ else {
 							for (int k=0; k<5; k++)
 								{
 									
-									w_SE_mat_mat[a][b][g][d]		+=		e_g_S[p][a][b]*w_SE_vec_vec[p][k]*e_E_a[p][b][g];
+									w_SE_mat_mat[a][b][g][d]		+=		e_g_S[p][a][b]*w_SE_vec_vec[p][k]*e_E_a[k][g][d];
 							
 								}
 						}
@@ -1178,10 +1169,10 @@ else {
 			for (int a=0; a<3; a++)
 				{
 				for (int b=0; b<3; b++)
-					{
-
+					{						
 						cluster[i].grad_mobility_S_tau_kb_T.comp[pi][rho]		+=		Levi_Civi[pi][a][b]*mu_S_tau[b][rho][a];
 						
+					}
 					for (int k=0; k<3; k++)
 						{
 						for (int s=0; s<3; s++)
@@ -1206,14 +1197,23 @@ else {
 								}
 							}
 						}
-					}
 				}				
 			}
 		}
 		
 		cluster[i].grad_mobility_S_tau_kb_T = cluster[i].grad_mobility_S_tau_kb_T * ( kb * T0 ) ;
 		cluster[i].grad_xi_sqrt_kb_T = ( H_v + H_w + H_E ) * ( kb * T0 ) ;
-
+		
+		cluster[i].H_v_B = ( H_v ) * ( kb * T0 ) ;
+		cluster[i].H_w_B = ( H_w ) * ( kb * T0 ) ;
+		cluster[i].H_E_B = ( H_E ) * ( kb * T0 ) ;
+		cluster[i].mu_S_tau_B = ( cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) ) ;
+		
+		cluster[i].H_v_S = null33D ;
+		cluster[i].H_w_S = null33D ;
+		cluster[i].H_E_S = null33D ;		
+		cluster[i].mu_S_tau_S = null33D ;	
+		
 		cout << "grad_mobility_S_tau_kb_T" << '\n';
 
 		(cluster[i].grad_mobility_S_tau_kb_T + (~cluster[i].grad_mobility_S_tau_kb_T ) ).echo();
@@ -1224,8 +1224,19 @@ else {
 
 		cluster[i].grad_xi_sqrt_kb_T.echo();
 		
+		cout << "H_V" << '\n';
+
+		cluster[i].H_v_B.echo();		
  		
- 		for (int l=0; l<3; l++)
+		cout << "H_w_B" << '\n';
+
+		cluster[i].H_w_B.echo();
+		
+		cout << "H_E_B" << '\n';
+
+		cluster[i].H_E_B.echo();		
+	
+	for (int l=0; l<3; l++)
 			{
 							File.read( (char*) &temp_mu     , sizeof(temp_mu     ) );
 							cluster[i].ctr_difu.comp[l] = temp_mu;
@@ -2077,8 +2088,33 @@ if (step%(frame)==0)
 	
 //	outFile_com<< cluster[0].pos.comp[0]<<'\t'<<cluster[0].pos.comp[1]<<'\t'<<cluster[0].pos.comp[2] << endl;
 		
-if (step%(1000*1000*frame)==0) 
+		cluster[0].H_v_S += (cluster[0].rotmat)*( cluster[0].H_v_B )*(~cluster[0].rotmat);
+		cluster[0].H_w_S += (cluster[0].rotmat)*( cluster[0].H_w_B )*(~cluster[0].rotmat);
+		cluster[0].H_E_S += ( (cluster[0].rotmat)*( cluster[0].H_E_B )*(~cluster[0].rotmat) ) ;
+	//	cluster[0].mu_S_tau_S += ( (cluster[0].rotmat)*( cluster[0].grad_mobility_S_tau_kb_T + (~cluster[0].grad_mobility_S_tau_kb_T ) )*(~cluster[0].rotmat) );
+		cluster[0].mu_S_tau_S = cluster[0].mu_S_tau_S + ( (cluster[0].rotmat)*(cluster[0].grad_mobility_S_tau_kb_T + (~cluster[0].grad_mobility_S_tau_kb_T ) +  cluster[0].grad_xi_sqrt_kb_T )*(~cluster[0].rotmat) );		
+
+						
+
+		
+if (step%(1000*100*frame)==0) 
 	{ 
+
+						Stresslet_data.precision(17);
+/*
+		Stresslet_data<<cluster[0].H_v_S.comp[0][0]<<'\t'<<cluster[0].H_v_S.comp[0][1]<<'\t'<<cluster[0].H_v_S.comp[0][2]<<'\t'
+					  <<cluster[0].H_v_S.comp[1][0]<<'\t'<<cluster[0].H_v_S.comp[1][1]<<'\t'<<cluster[0].H_v_S.comp[1][2]<<'\t'
+					  <<cluster[0].H_v_S.comp[2][0]<<'\t'<<cluster[0].H_v_S.comp[2][1]<<'\t'<<cluster[0].H_v_S.comp[2][2]<<endl;
+		Stresslet_data<<cluster[0].H_w_S.comp[0][0]<<'\t'<<cluster[0].H_w_S.comp[0][1]<<'\t'<<cluster[0].H_w_S.comp[0][2]<<'\t'
+					  <<cluster[0].H_w_S.comp[1][0]<<'\t'<<cluster[0].H_w_S.comp[1][1]<<'\t'<<cluster[0].H_w_S.comp[1][2]<<'\t'
+					  <<cluster[0].H_w_S.comp[2][0]<<'\t'<<cluster[0].H_w_S.comp[2][1]<<'\t'<<cluster[0].H_w_S.comp[2][2]<<endl;
+		Stresslet_data<<cluster[0].H_E_S.comp[0][0]<<'\t'<<cluster[0].H_E_S.comp[0][1]<<'\t'<<cluster[0].H_E_S.comp[0][2]<<'\t'
+					  <<cluster[0].H_E_S.comp[1][0]<<'\t'<<cluster[0].H_E_S.comp[1][1]<<'\t'<<cluster[0].H_E_S.comp[1][2]<<'\t'
+					  <<cluster[0].H_E_S.comp[2][0]<<'\t'<<cluster[0].H_E_S.comp[2][1]<<'\t'<<cluster[0].H_E_S.comp[2][2]<<endl;
+		Stresslet_data<<cluster[0].mu_S_tau_S.comp[0][0]<<'\t'<<cluster[0].mu_S_tau_S.comp[0][1]<<'\t'<<cluster[0].mu_S_tau_S.comp[0][2]<<'\t'
+					  <<cluster[0].mu_S_tau_S.comp[1][0]<<'\t'<<cluster[0].mu_S_tau_S.comp[1][1]<<'\t'<<cluster[0].mu_S_tau_S.comp[1][2]<<'\t'
+					  <<cluster[0].mu_S_tau_S.comp[2][0]<<'\t'<<cluster[0].mu_S_tau_S.comp[2][1]<<'\t'<<cluster[0].mu_S_tau_S.comp[2][2]<<endl;					  
+*/
 /*
 outFile_orient << step << endl;
 
@@ -2088,6 +2124,9 @@ for ( int i = 0 ; i < 100; i ++ )
 	}
 */
 
+
+
+
 		Stresslet_data<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'
 					  <<Stresslet_sqr_mean.comp[0]<<'\t'<<Stresslet_sqr_mean.comp[1]<<'\t'<<Stresslet_sqr_mean.comp[2]<<'\t'<<Stresslet_sqr_mean.comp[3]<<'\t'<<Stresslet_sqr_mean.comp[4]<<'\t'	
 					  <<Stresslet_Br_mean.comp[0]<<'\t'<<Stresslet_Br_mean.comp[1]<<'\t'<<Stresslet_Br_mean.comp[2]<<'\t'<<Stresslet_Br_mean.comp[3]<<'\t'<<Stresslet_Br_mean.comp[4]<<'\t'	
@@ -2095,8 +2134,10 @@ for ( int i = 0 ; i < 100; i ++ )
 					  <<Stresslet_Br_diff_mean.comp[0]<<'\t'<<Stresslet_Br_diff_mean.comp[1]<<'\t'<<Stresslet_Br_diff_mean.comp[2]<<'\t'<<Stresslet_Br_diff_mean.comp[3]<<'\t'<<Stresslet_Br_diff_mean.comp[4]<<'\t'	
 					  <<Stresslet_Br_diff_sqr_mean.comp[0]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[1]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[2]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[3]<<'\t'<<Stresslet_Br_diff_sqr_mean.comp[4]<<'\t'	
 					  <<endl;
+ 
+ 
     }
-   
+
   /*  
 if (step%(1000*1000*10*frame)==0) 
 	{ 
