@@ -817,9 +817,9 @@ for (int i=0; i<NrParticles; i++)
 
 double c = 1.0;	// short axis
 
-double a = 100.0*c;	// long axis
+double a = 60.0*c;	// long axis
 
-double a_bead = 100.0;	// long axis of bead ellipsoid
+double a_bead = 60.0;	// long axis of bead ellipsoid
 
 double a_bead3 = a_bead*a_bead*a_bead;	
 

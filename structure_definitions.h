@@ -152,6 +152,7 @@ struct ParticleData
   vctr3D frc;
   vector <int> sub;
   vctr3D omega;         // lab-fixed
+  vctr3D omega_tot = null3D;         // lab-fixed
   mtrx3D rotmat;        // apply for body-fixed-to-lab-fixed
   mtrx3D Iner_tnsr;
   mtrx3D mobility_tnsr;
@@ -362,6 +363,9 @@ struct ParticleData
     omega.comp[z]  = ( - quat.comp[3] * inp.comp[0] + quat.comp[2] * inp.comp[1] - quat.comp[1] * inp.comp[2] + quat.comp[0] * inp.comp[3]) * 2.;
 //  cout << "check " << check << endl;
   }
+  
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 }; // ParticleData
 

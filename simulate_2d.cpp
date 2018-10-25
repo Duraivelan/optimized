@@ -290,6 +290,19 @@ void writecor() {
 							{{0.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,-1.0}}
 						};
 
+
+  vctr3D qdot2omega_tot( vctr4D& inp1, vctr4D& inp2 ) // for 3D box: translate qdot (4 dimensions) into space omega (3 dimensions).
+  {
+
+    vctr3D result;
+    result.comp[0]  = ( - inp1.comp[1] * inp2.comp[0] + inp1.comp[0] * inp2.comp[1] - inp1.comp[3] * inp2.comp[2] + inp1.comp[2] * inp2.comp[3]) * 2.;
+    result.comp[1]  = ( - inp1.comp[2] * inp2.comp[0] + inp1.comp[3] * inp2.comp[1] + inp1.comp[0] * inp2.comp[2] - inp1.comp[1] * inp2.comp[3]) * 2.;
+    result.comp[2]  = ( - inp1.comp[3] * inp2.comp[0] - inp1.comp[2] * inp2.comp[1] + inp1.comp[1] * inp2.comp[2] + inp1.comp[0] * inp2.comp[3]) * 2.;
+//  cout << "check " << check << endl;
+//	result.echo();
+    return result;
+
+  }
 					
 void brownian( long long int step , vector<ParticleData>& cluster, vector<SubData>& particle, int *Max_Cluster_N , double vel_scale , 
 	const double force_norm	,
@@ -364,9 +377,9 @@ for(int i=0;i<*Max_Cluster_N;i++)
 								+ cluster[i].rotmat*cluster[i].mobility_tnsr_tr_sqrt*(rand1*stochas_norm)
 								+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 */
-				cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*( ( (~cluster[i].rotmat)*cluster[i].frc*force_norm + f_stochas*(stochas_norm/sqrt_2kbTdt) )*dt) 
-								+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*( ((~cluster[i].rotmat)*cluster[i].trq*torque_norm + t_stochas*(stochas_norm/sqrt_2kbTdt) ) *dt)
-								+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
+			//	cluster[i].pos+=cluster[i].rotmat*cluster[i].mobility_tnsr*( ( (~cluster[i].rotmat)*cluster[i].frc*force_norm + f_stochas*(stochas_norm/sqrt_2kbTdt) )*dt) 
+			//					+cluster[i].rotmat*cluster[i].mobility_tnsr_tr*( ((~cluster[i].rotmat)*cluster[i].trq*torque_norm + t_stochas*(stochas_norm/sqrt_2kbTdt) ) *dt)
+			//					+u_inf*vel_norm*dt-cluster[i].rotmat*(cluster[i].mobility_tnsr_td*E_inf_bt)*dt ;
 
 				cluster[i].pos = cluster[i].pos*pos_norm ; 
 
@@ -421,13 +434,13 @@ cluster[i].Stresslet_Br += (s_stochas );
 							}
 						}
 					}
-
-	/*			
+/*
+				
 		if (step%(1000*100*1000)==0) 
 			{ 		
 				writecor(); 
 			}				
-*/		
+	*/	
 					S_s = (cluster[i].rotmat)*S_b*(~cluster[i].rotmat);		
 					S_Br_s = (cluster[i].rotmat)*S_Br_b*(~cluster[i].rotmat);		
 					S_Br_2_s = (cluster[i].rotmat)*S_Br_2_b*(~cluster[i].rotmat);		
@@ -468,7 +481,7 @@ cluster[i].Stresslet_Br += (s_stochas );
 		crosscor(S_Br_s.comp[0][1]		,	S_Br_s.comp[0][1],			6,	1);
 		crosscor(S_Br_s.comp[1][1]		,	S_Br_s.comp[1][1],			7,	1);
 		crosscor(S_Br_s.comp[2][1]		,	S_Br_s.comp[2][1],			8,	1);
-*/			
+	*/		
 					for(int m=0;m<5;m++) 
 						{		
 						cluster[i].Stresslet.comp[m]=0.0;			
@@ -500,13 +513,18 @@ cluster[i].Stresslet_Br += (s_stochas );
 										+  cluster[i].rot_mobility_tnsr_rt_sqrt*(rand*stochas_norm)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 */
-
-				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*( ( (~cluster[i].rotmat)*cluster[i].trq*torque_norm + t_stochas ) *dt)
-										+cluster[i].rot_mobility_tnsr_rt*( ( (~cluster[i].rotmat)*cluster[i].frc*force_norm + f_stochas )*dt)
+				t_stochas.comp[0]=0.0; 
+				t_stochas.comp[1]=0.0; 
+				cluster[i].theta   	= 	cluster[i].rot_mobility_tnsr*( ( (~cluster[i].rotmat)*(cluster[i].trq*torque_norm + t_stochas*(stochas_norm) ) ) *dt)
+										+cluster[i].rot_mobility_tnsr_rt*( ( (~cluster[i].rotmat)*cluster[i].frc*force_norm + f_stochas*(stochas_norm) )*dt)
 										-  (cluster[i].mobility_tnsr_rd*E_inf_bt)*dt; 	// body fixed omega
 										
 				cluster[i].omega	=	w_inf*dt;						// space-fixed omega
 				cluster[i].quat		= cluster[i].theta2quat() + cluster[i].omega2qdot() ;
+
+
+
+
 			//	cout<<cluster[i].theta.comp[0]<<cluster[i].theta.comp[1]<<cluster[i].theta.comp[2]<<endl;
 			// lagragian normalization of quaternions; see your notes;
 			// after quaternion update you get new quaternion (say ~q) which non-normalised, i.e. |~q|!=1; 
@@ -517,7 +535,10 @@ cluster[i].Stresslet_Br += (s_stochas );
 				c=cluster[i].quat.norm2()-1.0;
 				lambda = (-b+sqrt(b*b-4.0*a*c))/(2.0*a);
 				cluster[i].quat=cluster[i].quat+quat_old*lambda;
-		
+				
+				cluster[i].omega_tot += qdot2omega_tot( quat_old, cluster[i].quat ) ;
+				
+			//	cluster[i].omega_tot.echo();
 			// update A matrix
 	//			}
 				cluster[i].quat2rotmat();
@@ -679,7 +700,7 @@ const int cellz=(int) ceil(Lz/r_cut);
  const double torque_norm 	= 1.0/(eta_6pi*bead_radii*bead_radii*bead_radii)	;
  const double pos_norm 		= 1.0/(bead_radii)		;
  const double vel_norm 		= 1.0/(bead_radii)		;
- const double stochas_norm	= sqrt(2.0*kb*T0*dt/(eta_6pi*bead_radii*bead_radii*bead_radii))		;
+ const double stochas_norm	= sqrt(1.0/(eta_6pi*bead_radii*bead_radii*bead_radii))		;
 
 const vctr3D box(Lx, Ly, Lz);
 const vctr3D rbox(1.0/Lx, 1.0/Ly, 1.0/Lz);
@@ -1017,136 +1038,6 @@ else {
 					}
 			}        
 					
-		cluster[i].mobility_tnsr_sqrt=null33D;
-		MatrixXd temp(6,6), temp_sqrt(6,6), temp_sqrt_inv(6,6),temp_dd(5,5), temp_sqrt_dd(5,5), temp_11x11(11,11), temp_sqrt_11x11(11,11) ;
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
-				cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
-
-			}
-		}
-		for (int k=0;k<3;k++) {
-			for (int l=3;l<6;l++) {
-				temp(k,l)=cluster[i].mobility_tnsr_tr.comp[k][l-3];
-				cout<<cluster[i].mobility_tnsr_tr.comp[k][l-3]<<endl;
-			}
-		}
-		for (int k=3;k<6;k++) {
-			for (int l=0;l<3;l++) {
-				temp(k,l)=cluster[i].rot_mobility_tnsr_rt.comp[k-3][l];
-				cout<<cluster[i].rot_mobility_tnsr_rt.comp[k-3][l]<<endl;
-			}
-		}
-		for (int k=3;k<6;k++) {		
-			for (int l=3;l<6;l++) {
-				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k-3][l-3];
-				cout<<cluster[i].rot_mobility_tnsr.comp[k-3][l-3]<<endl;
-			}
-		}
-		for (int k=0;k<5;k++) {
-			for (int l=0;l<5;l++) {
-				temp_dd(k,l)=cluster[i].mobility_tnsr_dd.comp[k][l];
-				cout<<cluster[i].mobility_tnsr_dd.comp[k][l]<<endl;
-
-			}
-		}		
-		for (int k=0;k<11;k++) {
-			for (int l=0;l<11;l++) {
-				temp_11x11(k,l)= xi_11x11_sqrt[k + 11*l];
-			}
-		}	
-	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
-	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
-	temp_sqrt_inv = temp_sqrt.inverse();
-			
-	Eigen::SelfAdjointEigenSolver<MatrixXd> DD_MAT(temp_dd);
-	temp_sqrt_dd = DD_MAT.operatorSqrt();
-	
-	Eigen::SelfAdjointEigenSolver<MatrixXd> xi_11x11_MAT(temp_11x11);
-	temp_sqrt_11x11 = xi_11x11_MAT.operatorSqrt();
-	
-	cout<<"mobility_tnsr_sqrt"<<endl;
-
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
-				cout<<cluster[i].mobility_tnsr_sqrt.comp[k][l]<<endl;
-			}
-		}
-
-		cout<<"mobility_tnsr_tr_sqrt"<<endl;
-		
-		for (int k=0;k<3;k++) {
-			for (int l=3;l<6;l++) {
-				cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]=temp_sqrt(k,l);
-				cout<<cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]<<endl;
-			}
-		}
-
-		cout<<"rot_mobility_tnsr_rt_sqrt"<<endl;
-
-		for (int k=3;k<6;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]=temp_sqrt(k,l);
-				cout<<cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]<<endl;
-			}
-		}
-
-		cout<<"rot_mobility_tnsr_sqrt"<<endl;
-
-		for (int k=3;k<6;k++) {
-			for (int l=3;l<6;l++) {
-				cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]=temp_sqrt(k,l);
-				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]<<endl;
-			}
-		}
-		cout<<"mobility_tnsr_dd_sqrt"<<endl;
-
-		for (int k=0;k<5;k++) {
-			for (int l=0;l<5;l++) {
-				cluster[i].mobility_tnsr_dd_sqrt.comp[k][l]=temp_sqrt_dd(k,l);
-				cout<<cluster[i].mobility_tnsr_dd_sqrt.comp[k][l]<<endl;
-			}
-		}
-		
-		cout<<'\n'<<"Friction_tnsr_11x11_sqrt"<<endl;
-
-		for (int k=0;k<11;k++) {
-			for (int l=0;l<11;l++) {
-				cluster[i].friction_tnsr_11x11_sqrt.comp[k][l]=temp_sqrt_11x11(k,l);
-				xi_11x11_sqrt[k + 11*l]=temp_sqrt_11x11(k,l);
-				cout<<cluster[i].friction_tnsr_11x11_sqrt.comp[k][l]<<'\t';
-			}
-			cout<<'\n';
-		}
-
-// inverse mobility square root for brownian stresslet calculation
-
-		for (int k=0;k<3;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].tt_mobility_tnsr_sqrt_inv.comp[k][l]=temp_sqrt_inv(k,l);
-			}
-		}
-		
-		for (int k=0;k<3;k++) {
-			for (int l=3;l<6;l++) {
-				cluster[i].tr_mobility_tnsr_sqrt_inv.comp[k][l-3]=temp_sqrt_inv(k,l);
-			}
-		}
-
-		for (int k=3;k<6;k++) {
-			for (int l=0;l<3;l++) {
-				cluster[i].rt_mobility_tnsr_sqrt_inv.comp[k-3][l]=temp_sqrt_inv(k,l);
-			}
-		}
-
-		for (int k=3;k<6;k++) {
-			for (int l=3;l<6;l++) {
-				cluster[i].rr_mobility_tnsr_sqrt_inv.comp[k-3][l-3]=temp_sqrt_inv(k,l);
-			}
-		}		
-		
 				
 	
 					
@@ -1169,7 +1060,7 @@ else {
  double W_cap_ww[3][3]={};				
  double W_cap_wE_vec[3][5]={};				
  double W_cap_wE_mat[3][3][3]={};
- /*
+ 
  			for (int l=0; l<3; l++)
 				{
 				for (int k=0; k<3; k++)
@@ -1210,49 +1101,7 @@ else {
 							w_SE_vec_vec[k][l] =	xi_11x11_sqrt[k	+	11*l	+	66	+	6	];
 						}
 				}		
-		*/	
-		
- 			for (int l=0; l<3; l++)
-				{
-				for (int k=0; k<3; k++)
-					{		
-						// 11N column major format
-						w_fv[k][l]	=	xi_11x11_sqrt[k	+	11*l					];
-						w_fw[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	33			];
-						w_tv[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	3			];
-						w_tw[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	33	+	3	];							
-					}
-				}
-				
-			for (int l=0; l<5; l++)
-				{
-				for (int k=0; k<3; k++)
-					{				
-						// column major format
-						w_fE_vec[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	66			];		// because mu_v_S(i,j) = -mu_v_S(j,i);
-						w_tE_vec[k][l]	=	xi_11x11_sqrt[k	+	11*l	+	66	+	3	];		// because mu_w_S(i,j) = mu_E_t(j,i);
-					}
-				}					 
-  
-			for (int l=0; l<3; l++)
-				{
-					for (int k=0; k<5; k++)
-						{				
-							// column major format
-							w_vec_Sv[k][l] =	xi_11x11_sqrt[k	+	11*l	+	6			];
-							w_vec_Sw[k][l] =	xi_11x11_sqrt[k	+	11*l	+	33	+	6	];
-						}
-				}
 			
-			for (int l=0; l<5; l++)
-				{
-					for (int k=0; k<5; k++)
-						{				
-							// column major format
-							w_SE_vec_vec[k][l] =	xi_11x11_sqrt[k	+	11*l	+	66	+	6	];
-						}
-				}	
-						
  			for (int a=0; a<3; a++)
 				{
 				for (int b=0; b<3; b++)
@@ -1268,7 +1117,7 @@ else {
 						}
 					}
 				}
-cout <<"W_cap_wE_vec" << endl;
+
  			for (int a=0; a<3; a++)
 				{
 				for (int b=0; b<5; b++)
@@ -1280,9 +1129,7 @@ cout <<"W_cap_wE_vec" << endl;
 							// 11N column major format							
 							W_cap_wE_vec[a][b]	+=	( cluster[i].mobility_tnsr_tr.comp[a][g]*w_fE_vec[g][b] + cluster[i].rot_mobility_tnsr.comp[a][g]*w_tE_vec[g][b] );
 						}
-						cout<< W_cap_wE_vec[a][b]<< '\t' ;
 					}
-					cout<<endl;
 				}
 	
  double mu_S_tau[3][3][3]={};
@@ -1311,7 +1158,6 @@ cout <<"W_cap_wE_vec" << endl;
 							w_mat_Sw[a][b][g]		+=		e_g_S[p][a][b]*w_vec_Sw[p][g];		
 							W_cap_wE_mat[a][b][g]		+=		W_cap_wE_vec[a][p]*e_E_a[p][b][g];
 					}
-				//	cout<< W_cap_wE_mat[a][b][g]<< '\t' ;
 								
 				for (int d=0; d<3; d++)
 					{
@@ -1489,7 +1335,134 @@ else {
     }    
 }	 
 */
+		cluster[i].mobility_tnsr_sqrt=null33D;
+		MatrixXd temp(6,6), temp_sqrt(6,6), temp_sqrt_inv(6,6),temp_dd(5,5), temp_sqrt_dd(5,5), temp_11x11(11,11), temp_sqrt_11x11(11,11) ;
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				temp(k,l)=cluster[i].mobility_tnsr.comp[k][l];
+				cout<<cluster[i].mobility_tnsr.comp[k][l]<<endl;
 
+			}
+		}
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				temp(k,l)=cluster[i].mobility_tnsr_tr.comp[k][l-3];
+				cout<<cluster[i].mobility_tnsr_tr.comp[k][l-3]<<endl;
+			}
+		}
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr_rt.comp[k-3][l];
+				cout<<cluster[i].rot_mobility_tnsr_rt.comp[k-3][l]<<endl;
+			}
+		}
+		for (int k=3;k<6;k++) {		
+			for (int l=3;l<6;l++) {
+				temp(k,l)=cluster[i].rot_mobility_tnsr.comp[k-3][l-3];
+				cout<<cluster[i].rot_mobility_tnsr.comp[k-3][l-3]<<endl;
+			}
+		}
+		for (int k=0;k<5;k++) {
+			for (int l=0;l<5;l++) {
+				temp_dd(k,l)=cluster[i].mobility_tnsr_dd.comp[k][l];
+				cout<<cluster[i].mobility_tnsr_dd.comp[k][l]<<endl;
+
+			}
+		}		
+		for (int k=0;k<11;k++) {
+			for (int l=0;l<11;l++) {
+				temp_11x11(k,l)= xi_11x11_sqrt[k + 11*l];
+			}
+		}	
+	Eigen::SelfAdjointEigenSolver<MatrixXd> TRANS_MOBL_MAT(temp);
+	temp_sqrt = TRANS_MOBL_MAT.operatorSqrt();
+	temp_sqrt_inv = temp_sqrt.inverse();
+			
+	Eigen::SelfAdjointEigenSolver<MatrixXd> DD_MAT(temp_dd);
+	temp_sqrt_dd = DD_MAT.operatorSqrt();
+	
+	Eigen::SelfAdjointEigenSolver<MatrixXd> xi_11x11_MAT(temp_11x11);
+	temp_sqrt_11x11 = xi_11x11_MAT.operatorSqrt();
+	
+	cout<<"mobility_tnsr_sqrt"<<endl;
+
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].mobility_tnsr_sqrt.comp[k][l]=temp_sqrt(k,l);
+				cout<<cluster[i].mobility_tnsr_sqrt.comp[k][l]<<endl;
+			}
+		}
+
+		cout<<"mobility_tnsr_tr_sqrt"<<endl;
+		
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]=temp_sqrt(k,l);
+				cout<<cluster[i].mobility_tnsr_tr_sqrt.comp[k][l-3]<<endl;
+			}
+		}
+
+		cout<<"rot_mobility_tnsr_rt_sqrt"<<endl;
+
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]=temp_sqrt(k,l);
+				cout<<cluster[i].rot_mobility_tnsr_rt_sqrt.comp[k-3][l]<<endl;
+			}
+		}
+
+		cout<<"rot_mobility_tnsr_sqrt"<<endl;
+
+		for (int k=3;k<6;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]=temp_sqrt(k,l);
+				cout<<cluster[i].rot_mobility_tnsr_sqrt.comp[k-3][l-3]<<endl;
+			}
+		}
+		cout<<"mobility_tnsr_dd_sqrt"<<endl;
+
+		for (int k=0;k<5;k++) {
+			for (int l=0;l<5;l++) {
+				cluster[i].mobility_tnsr_dd_sqrt.comp[k][l]=temp_sqrt_dd(k,l);
+				cout<<cluster[i].mobility_tnsr_dd_sqrt.comp[k][l]<<endl;
+			}
+		}
+		
+		cout<<'\n'<<"Friction_tnsr_11x11_sqrt"<<endl;
+
+		for (int k=0;k<11;k++) {
+			for (int l=0;l<11;l++) {
+				cluster[i].friction_tnsr_11x11_sqrt.comp[k][l]=temp_sqrt_11x11(k,l);
+				cout<<cluster[i].friction_tnsr_11x11_sqrt.comp[k][l]<<'\t';
+			}
+			cout<<'\n';
+		}
+
+// inverse mobility square root for brownian stresslet calculation
+
+		for (int k=0;k<3;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].tt_mobility_tnsr_sqrt_inv.comp[k][l]=temp_sqrt_inv(k,l);
+			}
+		}
+		
+		for (int k=0;k<3;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].tr_mobility_tnsr_sqrt_inv.comp[k][l-3]=temp_sqrt_inv(k,l);
+			}
+		}
+
+		for (int k=3;k<6;k++) {
+			for (int l=0;l<3;l++) {
+				cluster[i].rt_mobility_tnsr_sqrt_inv.comp[k-3][l]=temp_sqrt_inv(k,l);
+			}
+		}
+
+		for (int k=3;k<6;k++) {
+			for (int l=3;l<6;l++) {
+				cluster[i].rr_mobility_tnsr_sqrt_inv.comp[k-3][l-3]=temp_sqrt_inv(k,l);
+			}
+		}
 
 // end of storing inverse mobility square root
 
@@ -1552,7 +1525,7 @@ for ( int i = 0 ; i < 1; i ++ )
 	//	cluster[i].quat={0.951056516295154,	0.309016994374947,	0.0,	0.0};	// 2*pi/10;
 	//	cluster[i].quat={0.891006524188368,	0.453990499739547,	0.0,	0.0};	// 3*pi/10;
 	//	cluster[i].quat={0.809016994374948,	0.587785252292473,	0.0,	0.0};	// 4*pi/10;
-	//	cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
+		cluster[i].quat={0.707106781186548,  0.707106781186548, 0.0,    0.0};	// 5*pi/10;
 		// update A matrix
 
         cluster[i].quat2rotmat();
@@ -1862,6 +1835,10 @@ std::ofstream outFile_quat("outFile_quat.dat");
 				
 zerocor();										// intialize the array with zeros
 				
+double phi_old = pi/2.0 ;
+
+double phi_tot = 0.0 ;
+
 					  
 simu_time =dt;
 do {
@@ -1970,6 +1947,15 @@ do {
 	Stresslet_sqr_mean += cluster[0].Stresslet.norm2();
 	Stresslet_Br_sqr_mean += cluster[0].Stresslet_Br.norm2();
 	Stresslet_Br_diff_sqr_mean += cluster[0].Stresslet_Br_diff.norm2();
+	
+    vctr3D director = {cluster[0].rotmat.comp[0][2],cluster[0].rotmat.comp[1][2],cluster[0].rotmat.comp[2][2]}; 
+	
+	double phi = atan2(director.comp[1], director.comp[0]) ;
+		
+	phi_tot += abs( phi - phi_old )  ; 
+	
+	phi_old = phi ;	 
+
 /*	
 	// binning of orbital constant of ellipsoid , C
 	
@@ -2257,8 +2243,11 @@ for ( int i = 0 ; i < 100; i ++ )
 	cout<< max_cos << '\t' << min_cos << '\t' << max_tan << '\t'  << min_tan << endl;
 
 	cout<<Stresslet_mean.comp[0]<<'\t'<<Stresslet_mean.comp[1]<<'\t'<<Stresslet_mean.comp[2]<<'\t'<<Stresslet_mean.comp[3]<<'\t'<<Stresslet_mean.comp[4]<<'\t'<<std::endl;	
+						
+	cout << '\t' << "phi total" << '\t' << phi_tot << '\t'  << endl;
 	
-					
+	cout<<cluster[0].omega_tot.comp[0]<<'\t'<<cluster[0].omega_tot.comp[1]<<'\t'<<cluster[0].omega_tot.comp[2]<<'\t'<<"omega total"<<'\t'<<std::endl;	
+
 	std::ofstream outFile_rand_state(dataFileName+"/random_device_state_new.txt");
 	outFile_rand_state << gen;
 	outFile_rand_state.close();

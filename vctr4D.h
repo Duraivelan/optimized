@@ -42,6 +42,20 @@ struct vctr4D
     return comp[0] * comp[0] + comp[1] * comp[1] + comp[2] * comp[2] + comp[3] * comp[3];
   }
 
+/*
+  vctr3D qdot2omega_tot( const vctr4D& inp ) // for 3D box: translate qdot (4 dimensions) into omega (3 dimensions).
+  {
+    vctr3D result;
+
+    result.comp[0]  = ( - inp.comp[1] * inp.comp[0] + inp.comp[0] * inp.comp[1] + inp.comp[3] * inp.comp[2] - inp.comp[2] * inp.comp[3]) * 2.;
+    result.comp[1]  = ( - inp.comp[2] * inp.comp[0] - inp.comp[3] * inp.comp[1] + inp.comp[0] * inp.comp[2] + inp.comp[1] * inp.comp[3]) * 2.;
+    result.comp[2]  = ( - inp.comp[3] * inp.comp[0] + inp.comp[2] * inp.comp[1] - inp.comp[1] * inp.comp[2] + inp.comp[0] * inp.comp[3]) * 2.;
+//  cout << "check " << check << endl;
+    return result;
+}
+
+*/
+
 // operators
 
 /*        copy
